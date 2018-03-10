@@ -4,12 +4,12 @@ prev_p = initSolution(po,pf,h,K);
 epsilon = 2; %to be tuned
 tol = 0;
 H = eye(3*K);
-a_lim = 1; %Maximum acc of 1 m/s^2
+a_lim = 10; %Maximum acc of 1 m/s^2
 ub = a_lim*ones(3*K,1);
 lb = -ub; 
 i = 1;
 
-while i <= 10
+while i <= 3
     
     % Setup the QP
     [Ain, bin] = IneqConstr(prev_p, l, h, pmin, pmax);

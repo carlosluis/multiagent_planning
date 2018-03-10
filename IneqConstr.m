@@ -1,6 +1,6 @@
 function [Ain_total, bin_total] = IneqConstr(p, l, h, pmin, pmax)
 
-r_min = 0.9; %minimum radius in meters
+r_min = 0.2; %minimum radius in meters
 
 % Kinematic model A,b matrices
 A = [1 0 0 h 0 0;
@@ -38,14 +38,14 @@ if (~isempty(l))
 
         for k = 1:K % Iterate through all time steps of the trajectory
             dist = norm(p(:,k)-pj(:,k)); %distance at time step k
-            diff = (p-pj)'; % Transpose of the difference
+            diff = (p(:,k)-pj(:,k))'; % Transpose of the difference
 
             % Right side of inequality constraint (bin)
             r = dist*(r_min - dist + (p(:,k) - pj(:,k))'*p(:,k));
             bin = [bin; r];
 
             % Construct diagonal matrix with vector difference
-            diff_mat = [diff_mat; zeros(1,3*(k-1)) diff(1,:) zeros(1,3*(K-k))];
+            diff_mat = [diff_mat; zeros(1,3*(k-1)) diff zeros(1,3*(K-k))];
         end
 
         % Update the ineq. constraints matrix and vector
