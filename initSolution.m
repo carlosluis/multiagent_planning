@@ -1,9 +1,8 @@
 function [p] = initSolution(po,pf,h,K)
-
-diff = pf - po;
+diff = pf-po;
 t = 0:h:(K-1)*h;
 
 for i = 1:length(t)
-    p(:,i) = po + t(i)*diff;
+    p(:,i) = po + t(i)*diff/((K-1)*h);
 end
 end

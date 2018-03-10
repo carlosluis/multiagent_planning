@@ -13,7 +13,7 @@ while i <= 10
     
     % Setup the QP
     [Ain, bin] = IneqConstr(prev_p, l, h, pmin, pmax);
-    [Aeq, beq] = EqConstr(pf,K,h);
+    [Aeq, beq] = EqConstr(pf-po,K,h);
     
     %Solve and propagate states
     a = quadprog(H,[],Ain,bin,Aeq,beq,lb,ub);   

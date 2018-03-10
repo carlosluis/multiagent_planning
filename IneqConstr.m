@@ -1,6 +1,6 @@
 function [Ain_total, bin_total] = IneqConstr(p, l, h, pmin, pmax)
 
-r_min = 0.8; %minimum radius in meters
+r_min = 0.9; %minimum radius in meters
 
 % Kinematic model A,b matrices
 A = [1 0 0 h 0 0;
@@ -49,8 +49,8 @@ if (~isempty(l))
         end
 
         % Update the ineq. constraints matrix and vector
-        Ain_total =  [Ain_total; diff_mat*Ain];
-        bin_total = [bin_total; bin];
+        Ain_total =  [Ain_total; -diff_mat*Ain];
+        bin_total = [bin_total; -bin];
 
         % Reset vectors to calculate next obstacle
         bin = [];
