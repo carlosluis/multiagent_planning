@@ -11,7 +11,7 @@ A = [1 0 0 h 0 0;
 b = [h^2/2*eye(3);
      h*eye(3)];
  
-beq = [pf' ; zeros(3,1); zeros(3,1)];
+beq = [pf' ; zeros(3,1); zeros(3,1); zeros(3,1)];
 prev_row = zeros(6,3*K);
 Aeq = prev_row;
 
@@ -22,6 +22,6 @@ for k = 1:K % Iterate through all time steps of the trajectory
     prev_row = new_row;
 end
 
-Aeq = [new_row; [zeros(3,3*(K-1)) eye(3)]];
+Aeq = [new_row; [zeros(3,3*(K-1)) eye(3)]; [eye(3) zeros(3,3*(K-1))]];
 
 end

@@ -37,11 +37,11 @@ if (~isempty(l))
         pj = l(:,:,i); %position vector of the i-th neighbour over k iterations
 
         for k = 1:K % Iterate through all time steps of the trajectory
-            dist = norm(p(k)-pj(k)); %distance at time step k
+            dist = norm(p(:,k)-pj(:,k)); %distance at time step k
             diff = (p-pj)'; % Transpose of the difference
 
             % Right side of inequality constraint (bin)
-            r = dist*(r_min - dist + (p(k) - pj(k))'*p(k));
+            r = dist*(r_min - dist + (p(:,k) - pj(:,k))'*p(:,k));
             bin = [bin; r];
 
             % Construct diagonal matrix with vector difference
