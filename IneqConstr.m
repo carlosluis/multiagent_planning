@@ -1,6 +1,6 @@
 function [Ain_total, bin_total] = IneqConstr(p, l, h, pmin, pmax)
 
-r_min = 0.2; %minimum radius in meters
+r_min = 0.7; %minimum radius in meters
 
 % Kinematic model A,b matrices
 A = [1 0 0 h 0 0;
@@ -41,7 +41,7 @@ if (~isempty(l))
             diff = (p(:,k)-pj(:,k))'; % Transpose of the difference
 
             % Right side of inequality constraint (bin)
-            r = dist*(r_min - dist + (p(:,k) - pj(:,k))'*p(:,k));
+            r = dist*(r_min - dist - + (p(:,k) - pj(:,k))'*p(:,k)/dist) - (p(:,k) - pj(:,k))'*p(:,1);
             bin = [bin; r];
 
             % Construct diagonal matrix with vector difference

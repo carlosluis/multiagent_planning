@@ -26,7 +26,7 @@ H = eye(3*K);
 %% Test Single SCP
 
 T = 5;
-h = 0.2;
+h = 0.05;
 t = 0:h:5;
 K = T/h + 1;
 po = [0,0,1.5];
