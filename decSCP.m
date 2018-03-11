@@ -2,22 +2,26 @@ clc
 clear all
 close all
 
-T = 5;
-h = 0.1;
+T = 8;
+h = 0.2;
 tk = 0:h:T;
 K = T/h + 1;
 Ts = 0.01;
 t = 0:Ts:T;
 
 % Initial positions
-po1 = [-1,0,0.5];
-po2 = [1.2,0,0.5];
-po = cat(3,po1,po2);
+po1 = [-1.5,0,0.5];
+po2 = [1.5,0,0.5];
+po3 = [0,-1,0.5];
+po4 = [0, 2,0.5];
+po = cat(3,po1,po2,po3,po4);
 
 % Final positions
-pf1 = [1,2,0.5];
-pf2 = [-1,2,0.5];
-pf  = cat(3, pf1, pf2);
+pf1 = [1.5,2,0.5];
+pf2 = [-1.5,2,0.5];
+pf3 = [0,2,0.5];
+pf4 = [0,-1,0.5];
+pf  = cat(3, pf1, pf2,pf3,pf4);
 
 % Workspace boundaries
 pmin = [-4,-4,0];
@@ -30,7 +34,7 @@ N = size(po,3);
 tic
 for i = 1:N 
 %     diff =  - po(:,:,i);
-    [pi, vi, ai] = singleiSCP(po(:,:,i),pf(:,:,i),h,K,pmin,pmax,l);
+    [pi, vi, ai] = singleSCP(po(:,:,i),pf(:,:,i),h,K,pmin,pmax,l);
     l = cat(3,l,pi);
     p(:,:,i) = spline(tk,pi,t);
     v(:,:,i) = spline(tk,vi,t);
@@ -118,7 +122,7 @@ for i = 1:N
    
 end
 
-diff = p(:,:,1) - p(:,:,2);
+diff = p(:,:,1) - p(:,:,4);
 dist = sqrt(sum(diff.^2,1));
 
 figure(5)

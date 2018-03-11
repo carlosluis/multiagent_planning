@@ -2,14 +2,14 @@ function [p,v,a] = singleiSCP(po, pf, h, K, pmin,pmax, l)
 
 prev_p = initSolution(po,pf,h,K);
 epsilon = 2; %to be tuned
-tol = 0;
+tol = 2;
 H = eye(3*K);
 a_lim = 1; %Maximum acc of 1 m/s^2
 ub = a_lim*ones(3*K,1);
 lb = -ub; 
 i = 1;
 
-r_min = 0.5; %minimum radius in meters
+r_min = 0.8; %minimum radius in meters
 
 % Kinematic model A,b matrices
 A = [1 0 0 h 0 0;
@@ -40,19 +40,19 @@ end
 
 addConstr = [];
 
-while i <= 11
+while (i <= K && tol > 0.1)
     newConstrCount = 0; 
     Ain_total = [];
     bin_total = [];
     for k = 1:K
-        violation = CheckforColl (prev_p(:,k),l,k,r_min);
+        violation = CheckforColl(prev_p(:,k),l,k,r_min);
         if (ismember(k,addConstr))
             [Ainr, binr] = CollConstr(prev_p(:,k),po,k, l, Ain,r_min);
             Ain_total = [Ain_total; Ainr];
             bin_total = [bin_total; binr];
         
         elseif (newConstrCount==0 && violation)
-            [Ainr, binr] = CollConstr(prev_p(:,k-1),po,k-1, l, Ain,r_min);
+            [Ainr, binr] = CollConstr(prev_p(:,k),po,k, l, Ain,r_min);
             Ain_total = [Ain_total; Ainr];
             bin_total = [bin_total; binr];  
             addConstr = [addConstr k];

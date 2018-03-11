@@ -41,7 +41,7 @@ if (~isempty(l))
             diff = (p(:,k)-pj(:,k))'; % Transpose of the difference
 
             % Right side of inequality constraint (bin)
-            r = dist*(r_min - dist - + (p(:,k) - pj(:,k))'*p(:,k)/dist) - (p(:,k) - pj(:,k))'*p(:,1);
+            r = dist*(r_min - dist + (p(:,k) - pj(:,k))'*p(:,k)/dist) - (p(:,k) - pj(:,k))'*p(:,1);
             bin = [bin; r];
 
             % Construct diagonal matrix with vector difference
