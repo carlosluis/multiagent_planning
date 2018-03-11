@@ -40,7 +40,7 @@ end
 
 addConstr = [];
 
-while (i <= K && tol > 0.1)
+while (i <= K && tol > 0.05)
     newConstrCount = 0; 
     Ain_total = [];
     bin_total = [];
@@ -78,5 +78,5 @@ while (i <= K && tol > 0.1)
     prev_p = p;
     i = i + 1;   
 end
-
+fprintf("Number of SCP iterations = %i\n",i-1)
 end

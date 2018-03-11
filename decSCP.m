@@ -2,7 +2,7 @@ clc
 clear all
 close all
 
-T = 8;
+T = 5;
 h = 0.2;
 tk = 0:h:T;
 K = T/h + 1;
@@ -17,10 +17,10 @@ po4 = [0, 2,0.5];
 po = cat(3,po1,po2,po3,po4);
 
 % Final positions
-pf1 = [1.5,2,0.5];
-pf2 = [-1.5,2,0.5];
-pf3 = [0,2,0.5];
-pf4 = [0,-1,0.5];
+pf1 = [1.5,2,1.5];
+pf2 = [-1.5,2,1.5];
+pf3 = [0,2,1.5];
+pf4 = [0,-1,1.5];
 pf  = cat(3, pf1, pf2,pf3,pf4);
 
 % Workspace boundaries
