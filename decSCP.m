@@ -57,20 +57,21 @@ for i = 1:N
 end
 toc
 
+L = length(t);
 colors = get(gca,'colororder');
 figure(1)
 set(gcf,'currentchar',' ')
 while get(gcf,'currentchar')==' '
-    for k = 1:L
+    for k = 1:K
         for i = 1:N
-            plot3(p(1,k,i),p(2,k,i),p(3,k,i),'*', ...
+            plot3(pk(1,k,i),pk(2,k,i),pk(3,k,i),'o', ...
                   'LineWidth',2, 'Color',colors(i,:));
             hold on;
             grid on;
             xlim([-4,4])
             ylim([-4,4])
             zlim([0,3.5])
-            plot3(po(1,1,i), po(1,2,i), po(1,3,i),'o',...
+            plot3(po(1,1,i), po(1,2,i), po(1,3,i),'^',...
                   'LineWidth',2,'Color',colors(i,:));
             plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'x',...
                   'LineWidth',2,'Color',colors(i,:));    
@@ -81,9 +82,7 @@ while get(gcf,'currentchar')==' '
     clf
 end
 
-
 figure(1)
-L = length(t);
 for i = 1:N 
     plot3(p(1,:,i), p(2,:,i), p(3,:,i), 'LineWidth',1.5);    
     hold on;
@@ -176,7 +175,7 @@ end
 %    
 % end
 % 
-% diff = p(:,:,2) - p(:,:,4);
+% diff = p(:,:,1) - p(:,:,4);
 % dist = sqrt(sum(diff.^2,1));
 % 
 % figure(5)

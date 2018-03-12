@@ -12,7 +12,7 @@ Aeq = getPosVelMat(h,K);
 
 addConstr = [];
 
-while (i <= K && tol > 0.005)
+while (i <= K && tol > 0.01)
     newConstrCount = 0; 
     Ain_total = [];
     bin_total = [];
