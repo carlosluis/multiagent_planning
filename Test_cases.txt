@@ -1,0 +1,35 @@
+Test cases for dec-SCP and dec-iSCP - 4 Vehicles
+Tobe copied in appropriate place on file decSCP.m
+
+First case:
+
+% Initial positions
+po1 = [-1.5,0,0.5];
+po2 = [1.5,0,0.5];
+po3 = [0,-1,0.5];
+po4 = [0, 2,0.5];
+po = cat(3,po1,po2,po3,po4);
+
+% Final positions
+pf1 = [1.5,2,1.5];
+pf2 = [-1.5,2,1.5];
+pf3 = [0,2,1.5];
+pf4 = [0,-1,1.5];
+pf  = cat(3, pf1, pf2,pf3,pf4);
+
+Second case:
+
+% Initial positions
+po1 = [-1,-1,1.5];
+po2 = [0,-1,1.5];
+po3 = [1,-1,1.5];
+po4 = [2, -1,1.5];
+po = cat(3,po1,po2,po3,po4);
+
+% Final positions
+pf1 = [2,2,1.5];
+pf2 = [1,2,1.5];
+pf3 = [0,2,1.5];
+pf4 = [-1,2,1.5];
+pf  = cat(3, pf1, pf2,pf3,pf4);
+

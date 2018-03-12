@@ -1,22 +1,26 @@
-function [p,v,a] = singleSCP(po, pf, h, K, pmin,pmax, l)
+function [p,v,a] = singleSCP(po,pf,h,K,pmin,pmax,rmin,alim,l)
 
 prev_p = initSolution(po,pf,h,K);
 epsilon = 2; %to be tuned
 tol = 2;
-H = eye(3*K);
-a_lim = 1; %Maximum acc of 1 m/s^2
-ub = a_lim*ones(3*K,1);
+ub = alim*ones(3*K,1);
 lb = -ub; 
 i = 1;
 
-while (i <= K && tol > 0.05)
+H = eye(3*K);
+A = getPosMat(h,K);
+Aeq = getPosVelMat(h,K);
+
+while (i <= K && tol > 0.01)
     
     % Setup the QP
-    [Ain, bin] = IneqConstr(prev_p, l, h, pmin, pmax);
-    [Aeq, beq] = EqConstr(pf-po,K,h);
+    [Ain, bin] = AllCollConstr(prev_p,K,rmin,l,A);
+    Ain_total = [Ain; A; -A];
+    bin_total = [bin; repmat(pmax',K,1); repmat(-pmin',K,1)];
+    beq = [(pf-po)' ; zeros(3,1); zeros(3,1); zeros(3,1)];
     
     %Solve and propagate states
-    a = quadprog(H,[],Ain,bin,Aeq,beq,lb,ub);   
+    a = quadprog(H,[],Ain_total,bin_total,Aeq,beq,lb,ub);   
     [p,v] = propState(po,a,h);
     p = vec2mat(p,3)';
     v = vec2mat(v,3)';
@@ -24,8 +28,7 @@ while (i <= K && tol > 0.05)
     tol = maxDeviation(p, prev_p);
     
     prev_p = p;
-    i = i + 1;
-    
+    i = i + 1;    
 end
 
 end
