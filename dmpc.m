@@ -9,26 +9,19 @@ tk = 0:h:T;
 K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
+k_hor = 10;
 
 % Initial positions
-po1 = [-1,-1,1.5];
-po2 = [-1,1,1.5];
-po3 = [1,-1,1.5];
-po4 = [1,1,1.5];
-po5 = [-1,0,1.5];
-po6 = [1,0,1.5];
+po1 = [-2,0,1.5];
+po2 = [2,0,1.5];
 
-po = cat(3,po1,po2,po3,po4,po5,po6);
+po = cat(3,po1,po2);
 
 % Final positions
-pf1 = [1,1,1.5];
-pf2 = [1,-1,1.5];
-pf3 = [-1,1,1.5];
-pf4 = [-1,-1,1.5];
-pf5 = [1,0,1.5];
-pf6 = [-1,0,1.5];
+pf1 = [2,0,1.5];
+pf2 = [-2,0,1.5];
 
-pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6);
+pf  = cat(3,pf1,pf2);
 
 % Workspace boundaries
 pmin = [-4,-4,0];
@@ -46,21 +39,35 @@ alim = 1;
 N = size(po,3); % number of vehicles
 
 tic %measure the time it gets to solve the optimization problem
-for i = 1:N 
-    poi = po(:,:,i);
-    pfi = pf(:,:,i);
-    [pi, vi, ai] = singleiSCP(poi,pfi,h,K,pmin,pmax,rmin,alim,l);
-    l = cat(3,l,pi);
-    
-    pk(:,:,i) = pi;
-    vk(:,:,i) = vi;
-    ak(:,:,i) = ai;
-    
-    % Interpolate solution with a 100Hz sampling
-    p(:,:,i) = spline(tk,pi,t);
-    v(:,:,i) = spline(tk,vi,t);
-    a(:,:,i) = spline(tk,ai,t);
+
+for k = 1:K
+    for n = 1:N
+        if k==1
+            poi = po(:,:,n);
+            pfi = pf(:,:,n);
+            pi = initSolution(poi,pfi,h,K);
+            pi = pi(:,1:k_hor);
+            vi = zeros(3,K);
+            ai = zeros(3,K);
+            l(:,:,n) = pi;
+            pk(:,k,n) = pi(:,1);
+            vk(:,k,n) = vi(:,1);
+            ak(:,k,n) = ai(:,1); 
+        else
+            pok = pk(:,k-1,n);
+            vok = vk(:,k-1,n);
+            aok = ak(:,k-1,n);
+            [pi,vi,ai] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,k,l,k_hor,rmin,pmin,pmax,alim); 
+            l(:,:,n) = pi;
+            pk(:,k,n) = pi(:,2);
+            vk(:,k,n) = vi(:,2);
+            ak(:,k,n) = ai(:,2); 
+        end
+           
+    end
 end
+            
+       
 toc
 
 L = length(t);

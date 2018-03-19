@@ -33,3 +33,38 @@ pf3 = [0,2,1.5];
 pf4 = [-1,2,1.5];
 pf  = cat(3, pf1, pf2,pf3,pf4);
 
+% Time settings and variables
+T = 10; % Trajectory final time
+h = 0.2; % time step duration
+tk = 0:h:T;
+K = T/h + 1; % number of time steps
+Ts = 0.01; % period for interpolation @ 100Hz
+t = 0:Ts:T; % interpolated time vector
+
+% Initial positions
+po1 = [-1,-1,1.5];
+po2 = [0,-1,1.5];
+po3 = [1,-1,1.5];
+po4 = [2, -1,1.5];
+po5 = [-1,1,1.5];
+po6 = [2,0,1.5];
+po7 = [-1,0,1.5];
+po8 = [2,1,1.5];
+po9 = [-1,2,1.5];
+po10 = [2,2,1.5];
+
+po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9,po10);
+
+% Final positions
+pf1 = [2,2,1.5];
+pf2 = [1,2,1.5];
+pf3 = [0,2,1.5];
+pf4 = [-1,2,1.5];
+pf5 = [2,1,1.5];
+pf6 = [-1,0,1.5];
+pf7 = [2,0,1.5];
+pf8 = [-1,1,1.5];
+pf9 = [0,-1,1.5];
+pf10 = [1,-1,1.5];
+pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9,pf10);
+
