@@ -9,7 +9,7 @@ tk = 0:h:T;
 K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
-k_hor = 5;
+k_hor = 10;
 
 % Initial positions
 po1 = [-2,0.01,1.5];
@@ -31,12 +31,27 @@ pmax = [4,4,2.5];
 l = [];
 
 % Minimum distance between vehicles in m
-rmin = 0.9;
+rmin = 0.7;
 
 % Maximum acceleration in m/s^2
 alim = 1;
 
 N = size(po,3); % number of vehicles
+
+% Some pre computations
+A = getPosMat(h,k_hor);
+Aux = [1 0 0 h 0 0;
+     0 1 0 0 h 0;
+     0 0 1 0 0 h;
+     0 0 0 1 0 0;
+     0 0 0 0 1 0;
+     0 0 0 0 0 1];
+A_initp = [];
+A_init = eye(6);
+for k = 1:k_hor
+    A_init = Aux*A_init;
+    A_initp = [A_initp; A_init(1:3,:)];  
+end
 
 tic %measure the time it gets to solve the optimization problem
 for k = 1:K
@@ -44,24 +59,17 @@ for k = 1:K
         if k==1
             poi = po(:,:,n);
             pfi = pf(:,:,n);
-            pi = initSolution(poi,pfi,h,K);
-            pi = pi(:,1:k_hor);
-            vi = zeros(3,K);
-            ai = zeros(3,K);
-            new_l(:,:,n) = pi;
-            pk(:,k,n) = pi(:,1);
-            vk(:,k,n) = vi(:,1);
-            ak(:,k,n) = ai(:,1); 
+            [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
         else
             pok = pk(:,k-1,n);
             vok = vk(:,k-1,n);
             aok = ak(:,k-1,n);
-            [pi,vi,ai] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,k,l,k_hor,rmin,pmin,pmax,alim); 
-            new_l(:,:,n) = pi;
-            pk(:,k,n) = pi(:,2);
-            vk(:,k,n) = vi(:,2);
-            ak(:,k,n) = ai(:,2);
+            [pi,vi,ai] = solveDMPC(pok',pf(:,:,n),vok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp); 
         end
+        new_l(:,:,n) = pi;
+        pk(:,k,n) = pi(:,2);
+        vk(:,k,n) = vi(:,2);
+        ak(:,k,n) = ai(:,2);
     end
     l = new_l;
     pred(:,:,:,k) = l;

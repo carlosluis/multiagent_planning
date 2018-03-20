@@ -1,30 +1,15 @@
-function [p,v,a] = solveDMPC(po,pf,vo,ao,n,h,k_step,l,K,rmin,pmin,pmax,alim)
+function [p,v,a] = solveDMPC(po,pf,vo,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp)
 
 k_hor = size(l,2);
-A = getPosMat(h,K);
 tol = 2;
 ub = alim*ones(3*K,1);
 lb = -ub; 
 i = 1;
 addConstr = [];
 prev_p = l(:,:,n);
-Aeq = [eye(3) zeros(3,3*(K-1))];
-beq = ao';
+Aeq = [];
+beq = [];
 
-Aux = [1 0 0 h 0 0;
-     0 1 0 0 h 0;
-     0 0 1 0 0 h;
-     0 0 0 1 0 0;
-     0 0 0 0 1 0;
-     0 0 0 0 0 1];
-A_initp = [];
-A_init = eye(6);
-for k = 1:K
-    A_init = Aux*A_init;
-    A_initp = [A_initp; A_init(1:3,:)];  
-end
-
-%   NO COLLISION CONSTRAINTS FOR NOW
 while (i <= k_hor && tol > 0.01)
     newConstrCount = 0; 
     Ain_total = [];
@@ -54,7 +39,7 @@ while (i <= k_hor && tol > 0.01)
     f = -2*repmat((pf-po)',K,1)'*Q*A;
     
     %Solve and propagate states
-    a = quadprog(H,f',Ain_total,bin_total,[],[],lb,ub);   
+    a = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub);   
     [p,v] = propStatedmpc(po,vo,a,h);
     p = vec2mat(p,3)';
     v = vec2mat(v,3)';
