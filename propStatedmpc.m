@@ -20,7 +20,7 @@ A_initp = [];
 A_init = eye(6);
 
 % Build matrix to convert acceleration to position
-for k = 1:(K-1)
+for k = 1:(K)
     add_b = [zeros(size(b,1),size(b,2)*(k-1)) b zeros(size(b,1),size(b,2)*(K-k))];
     new_row = A*prev_row + add_b;   
     A_p = [A_p; new_row(1:3,:)];
@@ -30,9 +30,9 @@ for k = 1:(K-1)
     A_initp = [A_initp; A_init(1:3,:)];
 end
 
-new_p = A_p*a + A_initp*[po';vo'];
-new_v = A_v*a + repmat(vo',K-1,1);
+new_p = A_p*a + repmat(po',K,1);
+new_v = A_v*a ;
 
-p = [po';new_p];
-v = [vo';new_v];
+p = new_p;
+v = new_v;
 end

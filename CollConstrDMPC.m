@@ -1,4 +1,4 @@
-function [Ain_total, bin_total] = CollConstrDMPC(p,po,n, k, l, Ain,r_min)
+function [Ain_total, bin_total] = CollConstrDMPC(p,po,vo,n, k, l, Ain,r_min,A_initp)
 bin = [];
 diff_mat = [];
 Ain_total = [];
@@ -13,7 +13,7 @@ if (~isempty(l))
             diff = (p-pj(:,k))'; % Transpose of the difference
 
             % Right side of inequality constraint (bin)
-            r = dist*(r_min - dist + (p - pj(:,k))'*p/dist) - (p-pj(:,k))'*po';
+            r = dist*(r_min - dist + (p - pj(:,k))'*p/dist) - (p-pj(:,k))'*A_initp(3*(k-1)+1:3*k,:)*[po';vo'];
             bin = [bin; r];
 
             % Construct diagonal matrix with vector difference
