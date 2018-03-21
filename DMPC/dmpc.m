@@ -3,27 +3,33 @@ clear all
 close all
 
 % Time settings and variables
-T = 10; % Trajectory final time
+T = 15; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
-k_hor = 10;
+k_hor = 12;
 
 % Initial positions
-po1 = [-2,0.01,1.0];
-po2 = [2,0,1.0];
-po3 = [0,-1,1.5];
+po1 = [-1.01,-1,1.5];
+po2 = [-1,1,1.5];
+po3 = [1.5,-1,1.5];
+po4 = [1,1.5,1.5];
+po5 = [-1,0,1.5];
+po6 = [1,0,1.5];
 
-po = cat(3,po1,po2,po3);
+po = cat(3,po1,po2,po3,po4);
 
 % Final positions
-pf1 = [2,0.01,2.0];
-pf2 = [-2,0,2.0];
-pf3 = [0,1,1.5];
+pf1 = [1.01,1,1.5];
+pf2 = [1,-1,1.5];
+pf3 = [-1.01,1,1.5];
+pf4 = [-1,-1.5,1.5];
+pf5 = [1.3,0,1.5];
+pf6 = [-1,0,1.5];
 
-pf  = cat(3,pf1,pf2,pf3);
+pf  = cat(3,pf1,pf2,pf3,pf4);
 
 % Workspace boundaries
 pmin = [-4,-4,0];
@@ -114,7 +120,7 @@ while get(gcf,'currentchar')==' '
             plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'x',...
                   'LineWidth',2,'Color',colors(i,:));    
         end
-        pause(0.2)
+%         pause(0.2)
     end
     clf
     pause(0.1)
