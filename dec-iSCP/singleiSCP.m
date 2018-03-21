@@ -34,7 +34,7 @@ while (i <= K && tol > 0.01)
     
     % Setup the QP
     Ain_total = [Ain_total; A; -A];
-    bin_total = [bin_total; repmat(pmax',K,1); repmat(-pmin',K,1)];
+    bin_total = [bin_total; repmat((pmax-po)',K,1); repmat(-(pmin-po)',K,1)];
     beq = [(pf-po)' ; zeros(3,1); zeros(3,1); zeros(3,1)];
      
     %Solve and propagate states

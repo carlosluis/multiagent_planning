@@ -31,10 +31,15 @@ while (i <= k_hor && tol > 0.01)
     end
     
     % Setup the QP
+    if(isempty(Ain_total))
+        Q = 10*eye(3*K);
+        R = 2*eye(3*K);
+    else
+        Q = 2*eye(3*K);
+        R = 6*eye(3*K);
+    end
     Ain_total = [Ain_total; A; -A];
-    bin_total = [bin_total; repmat(pmax',K,1); repmat(-pmin',K,1)];
-    Q = 4*eye(3*K);
-    R = 5*eye(3*K);
+    bin_total = [bin_total; repmat((pmax-po)',K,1); repmat(-(pmin-po)',K,1)];
     H = 2*(A'*Q*A+R);
     f = -2*repmat((pf-po)',K,1)'*Q*A;
     
