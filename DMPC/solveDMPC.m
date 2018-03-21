@@ -34,7 +34,7 @@ while (i <= k_hor && tol > 0.01)
     Ain_total = [Ain_total; A; -A];
     bin_total = [bin_total; repmat(pmax',K,1); repmat(-pmin',K,1)];
     Q = 5*eye(3*K);
-    R = 2*eye(3*K);
+    R = 5*eye(3*K);
     H = 2*(A'*Q*A+R);
     f = -2*repmat((pf-po)',K,1)'*Q*A;
     

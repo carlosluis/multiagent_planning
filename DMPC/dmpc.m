@@ -12,16 +12,18 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 10;
 
 % Initial positions
-po1 = [-2,0.01,1.5];
-po2 = [2,0,1.5];
+po1 = [-2,0.01,1.0];
+po2 = [2,0,1.0];
+po3 = [0,-1,1.5];
 
-po = cat(3,po1,po2);
+po = cat(3,po1,po2,po3);
 
 % Final positions
-pf1 = [2,0.01,1.5];
-pf2 = [-2,0,1.5];
+pf1 = [2,0.01,2.0];
+pf2 = [-2,0,2.0];
+pf3 = [0,1,1.5];
 
-pf  = cat(3,pf1,pf2);
+pf  = cat(3,pf1,pf2,pf3);
 
 % Workspace boundaries
 pmin = [-4,-4,0];
@@ -119,11 +121,11 @@ while get(gcf,'currentchar')==' '
 end
 
 
-diff = p(:,:,1) - p(:,:,2);
-dist = sqrt(sum(diff.^2,1));
-
-figure(5)
-plot(t,dist, 'LineWidth',1.5);
-grid on;
-xlabel('t [s]')
-ylabel('distance [m]');
+% diff = p(:,:,1) - p(:,:,2);
+% dist = sqrt(sum(diff.^2,1));
+% 
+% figure(5)
+% plot(t,dist, 'LineWidth',1.5);
+% grid on;
+% xlabel('t [s]')
+% ylabel('distance [m]');
