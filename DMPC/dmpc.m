@@ -39,7 +39,7 @@ pmax = [4,4,2.5];
 l = [];
 
 % Minimum distance between vehicles in m
-rmin = 0.5;
+rmin = 0.75;
 
 % Maximum acceleration in m/s^2
 alim = 1;
