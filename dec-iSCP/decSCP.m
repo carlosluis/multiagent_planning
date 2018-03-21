@@ -3,7 +3,7 @@ clear all
 close all
 
 % Time settings and variables
-T = 10; % Trajectory final time
+T = 15; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -11,24 +11,24 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 
 % Initial positions
-po1 = [-1,-1,1.5];
-po2 = [-1,1,1.5];
-po3 = [1,-1,1.5];
-po4 = [1,1,1.5];
+po1 = [-2,2,1.5];
+po2 = [2,2,1.5];
+po3 = [2,-2,1.5];
+po4 = [-2,-2,1.5];
 po5 = [-1,0,1.5];
 po6 = [1,0,1.5];
 
-po = cat(3,po1,po2,po3,po4,po5,po6);
+po = cat(3,po1,po2,po3,po4);
 
 % Final positions
-pf1 = [1,1,1.5];
-pf2 = [1,-1,1.5];
-pf3 = [-1,1,1.5];
-pf4 = [-1,-1,1.5];
-pf5 = [1,0,1.5];
+pf1 = [2,-2,1.5];
+pf2 = [-2,-2,1.5];
+pf3 = [-2,2,1.5];
+pf4 = [2,2,1.5];
+pf5 = [1.3,0,1.5];
 pf6 = [-1,0,1.5];
 
-pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6);
+pf  = cat(3,pf1,pf2,pf3,pf4);
 
 % Workspace boundaries
 pmin = [-4,-4,0];
@@ -181,7 +181,6 @@ end
 %     grid on;
 %    
 % end
-% 
 % diff = p(:,:,6) - p(:,:,10);
 % dist = sqrt(sum(diff.^2,1));
 % 

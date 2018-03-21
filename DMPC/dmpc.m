@@ -39,7 +39,7 @@ pmax = [4,4,2.5];
 l = [];
 
 % Minimum distance between vehicles in m
-rmin = 0.7;
+rmin = 0.5;
 
 % Maximum acceleration in m/s^2
 alim = 1;
@@ -56,6 +56,9 @@ Aux = [1 0 0 h 0 0;
      0 0 0 0 0 1];
 A_initp = [];
 A_init = eye(6);
+
+Delta = getDeltaMat(k_hor); 
+
 for k = 1:k_hor
     A_init = Aux*A_init;
     A_initp = [A_initp; A_init(1:3,:)];  
@@ -72,7 +75,7 @@ for k = 1:K
             pok = pk(:,k-1,n);
             vok = vk(:,k-1,n);
             aok = ak(:,k-1,n);
-            [pi,vi,ai] = solveDMPC(pok',pf(:,:,n),vok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp); 
+            [pi,vi,ai] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta); 
         end
         new_l(:,:,n) = pi;
         pk(:,k,n) = pi(:,2);
@@ -126,12 +129,90 @@ while get(gcf,'currentchar')==' '
     pause(0.1)
 end
 
+%% Plotting all the states
+L = length(t);
+for i = 1:N
+    figure(1)
+    plot3(p(1,:,i), p(2,:,i), p(3,:,i), 'LineWidth',1.5);
+    hold on;
+    grid on;
+    xlim([-4,4])
+    ylim([-4,4])
+    zlim([0,3.5])
+    plot3(po(1,1,i), po(1,2,i), po(1,3,i),'or','LineWidth',2);
+    plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'xr','LineWidth',2); 
+    
+    figure(2)
+    subplot(3,1,1)
+    plot(t,p(1,:,i),'LineWidth',1.5);
+    ylabel('x [m]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
 
-% diff = p(:,:,1) - p(:,:,2);
+    subplot(3,1,2)
+    plot(t,p(2,:,i),'LineWidth',1.5);
+    ylabel('y [m]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,3)
+    plot(t,p(3,:,i),'LineWidth',1.5);
+    ylabel('z [m]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    figure(3)
+    subplot(3,1,1)
+    plot(t,v(1,:,i),'LineWidth',1.5);
+    ylabel('vx [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,2)
+    plot(t,v(2,:,i),'LineWidth',1.5);
+    ylabel('vy [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,3)
+    plot(t,v(3,:,i),'LineWidth',1.5);
+    ylabel('vz [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    figure(4)
+    subplot(3,1,1)
+    plot(t,a(1,:,i),'LineWidth',1.5);
+    ylabel('ax [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,2)
+    plot(t,a(2,:,i),'LineWidth',1.5);
+    ylabel('ay [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,3)
+    plot(t,a(3,:,i),'LineWidth',1.5);
+    ylabel('az [m/s]')
+    xlabel ('t [s]')
+    grid on;
+   
+end
+% diff = p(:,:,6) - p(:,:,10);
 % dist = sqrt(sum(diff.^2,1));
 % 
 % figure(5)
-% plot(t,dist, 'LineWidth',1.5);
+% plot(t, dist, 'LineWidth',1.5);
 % grid on;
 % xlabel('t [s]')
 % ylabel('distance [m]');

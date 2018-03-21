@@ -1,4 +1,4 @@
-function [p,v,a] = solveDMPC(po,pf,vo,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp)
+function [p,v,a] = solveDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta)
 
 k_hor = size(l,2);
 tol = 2;
@@ -9,6 +9,8 @@ addConstr = [];
 prev_p = l(:,:,n);
 Aeq = [];
 beq = [];
+Ain_total = [];
+bin_total = [];
 
 while (i <= k_hor && tol > 0.01)
     newConstrCount = 0; 
@@ -33,15 +35,18 @@ while (i <= k_hor && tol > 0.01)
     % Setup the QP
     if(isempty(Ain_total))
         Q = 10*eye(3*K);
-        R = 2*eye(3*K);
+        R = 5*eye(3*K);
+        S = 30*eye(3*K);
     else
-        Q = 2*eye(3*K);
-        R = 6*eye(3*K);
+        Q = 5*eye(3*K);
+        R = 10*eye(3*K);
+        S = 30*eye(3*K);
     end
     Ain_total = [Ain_total; A; -A];
     bin_total = [bin_total; repmat((pmax-po)',K,1); repmat(-(pmin-po)',K,1)];
-    H = 2*(A'*Q*A+R);
-    f = -2*repmat((pf-po)',K,1)'*Q*A;
+    H = 2*(A'*Q*A+ Delta'*S*Delta + R);
+    ao_1 = [ao zeros(1,3*(K-1))];
+    f = -2*(repmat((pf-po)',K,1)'*Q*A + ao_1*S*Delta) ;
     
     %Solve and propagate states
     a = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub);   
