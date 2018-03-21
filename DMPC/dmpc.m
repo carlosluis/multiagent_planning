@@ -3,7 +3,7 @@ clear all
 close all
 
 % Time settings and variables
-T = 15; % Trajectory final time
+T = 10; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -12,14 +12,14 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 
 % Initial positions
-po1 = [-2,2,1.5];
+po1 = [-2.01,2,1.5];
 po2 = [2,2,1.5];
 po3 = [2,-2,1.5];
 po4 = [-2,-2,1.5];
 po5 = [-1,0,1.5];
 po6 = [1,0,1.5];
 
-po = cat(3,po1,po2,po3,po4);
+po = cat(3,po1);
 
 % Final positions
 pf1 = [2,-2,1.5];
@@ -29,11 +29,11 @@ pf4 = [2,2,1.5];
 pf5 = [1.3,0,1.5];
 pf6 = [-1,0,1.5];
 
-pf  = cat(3,pf1,pf2,pf3,pf4);
+pf  = cat(3,pf1);
 
 % Workspace boundaries
 pmin = [-4,-4,0];
-pmax = [4,4,2.5];
+pmax = [4,4,3];
 
 % Empty list of obstacles
 l = [];
@@ -42,7 +42,7 @@ l = [];
 rmin = 0.75;
 
 % Maximum acceleration in m/s^2
-alim = 1;
+alim = 0.4;
 
 N = size(po,3); % number of vehicles
 
@@ -123,7 +123,7 @@ while get(gcf,'currentchar')==' '
             plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'x',...
                   'LineWidth',2,'Color',colors(i,:));    
         end
-%         pause(0.2)
+        pause(0.2)
     end
     clf
     pause(0.1)

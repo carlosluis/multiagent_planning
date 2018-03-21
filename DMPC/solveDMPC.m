@@ -33,20 +33,20 @@ while (i <= k_hor && tol > 0.01)
     end
     
     % Setup the QP
-    if(isempty(Ain_total))
-        Q = 50*eye(3*K);
+    if(isempty(Ain_total)) % Case of no collisions
+        Q = 100*eye(3*K);
         R = 10*eye(3*K);
-        S = 10*eye(3*K);
+        S = 2*eye(3*K);
     else
-        Q = 3*eye(3*K);
-        R = 10*eye(3*K);
-        S = 150*eye(3*K);
+        Q = 100*eye(3*K);
+        R = 100*eye(3*K);
+        S = 2000*eye(3*K);
     end
     Ain_total = [Ain_total; A; -A];
-    bin_total = [bin_total; repmat((pmax-po)',K,1); repmat(-(pmin-po)',K,1)];
+    bin_total = [bin_total; repmat((pmax)',K,1) - A_initp*([po';vo']); repmat(-(pmin)',K,1) + A_initp*([po';vo'])];
     H = 2*(A'*Q*A+ Delta'*S*Delta + R);
     ao_1 = [ao zeros(1,3*(K-1))];
-    f = -2*(repmat((pf-po)',K,1)'*Q*A + ao_1*S*Delta) ;
+    f = -2*(repmat((pf)',K,1)'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) ;
     
     %Solve and propagate states
     a = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub);   

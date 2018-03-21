@@ -30,8 +30,8 @@ for k = 1:(K)
     A_initp = [A_initp; A_init(1:3,:)];
 end
 
-new_p = A_p*a + repmat(po',K,1);
-new_v = A_v*a;
+new_p = A_p*(a) + A_initp*([po';vo']);
+new_v = A_v*(a) + repmat(vo',K,1);
 
 p = new_p;
 v = new_v;
