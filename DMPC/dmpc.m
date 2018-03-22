@@ -3,7 +3,7 @@ clear all
 close all
 
 % Time settings and variables
-T = 10; % Trajectory final time
+T = 12; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -25,15 +25,15 @@ po9 = [1,-1,1.5];
 po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9);
 
 % Final positions
-pf1 = po6;
-pf2 = po8;
+pf1 = po8;
+pf2 = po2;
 pf3 = po4;
-pf4 = po5;
-pf5 = po9;
-pf6 = po7;
-pf7 = po2;
+pf4 = po9;
+pf5 = po5;
+pf6 = po1;
+pf7 = po6;
 pf8 = po3;
-pf9 = po1;
+pf9 = po7;
 
 pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9);
 
@@ -136,7 +136,7 @@ while get(gcf,'currentchar')==' '
     pause(0.1)
 end
 
-%% Plotting all the states
+%% Plotting
 L = length(t);
 for i = 1:N
     figure(1)
@@ -147,11 +147,23 @@ for i = 1:N
     ylim([-4,4])
     zlim([0,3.5])
     plot3(po(1,1,i), po(1,2,i), po(1,3,i),'or','LineWidth',2);
-    plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'xr','LineWidth',2); 
+    plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'xr','LineWidth',2);
     
     figure(2)
+    diff = p(:,:,i) - repmat(pf(:,:,i),length(t),1)';
+    dist = sqrt(sum(diff.^2,1));
+    plot(t, dist, 'LineWidth',1.5);
+    grid on;
+    hold on;
+    xlabel('t [s]')
+    ylabel('Distance to target [m]');
+    
+    
+    figure(3)
     subplot(3,1,1)
     plot(t,p(1,:,i),'LineWidth',1.5);
+    plot(t,pmin(1)*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,pmax(1)*ones(length(t),1),'--r','LineWidth',1.5);
     ylabel('x [m]')
     xlabel ('t [s]')
     grid on;
@@ -159,6 +171,8 @@ for i = 1:N
 
     subplot(3,1,2)
     plot(t,p(2,:,i),'LineWidth',1.5);
+    plot(t,pmin(2)*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,pmax(2)*ones(length(t),1),'--r','LineWidth',1.5);
     ylabel('y [m]')
     xlabel ('t [s]')
     grid on;
@@ -166,12 +180,14 @@ for i = 1:N
 
     subplot(3,1,3)
     plot(t,p(3,:,i),'LineWidth',1.5);
+    plot(t,pmin(3)*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,pmax(3)*ones(length(t),1),'--r','LineWidth',1.5);
     ylabel('z [m]')
     xlabel ('t [s]')
     grid on;
     hold on;
 
-    figure(3)
+    figure(4)
     subplot(3,1,1)
     plot(t,v(1,:,i),'LineWidth',1.5);
     ylabel('vx [m/s]')
@@ -193,9 +209,11 @@ for i = 1:N
     grid on;
     hold on;
 
-    figure(4)
+    figure(5)
     subplot(3,1,1)
     plot(t,a(1,:,i),'LineWidth',1.5);
+    plot(t,alim*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,-alim*ones(length(t),1),'--r','LineWidth',1.5);
     ylabel('ax [m/s]')
     xlabel ('t [s]')
     grid on;
@@ -203,6 +221,8 @@ for i = 1:N
 
     subplot(3,1,2)
     plot(t,a(2,:,i),'LineWidth',1.5);
+    plot(t,alim*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,-alim*ones(length(t),1),'--r','LineWidth',1.5);
     ylabel('ay [m/s]')
     xlabel ('t [s]')
     grid on;
@@ -210,17 +230,27 @@ for i = 1:N
 
     subplot(3,1,3)
     plot(t,a(3,:,i),'LineWidth',1.5);
+    plot(t,alim*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,-alim*ones(length(t),1),'--r','LineWidth',1.5);
     ylabel('az [m/s]')
     xlabel ('t [s]')
     grid on;
     hold on;
    
 end
-% diff = p(:,:,6) - p(:,:,10);
-% dist = sqrt(sum(diff.^2,1));
-% 
-% figure(5)
-% plot(t, dist, 'LineWidth',1.5);
-% grid on;
-% xlabel('t [s]')
-% ylabel('distance [m]');
+
+figure(6)
+for i = 1:N
+    for j = 1:N
+        if(i~=j)
+            diff = p(:,:,i) - p(:,:,j);
+            dist = sqrt(sum(diff.^2,1));
+            plot(t, dist, 'LineWidth',1.5);
+            grid on;
+            hold on;
+            xlabel('t [s]')
+            ylabel('Inter-agent distance [m]');
+        end
+    end
+end
+plot(t,rmin*ones(length(t),1),'--r','LineWidth',1.5);

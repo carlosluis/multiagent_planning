@@ -24,15 +24,15 @@ po9 = [1,-1,1.5];
 po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9);
 
 % Final positions
-pf1 = po6;
-pf2 = po8;
+pf1 = po8;
+pf2 = po2;
 pf3 = po4;
-pf4 = po5;
-pf5 = po9;
-pf6 = po7;
-pf7 = po2;
+pf4 = po9;
+pf5 = po5;
+pf6 = po1;
+pf7 = po6;
 pf8 = po3;
-pf9 = po1;
+pf9 = po7;
 
 pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9);
 
