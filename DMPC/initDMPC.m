@@ -1,6 +1,6 @@
 function [p,v,a] = initDMPC(po,pf,h,k_hor,K)
 diff = pf-po;
-t = 0:h:(K-1)*h;
+t = h:h:(K)*h;
 
 for i = 1:length(t)
     p(:,i) = po + t(i)*diff/((K-1)*h);

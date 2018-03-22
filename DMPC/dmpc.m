@@ -12,14 +12,14 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 
 % Initial positions
-po1 = [-2.01,2,1.5];
+po1 = [-2,2,1.5];
 po2 = [2,2,1.5];
 po3 = [2,-2,1.5];
 po4 = [-2,-2,1.5];
 po5 = [-1,0,1.5];
 po6 = [1,0,1.5];
 
-po = cat(3,po1);
+po = cat(3,po1,po2,po3,po4);
 
 % Final positions
 pf1 = [2,-2,1.5];
@@ -29,7 +29,7 @@ pf4 = [2,2,1.5];
 pf5 = [1.3,0,1.5];
 pf6 = [-1,0,1.5];
 
-pf  = cat(3,pf1);
+pf  = cat(3,pf1,pf2,pf3,pf4);
 
 % Workspace boundaries
 pmin = [-4,-4,0];
@@ -42,7 +42,7 @@ l = [];
 rmin = 0.75;
 
 % Maximum acceleration in m/s^2
-alim = 0.4;
+alim = 1;
 
 N = size(po,3); % number of vehicles
 
@@ -78,9 +78,9 @@ for k = 1:K
             [pi,vi,ai] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta); 
         end
         new_l(:,:,n) = pi;
-        pk(:,k,n) = pi(:,2);
-        vk(:,k,n) = vi(:,2);
-        ak(:,k,n) = ai(:,2);
+        pk(:,k,n) = pi(:,1);
+        vk(:,k,n) = vi(:,1);
+        ak(:,k,n) = ai(:,1);
     end
     l = new_l;
     pred(:,:,:,k) = l;
@@ -94,7 +94,7 @@ for i = 1:N
     a(:,:,i) = spline(tk,ak(:,:,i),t); 
 end
 
-
+%%
 figure(1)
 colors = get(gca,'colororder');
 colors = [colors; [1,0,0];[0,1,0];[0,0,1]];
@@ -123,7 +123,7 @@ while get(gcf,'currentchar')==' '
             plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'x',...
                   'LineWidth',2,'Color',colors(i,:));    
         end
-        pause(0.2)
+        pause(0.5)
     end
     clf
     pause(0.1)

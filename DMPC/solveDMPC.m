@@ -12,7 +12,7 @@ beq = [];
 Ain_total = [];
 bin_total = [];
 
-while (i <= k_hor && tol > 0.01)
+while (i <= k_hor && tol > 0.3)
     newConstrCount = 0; 
     Ain_total = [];
     bin_total = [];
@@ -34,14 +34,17 @@ while (i <= k_hor && tol > 0.01)
     
     % Setup the QP
     if(isempty(Ain_total)) % Case of no collisions
-        Q = 100*eye(3*K);
-        R = 10*eye(3*K);
-        S = 2*eye(3*K);
+        Q = 1000*[zeros(3*(K-1),3*K);
+                zeros(3,3*(K-1)) eye(3)];
+        R = 1*eye(3*K);
+        S = 0*eye(3*K);
     else
-        Q = 100*eye(3*K);
-        R = 100*eye(3*K);
-        S = 2000*eye(3*K);
+        Q = 1000*[zeros(3*(K-1),3*K);
+                zeros(3,3*(K-1)) eye(3)];
+        R = 1*eye(3*K);
+        S = 0*eye(3*K);
     end
+    
     Ain_total = [Ain_total; A; -A];
     bin_total = [bin_total; repmat((pmax)',K,1) - A_initp*([po';vo']); repmat(-(pmin)',K,1) + A_initp*([po';vo'])];
     H = 2*(A'*Q*A+ Delta'*S*Delta + R);
