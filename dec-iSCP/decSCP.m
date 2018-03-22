@@ -3,7 +3,7 @@ clear all
 close all
 
 % Time settings and variables
-T = 15; % Trajectory final time
+T = 10; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -15,20 +15,20 @@ po1 = [-2,2,1.5];
 po2 = [2,2,1.5];
 po3 = [2,-2,1.5];
 po4 = [-2,-2,1.5];
-po5 = [-1,0,1.5];
-po6 = [1,0,1.5];
+po5 = [-2,0,1.5];
+po6 = [2,0,1.5];
 
-po = cat(3,po1,po2,po3,po4);
+po = cat(3,po1,po2,po3,po4,po5,po6);
 
 % Final positions
 pf1 = [2,-2,1.5];
 pf2 = [-2,-2,1.5];
 pf3 = [-2,2,1.5];
 pf4 = [2,2,1.5];
-pf5 = [1.3,0,1.5];
-pf6 = [-1,0,1.5];
+pf5 = [2,0,1.5];
+pf6 = [-2,0,1.5];
 
-pf  = cat(3,pf1,pf2,pf3,pf4);
+pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6);
 
 % Workspace boundaries
 pmin = [-4,-4,0];

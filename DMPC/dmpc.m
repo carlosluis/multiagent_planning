@@ -16,20 +16,20 @@ po1 = [-2,2,1.5];
 po2 = [2,2,1.5];
 po3 = [2,-2,1.5];
 po4 = [-2,-2,1.5];
-po5 = [-1,0,1.5];
-po6 = [1,0,1.5];
+po5 = [-2,0,1.5];
+po6 = [2,0,1.5];
 
-po = cat(3,po1,po2,po3,po4);
+po = cat(3,po1,po2,po3,po4,po5,po6);
 
 % Final positions
 pf1 = [2,-2,1.5];
 pf2 = [-2,-2,1.5];
 pf3 = [-2,2,1.5];
 pf4 = [2,2,1.5];
-pf5 = [1.3,0,1.5];
-pf6 = [-1,0,1.5];
+pf5 = [2,0,1.5];
+pf6 = [-2,0,1.5];
 
-pf  = cat(3,pf1,pf2,pf3,pf4);
+pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6);
 
 % Workspace boundaries
 pmin = [-4,-4,0];
@@ -123,7 +123,7 @@ while get(gcf,'currentchar')==' '
             plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'x',...
                   'LineWidth',2,'Color',colors(i,:));    
         end
-        pause(0.5)
+%         pause(0.5)
     end
     clf
     pause(0.1)
