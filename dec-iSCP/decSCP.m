@@ -17,8 +17,10 @@ po3 = [2,-2,1.5];
 po4 = [-2,-2,1.5];
 po5 = [-2,0,1.5];
 po6 = [2,0,1.5];
+po7 = [0,2,1.5];
+po8 = [0,-2,1.5];
 
-po = cat(3,po1,po2,po3,po4,po5,po6);
+po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8);
 
 % Final positions
 pf1 = [2,-2,1.5];
@@ -27,8 +29,10 @@ pf3 = [-2,2,1.5];
 pf4 = [2,2,1.5];
 pf5 = [2,0,1.5];
 pf6 = [-2,0,1.5];
+pf7 = [0,-2,1.5];
+pf8 = [0,2,1.5];
 
-pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6);
+pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8);
 
 % Workspace boundaries
 pmin = [-4,-4,0];
