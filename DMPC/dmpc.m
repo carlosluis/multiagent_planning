@@ -3,7 +3,7 @@ clear all
 close all
 
 % Time settings and variables
-T = 12; % Trajectory final time
+T = 10; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -12,30 +12,24 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 
 % Initial positions
-po1 = [-1,1,1.5];
-po2 = [0,1,1.5];
-po3 = [1,1,1.5];
-po4 = [-1,0,1.5];
-po5 = [0,0,1.5];
-po6 = [1,0,1.5];
-po7 = [-1,-1,1.5];
-po8 = [0,-1,1.5];
-po9 = [1,-1,1.5];
+po1 = [-2,2,1.5];
+po2 = [2,2,1.5];
+po3 = [2,-2,1.5];
+po4 = [-2,-2,1.5];
+po5 = [-2,0,1.5];
+po6 = [2,0,1.5];
 
-po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9);
+po = cat(3,po1,po2,po3,po4,po5,po6);
 
 % Final positions
-pf1 = po8;
-pf2 = po2;
-pf3 = po4;
-pf4 = po9;
-pf5 = po5;
-pf6 = po1;
-pf7 = po6;
-pf8 = po3;
-pf9 = po7;
+pf1 = [2,-2,1.5];
+pf2 = [-2,-2,1.5];
+pf3 = [-2,2,1.5];
+pf4 = [2,2,1.5];
+pf5 = [2,0,1.5];
+pf6 = [-2,0,1.5];
 
-pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9);
+pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6);
 
 % Workspace boundaries
 pmin = [-4,-4,0.2];

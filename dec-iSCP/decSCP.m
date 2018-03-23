@@ -11,30 +11,24 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 
 % Initial positions
-po1 = [-1,1,1.5];
-po2 = [0,1,1.5];
-po3 = [1,1,1.5];
-po4 = [-1,0,1.5];
-po5 = [0,0,1.5];
-po6 = [1,0,1.5];
-po7 = [-1,-1,1.5];
-po8 = [0,-1,1.5];
-po9 = [1,-1,1.5];
+po1 = [-2,2,1.5];
+po2 = [2,2,1.5];
+po3 = [2,-2,1.5];
+po4 = [-2,-2,1.5];
+po5 = [-2,0,1.5];
+po6 = [2,0,1.5];
 
-po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9);
+po = cat(3,po1,po2,po3,po4,po5,po6);
 
 % Final positions
-pf1 = po8;
-pf2 = po2;
-pf3 = po4;
-pf4 = po9;
-pf5 = po5;
-pf6 = po1;
-pf7 = po6;
-pf8 = po3;
-pf9 = po7;
+pf1 = [2,-2,1.5];
+pf2 = [-2,-2,1.5];
+pf3 = [-2,2,1.5];
+pf4 = [2,2,1.5];
+pf5 = [2,0,1.5];
+pf6 = [-2,0,1.5];
 
-pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9);
+pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6);
 
 % Workspace boundaries
 pmin = [-4,-4,0];
@@ -44,7 +38,7 @@ pmax = [4,4,2.5];
 l = [];
 
 % Minimum distance between vehicles in m
-rmin = 0.9;
+rmin = 0.75;
 
 % Maximum acceleration in m/s^2
 alim = 1;
@@ -69,6 +63,7 @@ for i = 1:N
 end
 toc
 
+%%
 L = length(t);
 colors = get(gca,'colororder');
 colors = [colors; [1,0,0];[0,1,0];[0,0,1];[1,1,0];[0,1,1];...
@@ -96,9 +91,11 @@ while get(gcf,'currentchar')==' '
     clf
 end
 
-figure(1)
-for i = 1:N 
-    plot3(p(1,:,i), p(2,:,i), p(3,:,i), 'LineWidth',1.5);    
+%% Plotting
+L = length(t);
+for i = 1:N
+    figure(1)
+    plot3(p(1,:,i), p(2,:,i), p(3,:,i), 'LineWidth',1.5);
     hold on;
     grid on;
     xlim([-4,4])
@@ -106,93 +103,109 @@ for i = 1:N
     zlim([0,3.5])
     plot3(po(1,1,i), po(1,2,i), po(1,3,i),'or','LineWidth',2);
     plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'xr','LineWidth',2);
+    
+    figure(2)
+    diff = p(:,:,i) - repmat(pf(:,:,i),length(t),1)';
+    dist = sqrt(sum(diff.^2,1));
+    plot(t, dist, 'LineWidth',1.5);
+    grid on;
+    hold on;
+    xlabel('t [s]')
+    ylabel('Distance to target [m]');
+    
+    
+    figure(3)
+    subplot(3,1,1)
+    plot(t,p(1,:,i),'LineWidth',1.5);
+    plot(t,pmin(1)*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,pmax(1)*ones(length(t),1),'--r','LineWidth',1.5);
+    ylabel('x [m]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,2)
+    plot(t,p(2,:,i),'LineWidth',1.5);
+    plot(t,pmin(2)*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,pmax(2)*ones(length(t),1),'--r','LineWidth',1.5);
+    ylabel('y [m]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,3)
+    plot(t,p(3,:,i),'LineWidth',1.5);
+    plot(t,pmin(3)*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,pmax(3)*ones(length(t),1),'--r','LineWidth',1.5);
+    ylabel('z [m]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    figure(4)
+    subplot(3,1,1)
+    plot(t,v(1,:,i),'LineWidth',1.5);
+    ylabel('vx [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,2)
+    plot(t,v(2,:,i),'LineWidth',1.5);
+    ylabel('vy [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,3)
+    plot(t,v(3,:,i),'LineWidth',1.5);
+    ylabel('vz [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    figure(5)
+    subplot(3,1,1)
+    plot(t,a(1,:,i),'LineWidth',1.5);
+    plot(t,alim*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,-alim*ones(length(t),1),'--r','LineWidth',1.5);
+    ylabel('ax [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,2)
+    plot(t,a(2,:,i),'LineWidth',1.5);
+    plot(t,alim*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,-alim*ones(length(t),1),'--r','LineWidth',1.5);
+    ylabel('ay [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,3)
+    plot(t,a(3,:,i),'LineWidth',1.5);
+    plot(t,alim*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,-alim*ones(length(t),1),'--r','LineWidth',1.5);
+    ylabel('az [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+   
 end
 
-
-% Plotting
-% L = length(t);
-% for i = 1:N
-%     figure(1)
-%     plot3(p(1,:,i), p(2,:,i), p(3,:,i), 'LineWidth',1.5);
-%     hold on;
-%     grid on;
-%     xlim([-4,4])
-%     ylim([-4,4])
-%     zlim([0,3.5])
-%     plot3(po(1,1,i), po(1,2,i), po(1,3,i),'or','LineWidth',2);
-%     plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'xr','LineWidth',2); 
-%     
-%     figure(2)
-%     subplot(3,1,1)
-%     plot(t,p(1,:,i),'LineWidth',1.5);
-%     ylabel('x [m]')
-%     xlabel ('t [s]')
-%     grid on;
-%     hold on;
-% 
-%     subplot(3,1,2)
-%     plot(t,p(2,:,i),'LineWidth',1.5);
-%     ylabel('y [m]')
-%     xlabel ('t [s]')
-%     grid on;
-%     hold on;
-% 
-%     subplot(3,1,3)
-%     plot(t,p(3,:,i),'LineWidth',1.5);
-%     ylabel('z [m]')
-%     xlabel ('t [s]')
-%     grid on;
-%     hold on;
-% 
-%     figure(3)
-%     subplot(3,1,1)
-%     plot(t,v(1,:,i),'LineWidth',1.5);
-%     ylabel('vx [m/s]')
-%     xlabel ('t [s]')
-%     grid on;
-%     hold on;
-% 
-%     subplot(3,1,2)
-%     plot(t,v(2,:,i),'LineWidth',1.5);
-%     ylabel('vy [m/s]')
-%     xlabel ('t [s]')
-%     grid on;
-%     hold on;
-% 
-%     subplot(3,1,3)
-%     plot(t,v(3,:,i),'LineWidth',1.5);
-%     ylabel('vz [m/s]')
-%     xlabel ('t [s]')
-%     grid on;
-%     hold on;
-% 
-%     figure(4)
-%     subplot(3,1,1)
-%     plot(t,a(1,:,i),'LineWidth',1.5);
-%     ylabel('ax [m/s]')
-%     xlabel ('t [s]')
-%     grid on;
-%     hold on;
-% 
-%     subplot(3,1,2)
-%     plot(t,a(2,:,i),'LineWidth',1.5);
-%     ylabel('ay [m/s]')
-%     xlabel ('t [s]')
-%     grid on;
-%     hold on;
-% 
-%     subplot(3,1,3)
-%     plot(t,a(3,:,i),'LineWidth',1.5);
-%     ylabel('az [m/s]')
-%     xlabel ('t [s]')
-%     grid on;
-%    
-% end
-% diff = p(:,:,6) - p(:,:,10);
-% dist = sqrt(sum(diff.^2,1));
-% 
-% figure(5)
-% plot(t, dist, 'LineWidth',1.5);
-% grid on;
-% xlabel('t [s]')
-% ylabel('distance [m]');
+figure(6)
+for i = 1:N
+    for j = 1:N
+        if(i~=j)
+            diff = p(:,:,i) - p(:,:,j);
+            dist = sqrt(sum(diff.^2,1));
+            plot(t, dist, 'LineWidth',1.5);
+            grid on;
+            hold on;
+            xlabel('t [s]')
+            ylabel('Inter-agent distance [m]');
+        end
+    end
+end
+plot(t,rmin*ones(length(t),1),'--r','LineWidth',1.5);

@@ -129,3 +129,29 @@ pf16 = [2,1,1.5];
 
 pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9,pf10,pf11,pf12,pf13,pf14,pf15,pf16);
 
+TEST CASE OF MATRIX
+% Initial positions
+po1 = [-1,1,1.5];
+po2 = [0,1,1.5];
+po3 = [1,1,1.5];
+po4 = [-1,0,1.5];
+po5 = [0,0,1.5];
+po6 = [1,0,1.5];
+po7 = [-1,-1,1.5];
+po8 = [0,-1,1.5];
+po9 = [1,-1,1.5];
+
+po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9);
+
+% Final positions
+pf1 = po8;
+pf2 = po2;
+pf3 = po4;
+pf4 = po9;
+pf5 = po5;
+pf6 = po1;
+pf7 = po6;
+pf8 = po3;
+pf9 = po7;
+
+pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9);

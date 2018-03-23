@@ -24,7 +24,7 @@ while (i <= k_hor && tol > 0.3)
             bin_total = [bin_total; binr];
             
         elseif (newConstrCount==0 && violation)
-            [Ainr, binr] = CollConstrDMPC(prev_p(:,k),po,vo,n,k,l,A,rmin,A_initp);
+            [Ainr, binr] = CollConstrDMPC(prev_p(:,k-1),po,vo,n,k,l,A,rmin,A_initp);
             Ain_total = [Ain_total; Ainr];
             bin_total = [bin_total; binr];  
             addConstr = [addConstr k];
@@ -60,6 +60,8 @@ while (i <= k_hor && tol > 0.3)
     tol = maxDeviation(p, prev_p);  
     prev_p = p;
     i = i + 1;     
+end
+fprintf("Number of SCP iterations = %i\n",i-1)
 end
 
 
