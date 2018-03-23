@@ -24,7 +24,7 @@ while (i <= k_hor && tol > 0.3)
             bin_total = [bin_total; binr];
             
         elseif (newConstrCount==0 && violation)
-            [Ainr, binr] = CollConstrDMPC(prev_p(:,k-1),po,vo,n,k,l,A,rmin,A_initp);
+            [Ainr, binr] = CollConstrDMPC(prev_p(:,k),po,vo,n,k,l,A,rmin,A_initp);
             Ain_total = [Ain_total; Ainr];
             bin_total = [bin_total; binr];  
             addConstr = [addConstr k];
@@ -37,12 +37,12 @@ while (i <= k_hor && tol > 0.3)
         Q = 1000*[zeros(3*(K-1),3*K);
                 zeros(3,3*(K-1)) eye(3)];
         R = 1*eye(3*K);
-        S = 0*eye(3*K);
+        S = 10*eye(3*K);
     else
         Q = 1000*[zeros(3*(K-1),3*K);
                 zeros(3,3*(K-1)) eye(3)];
         R = 1*eye(3*K);
-        S = 0*eye(3*K);
+        S = 10*eye(3*K);
     end
     
     Ain_total = [Ain_total; A; -A];
