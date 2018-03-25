@@ -93,16 +93,26 @@ end
 
 %% Plotting
 L = length(t);
+colors = get(gca,'colororder');
+colors = [colors; [1,0,0];[0,1,0];[0,0,1];[1,1,0];[0,1,1];...
+           [0.5,0,0];[0,0.5,0];[0,0,0.5];[0.5,0.5,0]];
 for i = 1:N
-    figure(1)
-    plot3(p(1,:,i), p(2,:,i), p(3,:,i), 'LineWidth',1.5);
+    figure(1);
+    h_plot(i) = plot3(p(1,:,i), p(2,:,i), p(3,:,i), 'LineWidth',1.5,...
+                'Color',colors(i,:));
+    h_label{i} = ['Vehicle #' num2str(i)];
     hold on;
     grid on;
     xlim([-4,4])
     ylim([-4,4])
     zlim([0,3.5])
-    plot3(po(1,1,i), po(1,2,i), po(1,3,i),'or','LineWidth',2);
-    plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'xr','LineWidth',2);
+    xlabel('x[m]')
+    ylabel('y[m]');
+    zlabel('z[m]')
+    plot3(po(1,1,i), po(1,2,i), po(1,3,i),'x',...
+                  'LineWidth',3,'Color',colors(i,:));
+%     plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'x',...
+%                   'LineWidth',5,'Color',colors(i,:)); 
     
     figure(2)
     diff = p(:,:,i) - repmat(pf(:,:,i),length(t),1)';
@@ -209,3 +219,4 @@ for i = 1:N
     end
 end
 plot(t,rmin*ones(length(t),1),'--r','LineWidth',1.5);
+legend(h_plot,h_label);
