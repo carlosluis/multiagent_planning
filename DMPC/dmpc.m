@@ -3,33 +3,41 @@ clear all
 close all
 
 % Time settings and variables
-T = 10; % Trajectory final time
+T = 15; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
-k_hor = 8;
+k_hor = 15;
 
 % Initial positions
-po1 = [-2,2,1.5];
-po2 = [2,2,1.5];
-po3 = [2,-2,1.5];
-po4 = [-2,-2,1.5];
-po5 = [-2,0,1.5];
-po6 = [2,0,1.5];
+po1 = [-1,1,1.5];
+po2 = [0,1,1.5];
+po3 = [1,1,1.5];
+po4 = [-1,0,1.5];
+po5 = [0,0,1.5];
+po6 = [1,0,1.5];
+po7 = [-1,-1,1.5];
+po8 = [0,-1,1.5];
+po9 = [1,-1,1.5];
 
-po = cat(3,po1,po2,po3,po4,po5,po6);
+po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9);
+N = size(po,3); % number of vehicles
+assign = randperm(N);
 
 % Final positions
-pf1 = [2,-2,1.5];
-pf2 = [-2,-2,1.5];
-pf3 = [-2,2,1.5];
-pf4 = [2,2,1.5];
-pf5 = [2,0,1.5];
-pf6 = [-2,0,1.5];
+pf1 = po(:,:,assign(1));
+pf2 = po(:,:,assign(2));
+pf3 = po(:,:,assign(3));
+pf4 = po(:,:,assign(4));
+pf5 = po(:,:,assign(5));
+pf6 = po(:,:,assign(6));
+pf7 = po(:,:,assign(7));
+pf8 = po(:,:,assign(8));
+pf9 = po(:,:,assign(9));
 
-pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6);
+pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9);
 
 % Workspace boundaries
 pmin = [-4,-4,0.2];
@@ -43,8 +51,6 @@ rmin = 0.75;
 
 % Maximum acceleration in m/s^2
 alim = 1;
-
-N = size(po,3); % number of vehicles
 
 % Some pre computations
 A = getPosMat(h,k_hor);
