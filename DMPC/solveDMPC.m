@@ -37,12 +37,12 @@ while (i <= k_hor && tol > 0.3)
         Q = 1000*[zeros(3*(K-1),3*K);
                 zeros(3,3*(K-1)) eye(3)];
         R = 1*eye(3*K);
-        S = 10*eye(3*K);
+        S = 30*eye(3*K);
     else
         Q = 1000*[zeros(3*(K-1),3*K);
                 zeros(3,3*(K-1)) eye(3)];
         R = 1*eye(3*K);
-        S = 10*eye(3*K);
+        S = 30*eye(3*K);
     end
     
     Ain_total = [Ain_total; A; -A];

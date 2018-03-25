@@ -21,8 +21,16 @@ po6 = [1,0,1.5];
 po7 = [-1,-1,1.5];
 po8 = [0,-1,1.5];
 po9 = [1,-1,1.5];
+po10 = [1,2,1.5];
+po11 = [0,2,1.5];
+po12 = [-1,2,1.5];
+po13 = [-2,2,1.5];
+po14 = [-2,1,1.5];
+po15 = [-2,0,1.5];
+po16 = [-2,-1,1.5];
 
-po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9);
+po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9,...
+         po10,po11,po12,po13,po14,po15,po16);
 N = size(po,3); % number of vehicles
 assign = randperm(N);
 
@@ -36,8 +44,16 @@ pf6 = po(:,:,assign(6));
 pf7 = po(:,:,assign(7));
 pf8 = po(:,:,assign(8));
 pf9 = po(:,:,assign(9));
+pf10 = po(:,:,assign(10));
+pf11 = po(:,:,assign(11));
+pf12 = po(:,:,assign(12));
+pf13 = po(:,:,assign(13));
+pf14 = po(:,:,assign(14));
+pf15 = po(:,:,assign(15));
+pf16 = po(:,:,assign(16));
 
-pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9);
+pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9,...
+          pf10,pf11,pf12,pf13,pf14,pf15,pf16);
 
 % Workspace boundaries
 pmin = [-4,-4,0.2];
@@ -50,7 +66,7 @@ l = [];
 rmin = 0.75;
 
 % Maximum acceleration in m/s^2
-alim = 1;
+alim = 0.7;
 
 % Some pre computations
 A = getPosMat(h,k_hor);
