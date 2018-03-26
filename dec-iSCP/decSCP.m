@@ -11,32 +11,48 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 
 % Initial positions
-po1 = [-1,1,1.5];
-po2 = [0,1,1.5];
-po3 = [1,1,1.5];
-po4 = [-1,0,1.5];
-po5 = [0,0,1.5];
-po6 = [1,0,1.5];
-po7 = [-1,-1,1.5];
-po8 = [0,-1,1.5];
-po9 = [1,-1,1.5];
+po1 = [-2,2,1.5];
+po2 = [2,2,1.5];
+po3 = [2,-2,1.5];
+po4 = [-2,-2,1.5];
+po5 = [-2,0,1.5];
+po6 = [2,0,1.5];
+po7 = [0,2,1.5];
+po8 = [0,-2,1.5];
+po9 = [-1,2,1.5];
+po10 = [1,-2,1.5];
+po11 = [2,-1,1.5];
+po12 = [-2,1,1.5];
+po13 = [1,2,1.5];
+po14 = [-1,-2,1.5];
+po15 = [2,1,1.5];
+po16 = [-2,-1,1.5];
 
-po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9);
+po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9,...
+         po10,po11,po12,po13,po14,po15,po16);
+
 N = size(po,3); % number of vehicles
-assign = randperm(N);
 
 % Final positions
-pf1 = po(:,:,assign(1));
-pf2 = po(:,:,assign(2));
-pf3 = po(:,:,assign(3));
-pf4 = po(:,:,assign(4));
-pf5 = po(:,:,assign(5));
-pf6 = po(:,:,assign(6));
-pf7 = po(:,:,assign(7));
-pf8 = po(:,:,assign(8));
-pf9 = po(:,:,assign(9));
+pf1 = [2,-2,1.5];
+pf2 = [-2,-2,1.5];
+pf3 = [-2,2,1.5];
+pf4 = [2,2,1.5];
+pf5 = [2,0,1.5];
+pf6 = [-2,0,1.5];
+pf7 = [0,-2,1.5];
+pf8 = [0,2,1.5];
+pf9 = [1,-2,1.5];
+pf10 = [-1,2,1.5];
+pf11 = [-2,1,1.5];
+pf12 = [2,-1,1.5];
+pf13 = [-1,-2,1.5];
+pf14 = [1,2,1.5];
+pf15 = [-2,-1,1.5];
+pf16 = [2,1,1.5];
 
-pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9);
+pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9,...
+          pf10,pf11,pf12,pf13,pf14,pf15,pf16);
 
 % Workspace boundaries
 pmin = [-4,-4,0];

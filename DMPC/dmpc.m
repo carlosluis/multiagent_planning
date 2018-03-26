@@ -28,9 +28,19 @@ po13 = [-2,2,1.5];
 po14 = [-2,1,1.5];
 po15 = [-2,0,1.5];
 po16 = [-2,-1,1.5];
+po17 = [-2,-2,1.5];
+po18 = [-1,-2,1.5];
+po19 = [0,-2,1.5];
+po20 = [1,-2,1.5];
+po21 = [2,-2,1.5];
+po22 = [2,-1,1.5];
+po23 = [2,0,1.5];
+po24 = [2,1,1.5];
+po25 = [2,2,1.5];
 
 po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9,...
-         po10,po11,po12,po13,po14,po15,po16);
+         po10,po11,po12,po13,po14,po15,po16,po17,...
+         po18,po19,po20,po21,po22,po23,po24,po25);
 N = size(po,3); % number of vehicles
 assign = randperm(N);
 
@@ -51,9 +61,19 @@ pf13 = po(:,:,assign(13));
 pf14 = po(:,:,assign(14));
 pf15 = po(:,:,assign(15));
 pf16 = po(:,:,assign(16));
+pf17 = po(:,:,assign(17));
+pf18 = po(:,:,assign(18));
+pf19 = po(:,:,assign(19));
+pf20 = po(:,:,assign(20));
+pf21 = po(:,:,assign(21));
+pf22 = po(:,:,assign(22));
+pf23 = po(:,:,assign(23));
+pf24 = po(:,:,assign(24));
+pf25 = po(:,:,assign(25));
 
 pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9,...
-          pf10,pf11,pf12,pf13,pf14,pf15,pf16);
+          pf10,pf11,pf12,pf13,pf14,pf15,pf16,pf17,...
+          pf18,pf19,pf20,pf21,pf22,pf23,pf24,pf25);
 
 % Workspace boundaries
 pmin = [-4,-4,0.2];
@@ -118,10 +138,7 @@ end
 
 %%
 figure(1)
-colors = get(gca,'colororder');
-colors = [colors; [1,0,0];[0,1,0];[0,0,1];[1,1,0];[0,1,1];...
-           [0.5,0,0];[0,0.5,0];[0,0,0.5];[0.5,0.5,0]];
-
+colors = distinguishable_colors(N);
 
 set(gcf, 'Position', get(0, 'Screensize'));
 set(gcf,'currentchar',' ')
@@ -153,9 +170,8 @@ end
 
 %% Plotting
 L = length(t);
-colors = get(gca,'colororder');
-colors = [colors; [1,0,0];[0,1,0];[0,0,1];[1,1,0];[0,1,1];...
-           [0.5,0,0];[0,0.5,0];[0,0,0.5];[0.5,0.5,0]];
+colors = distinguishable_colors(N);
+       
 for i = 1:N
     figure(1);
     h_plot(i) = plot3(p(1,:,i), p(2,:,i), p(3,:,i), 'LineWidth',1.5,...
