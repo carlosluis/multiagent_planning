@@ -1,5 +1,6 @@
-function [p,v,a] = solveDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta)
+function [p,v,a,success] = solveDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta)
 
+success = 1;
 k_hor = size(l,2);
 tol = 2;
 ub = alim*ones(3*K,1);
@@ -37,12 +38,12 @@ while (i <= k_hor && tol > 0.3)
         Q = 100*[zeros(3*(K-1),3*K);
                 zeros(3,3*(K-1)) eye(3)];
         R = 1*eye(3*K);
-        S = 30*eye(3*K);
+        S = 10*eye(3*K);
     else
         Q = 100*[zeros(3*(K-1),3*K);
                 zeros(3,3*(K-1)) eye(3)];
         R = 1*eye(3*K);
-        S = 30*eye(3*K);
+        S = 10*eye(3*K);
     end
     
     Ain_total = [Ain_total; A; -A];
@@ -52,7 +53,13 @@ while (i <= k_hor && tol > 0.3)
     f = -2*(repmat((pf)',K,1)'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) ;
     
     %Solve and propagate states
-    a = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub);   
+    a = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub);
+    if isempty(a)
+        p = [];
+        v = [];
+        success = 0;
+        return
+    end
     [p,v] = propStatedmpc(po,vo,a,h);
     p = vec2mat(p,3)';
     v = vec2mat(v,3)';

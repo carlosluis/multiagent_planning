@@ -10,17 +10,17 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
-
-N = 16; % number of vehicles
+success = 1;
+N = 25; % number of vehicles
 
 % Workspace boundaries
-pmin = [-3,-3,0.2];
-pmax = [3,3,2.2];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
 % Minimum distance between vehicles in m
 rmin = 0.75;
 
-% Random initial and final points
+% Initial positions
 [po,pf] = randomTest(N,pmin,pmax,rmin);
 
 % Empty list of obstacles
@@ -58,23 +58,30 @@ for k = 1:K
             pok = pk(:,k-1,n);
             vok = vk(:,k-1,n);
             aok = ak(:,k-1,n);
-            [pi,vi,ai] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta); 
+            [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta); 
+        end
+        if ~success
+            break;
         end
         new_l(:,:,n) = pi;
         pk(:,k,n) = pi(:,1);
         vk(:,k,n) = vi(:,1);
         ak(:,k,n) = ai(:,1);
     end
+     if ~success
+            break;
+     end
     l = new_l;
     pred(:,:,:,k) = l;
 end      
        
 toc
-
-for i = 1:N
-    p(:,:,i) = spline(tk,pk(:,:,i),t);
-    v(:,:,i) = spline(tk,vk(:,:,i),t);
-    a(:,:,i) = spline(tk,ak(:,:,i),t); 
+if success
+    for i = 1:N
+        p(:,:,i) = spline(tk,pk(:,:,i),t);
+        v(:,:,i) = spline(tk,vk(:,:,i),t);
+        a(:,:,i) = spline(tk,ak(:,:,i),t); 
+    end
 end
 
 %%
