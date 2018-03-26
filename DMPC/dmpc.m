@@ -54,7 +54,7 @@ pf16 = po(:,:,assign(16));
 
 pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9,...
           pf10,pf11,pf12,pf13,pf14,pf15,pf16);
-%%
+
 % Workspace boundaries
 pmin = [-4,-4,0.2];
 pmax = [4,4,2.2];
@@ -132,8 +132,7 @@ while get(gcf,'currentchar')==' '
     for k = 1:K
         for i = 1:N
             clearpoints(h_line(i));
-            addpoints(h_line(i),pred(1,:,i,k),pred(2,:,i,k),pred(3,:,i,k));
-            drawnow
+            addpoints(h_line(i),pred(1,:,i,k),pred(2,:,i,k),pred(3,:,i,k));     
             hold on;
             grid on;
             xlim([-4,4])
@@ -146,7 +145,7 @@ while get(gcf,'currentchar')==' '
             plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'x',...
                   'LineWidth',2,'Color',colors(i,:));    
         end
-%         pause(0.5)
+    drawnow
     end
     clf
     pause(0.1)
