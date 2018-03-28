@@ -1,6 +1,7 @@
 clc
 clear all
 close all
+warning('off','all')
 
 % Time settings and variables
 T = 12; % Trajectory final time
@@ -11,8 +12,8 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 success = 1;
-N_vector = 2; % number of vehicles
-trials = 5;
+N_vector = 2:2:20; % number of vehicles
+trials = 30;
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
 pmax = [2.5,2.5,2.2];
@@ -44,6 +45,7 @@ end
 for q = 1:length(N_vector)
     N = N_vector(q);
     for r = 1:trials
+        fprintf("Doing trial #%i with %i vehicles\n",r,N)
         % Initial positions
         [po,pf] = randomTest(N,pmin,pmax,rmin);
 
@@ -74,8 +76,8 @@ for q = 1:length(N_vector)
             totdist_dec(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
         
         else
-            t_dec(q,r) = 0;
-            totdist_dec(q,r) = 0;
+            t_dec(q,r) = nan;
+            totdist_dec(q,r) = nan;
         end
         success_dec(q,r) = success;
         
@@ -108,7 +110,6 @@ for q = 1:length(N_vector)
                     break;
              end
             l = new_l;
-            pred(:,:,:,k) = l;
         end      
 
         if success
@@ -120,9 +121,40 @@ for q = 1:length(N_vector)
             t_dmpc(q,r) = toc(t_start);
             totdist_dmpc(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
         else
-            t_dmpc(q,r) = 0;
-            totdist_dmpc(q,r) = 0;
+            t_dmpc(q,r) = nan;
+            totdist_dmpc(q,r) = nan;
         end
         success_dmpc(q,r) = success;
     end
 end
+fprintf("Finished!")
+%% Post-Processing
+
+% Probability of success plots
+prob_dec = sum(success_dec,2)/trials;
+prob_dmpc = sum(success_dmpc,2)/trials;
+figure(1)
+plot(N_vector,prob_dec','Linewidth',2);
+grid on;
+hold on;
+ylim([0,1.05])
+plot(N_vector,prob_dmpc,'Linewidth',2);
+xlabel('Number of Vehicles');
+ylabel('Success Probability');
+legend('dec-iSCP','DMPC');
+
+% Computation time
+tmean_dec = nanmean(t_dec,2);
+tstd_dec = nanstd(t_dec,1,2);
+tmean_dmpc = nanmean(t_dmpc,2);
+tstd_dmpc = nanstd(t_dec,1,2);
+figure(2)
+errorbar(N_vector,tmean_dec,tstd_dec,'Linewidth',2);
+grid on;
+hold on;
+errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
+xlabel('Number of Vehicles');
+ylabel('Computation time [s]');
+legend('dec-iSCP','DMPC');
+
+

@@ -9,6 +9,7 @@ success = 1;
 H = eye(3*K);
 A = getPosMat(h,K);
 Aeq = getPosVelMat(h,K);
+options = optimset('Display', 'off');
 
 addConstr = [];
 
@@ -38,7 +39,7 @@ while (i <= K && tol > 1e-7)
     beq = [(pf-po)' ; zeros(3,1); zeros(3,1); zeros(3,1)];
      
     %Solve and propagate states
-    [a,fval,exitflag] = quadprog(H,[],Ain_total,bin_total,Aeq,beq,lb,ub);
+    [a,fval,exitflag] = quadprog(H,[],Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
     if (isempty(a) || exitflag == 0)
         p = [];
         v = [];
@@ -53,5 +54,5 @@ while (i <= K && tol > 1e-7)
     prev_p = p;
     i = i + 1;   
 end
-fprintf("Number of SCP iterations = %i\n",i-1)
+% fprintf("Number of SCP iterations = %i\n",i-1)
 end

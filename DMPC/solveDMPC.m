@@ -12,6 +12,7 @@ Aeq = [];
 beq = [];
 Ain_total = [];
 bin_total = [];
+options = optimset('Display', 'off');
 
 while (i <= k_hor && tol > 0.3)
     newConstrCount = 0; 
@@ -53,7 +54,7 @@ while (i <= k_hor && tol > 0.3)
     f = -2*(repmat((pf)',K,1)'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) ;
     
     %Solve and propagate states
-    [a,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub);
+    [a,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
     if (isempty(a) || exitflag == 0)
         p = [];
         v = [];
@@ -69,7 +70,7 @@ while (i <= k_hor && tol > 0.3)
     prev_p = p;
     i = i + 1;     
 end
-fprintf("Number of SCP iterations = %i\n",i-1)
+% fprintf("Number of SCP iterations = %i\n",i-1)
 end
 
 
