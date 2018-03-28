@@ -1,8 +1,8 @@
-function [p,v,a,success] = solveDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta)
+function [p,v,a,success] = solveDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,tol)
 
 success = 1;
 k_hor = size(l,2);
-tol = 2;
+val = tol + 2;
 ub = alim*ones(3*K,1);
 lb = -ub; 
 i = 1;
@@ -14,7 +14,7 @@ Ain_total = [];
 bin_total = [];
 options = optimset('Display', 'off');
 
-while (i <= k_hor && tol > 0.3)
+while (i <= k_hor && val > tol)
     newConstrCount = 0; 
     Ain_total = [];
     bin_total = [];
@@ -36,15 +36,15 @@ while (i <= k_hor && tol > 0.3)
     
     % Setup the QP
     if(isempty(Ain_total)) % Case of no collisions
-        Q = 100*[zeros(3*(K-1),3*K);
+        Q = 100000*[zeros(3*(K-1),3*K);
                 zeros(3,3*(K-1)) eye(3)];
         R = 1*eye(3*K);
         S = 10*eye(3*K);
     else
-        Q = 100*[zeros(3*(K-1),3*K);
+        Q = 500*[zeros(3*(K-1),3*K);
                 zeros(3,3*(K-1)) eye(3)];
         R = 1*eye(3*K);
-        S = 10*eye(3*K);
+        S = 100*eye(3*K);
     end
     
     Ain_total = [Ain_total; A; -A];
@@ -66,7 +66,7 @@ while (i <= k_hor && tol > 0.3)
     p = vec2mat(p,3)';
     v = vec2mat(v,3)';
     a = vec2mat(a,3)';
-    tol = maxDeviation(p, prev_p);  
+    val = maxDeviation(p, prev_p);  
     prev_p = p;
     i = i + 1;     
 end

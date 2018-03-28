@@ -10,10 +10,10 @@ H = eye(3*K);
 A = getPosMat(h,K);
 Aeq = getPosVelMat(h,K);
 options = optimset('Display', 'off');
-
+fail = true;
 addConstr = [];
 
-while (i <= K && tol > 1e-7)
+while (i <= K && fail)
     newConstrCount = 0; 
     Ain_total = [];
     bin_total = [];
@@ -50,7 +50,7 @@ while (i <= K && tol > 1e-7)
     p = vec2mat(p,3)';
     v = vec2mat(v,3)';
     a = vec2mat(a,3)';
-    tol = maxDeviation(p, prev_p);  
+    fail = CheckforAllColl(p,l,K,rmin);
     prev_p = p;
     i = i + 1;   
 end
