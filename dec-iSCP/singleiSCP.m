@@ -1,18 +1,18 @@
-function [p,v,a] = singleiSCP(po,pf,h,K,pmin,pmax,rmin,alim,l)
+function [p,v,a,success] = singleiSCP(po,pf,h,K,pmin,pmax,rmin,alim,l)
 
 prev_p = initSolution(po,pf,h,K);
 tol = 2;
 ub = alim*ones(3*K,1);
 lb = -ub; 
 i = 1;
-
+success = 1;
 H = eye(3*K);
 A = getPosMat(h,K);
 Aeq = getPosVelMat(h,K);
 
 addConstr = [];
 
-while (i <= K && tol > 0.001)
+while (i <= K && tol > 1e-7)
     newConstrCount = 0; 
     Ain_total = [];
     bin_total = [];
@@ -38,7 +38,13 @@ while (i <= K && tol > 0.001)
     beq = [(pf-po)' ; zeros(3,1); zeros(3,1); zeros(3,1)];
      
     %Solve and propagate states
-    a = quadprog(H,[],Ain_total,bin_total,Aeq,beq,lb,ub);   
+    [a,fval,exitflag] = quadprog(H,[],Ain_total,bin_total,Aeq,beq,lb,ub);
+    if (isempty(a) || exitflag == 0)
+        p = [];
+        v = [];
+        success = 0;
+        return
+    end
     [p,v] = propState(po,a,h);
     p = vec2mat(p,3)';
     v = vec2mat(v,3)';

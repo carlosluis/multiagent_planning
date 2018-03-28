@@ -53,13 +53,14 @@ while (i <= k_hor && tol > 0.3)
     f = -2*(repmat((pf)',K,1)'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) ;
     
     %Solve and propagate states
-    a = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub);
-    if isempty(a)
+    [a,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub);
+    if (isempty(a) || exitflag == 0)
         p = [];
         v = [];
         success = 0;
         return
     end
+    success = exitflag;
     [p,v] = propStatedmpc(po,vo,a,h);
     p = vec2mat(p,3)';
     v = vec2mat(v,3)';
