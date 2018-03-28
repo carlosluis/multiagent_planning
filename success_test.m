@@ -4,7 +4,7 @@ close all
 warning('off','all')
 
 % Time settings and variables
-T = 12; % Trajectory final time
+T = 15; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -118,7 +118,7 @@ for q = 1:length(N_vector)
                 v(:,:,i) = spline(tk,vk(:,:,i),t);
                 a(:,:,i) = spline(tk,ak(:,:,i),t); 
             end
-            t_dmpc(q,r) = toc(t_start);
+            t_dmpc(q,r) = toc(t_start)
             totdist_dmpc(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
         else
             t_dmpc(q,r) = nan;
@@ -145,16 +145,28 @@ legend('dec-iSCP','DMPC');
 
 % Computation time
 tmean_dec = nanmean(t_dec,2);
-tstd_dec = nanstd(t_dec,1,2);
+tstd_dec = 0*nanstd(t_dec,1,2);
 tmean_dmpc = nanmean(t_dmpc,2);
-tstd_dmpc = nanstd(t_dec,1,2);
+tstd_dmpc = 0*nanstd(t_dec,1,2);
 figure(2)
 errorbar(N_vector,tmean_dec,tstd_dec,'Linewidth',2);
 grid on;
 hold on;
 errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
-ylabel('Computation time [s]');
+ylabel('Average Computation time [s]');
 legend('dec-iSCP','DMPC');
 
+% Percentage increase/decrease on travelled dist of dmpc wrt dec
+% Positive number means that dmpc path was longer
+diff_dist = (totdist_dmpc-totdist_dec)./totdist_dmpc;
+avg_diff = nanmean(diff_dist,2);
+std_diff = nanstd(diff_dist,1,2);
+figure(3)
+errorbar(N_vector,100*avg_diff,100*std_diff,'Linewidth',2);
+grid on;
+xlabel('Number of Vehicles');
+ylabel('Average % increase/decrease');
+title('Percentual increase/decrease on total travelled distance of DMPC wrt dec-iSCP')
+legend('dec-iSCP','DMPC');
 

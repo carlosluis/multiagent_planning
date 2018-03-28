@@ -1,6 +1,7 @@
 clc
 clear all
 close all
+warning('off','all')
 
 % Time settings and variables
 T = 15; % Trajectory final time
@@ -11,7 +12,7 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 success = 1;
-N = 9; % number of vehicles
+N = 40; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -232,8 +233,8 @@ figure(6)
 for i = 1:N
     for j = 1:N
         if(i~=j)
-            diff = p(:,:,i) - p(:,:,j);
-            dist = sqrt(sum(diff.^2,1));
+            differ = p(:,:,i) - p(:,:,j);
+            dist = sqrt(sum(differ.^2,1));
             plot(t, dist, 'LineWidth',1.5);
             grid on;
             hold on;
