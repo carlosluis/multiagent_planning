@@ -12,7 +12,7 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 success = 1;
-N_vector = 2:2:20; % number of vehicles
+N_vector = 2:2:30; % number of vehicles
 trials = 30;
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -24,7 +24,32 @@ rmin = 0.75;
 % Maximum acceleration in m/s^2
 alim = 0.7;
 
-% Some pre computations
+% Some Precomputations dec-iSCP
+% Kinematic model A,b matrices
+A = [1 0 0 h 0 0;
+     0 1 0 0 h 0;
+     0 0 1 0 0 h;
+     0 0 0 1 0 0;
+     0 0 0 0 1 0;
+     0 0 0 0 0 1];
+
+b = [h^2/2*eye(3);
+     h*eye(3)];
+ 
+prev_row = zeros(6,3*K); % For the first iteration of constructing matrix Ain
+A_p = [];
+A_v = [];
+
+% Build matrix to convert acceleration to position
+for k = 1:(K-1)
+    add_b = [zeros(size(b,1),size(b,2)*(k-1)) b zeros(size(b,1),size(b,2)*(K-k))];
+    new_row = A*prev_row + add_b;   
+    A_p = [A_p; new_row(1:3,:)];
+    A_v = [A_v; new_row(4:6,:)];
+    prev_row = new_row; 
+end
+
+% Some pre computations DMPC
 A = getPosMat(h,k_hor);
 Aux = [1 0 0 h 0 0;
      0 1 0 0 h 0;
@@ -34,6 +59,7 @@ Aux = [1 0 0 h 0 0;
      0 0 0 0 0 1];
 A_initp = [];
 A_init = eye(6);
+tol = 2;
 
 Delta = getDeltaMat(k_hor); 
 
@@ -41,6 +67,8 @@ for k = 1:k_hor
     A_init = Aux*A_init;
     A_initp = [A_initp; A_init(1:3,:)];  
 end
+
+% Start Test
 
 for q = 1:length(N_vector)
     N = N_vector(q);
@@ -57,7 +85,7 @@ for q = 1:length(N_vector)
         for i = 1:N 
             poi = po(:,:,i);
             pfi = pf(:,:,i);
-            [pi, vi, ai,success] = singleiSCP(poi,pfi,h,K,pmin,pmax,rmin,alim,l);
+            [pi, vi, ai,success] = singleiSCP(poi,pfi,h,K,pmin,pmax,rmin,alim,l,A_p,A_v);
             if ~success
                 break;
             end
@@ -96,7 +124,7 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta); 
+                    [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol); 
                 end
                 if ~success
                     break;
@@ -118,7 +146,7 @@ for q = 1:length(N_vector)
                 v(:,:,i) = spline(tk,vk(:,:,i),t);
                 a(:,:,i) = spline(tk,ak(:,:,i),t); 
             end
-            t_dmpc(q,r) = toc(t_start)
+            t_dmpc(q,r) = toc(t_start);
             totdist_dmpc(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
         else
             t_dmpc(q,r) = nan;
@@ -167,6 +195,5 @@ errorbar(N_vector,100*avg_diff,100*std_diff,'Linewidth',2);
 grid on;
 xlabel('Number of Vehicles');
 ylabel('Average % increase/decrease');
-title('Percentual increase/decrease on total travelled distance of DMPC wrt dec-iSCP')
-legend('dec-iSCP','DMPC');
+title('Percentual increase/decrease on total travelled distance of DMPC wrt dec-iSCP');
 

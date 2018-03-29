@@ -11,7 +11,7 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
-tol = 0.5;
+tol = 2;
 
 N = 20; % number of vehicles
 

@@ -10,7 +10,7 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 success = 1;
-N = 6; % number of vehicles
+N = 30; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -22,33 +22,30 @@ rmin = 0.75;
 % Initial positions
 [po,pf] = randomTest(N,pmin,pmax,rmin);
 
-% % Initial positions
-% po1 = [-2,2,1.5];
-% po2 = [2,2,1.5];
-% po3 = [2,-2,1.5];
-% po4 = [-2,-2,1.5];
-% po5 = [-2,0,1.5];
-% po6 = [2,0,1.5];
-% po7 = [0,2,1.5];
-% po8 = [0,-2,1.5];
-% po9 = [-1,2,1.5];
-% 
-% po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8);
-% 
-% N = size(po,3); % number of vehicles
-% 
-% % Final positions
-% pf1 = [2,-2,1.5];
-% pf2 = [-2,-2,1.5];
-% pf3 = [-2,2,1.5];
-% pf4 = [2,2,1.5];
-% pf5 = [2,0,1.5];
-% pf6 = [-2,0,1.5];
-% pf7 = [0,-2,1.5];
-% pf8 = [0,2,1.5];
-% pf9 = [1,-2,1.5];
-% 
-% pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8);
+% Some Precomputations
+% Kinematic model A,b matrices
+A = [1 0 0 h 0 0;
+     0 1 0 0 h 0;
+     0 0 1 0 0 h;
+     0 0 0 1 0 0;
+     0 0 0 0 1 0;
+     0 0 0 0 0 1];
+
+b = [h^2/2*eye(3);
+     h*eye(3)];
+ 
+prev_row = zeros(6,3*K); % For the first iteration of constructing matrix Ain
+A_p = [];
+A_v = [];
+
+% Build matrix to convert acceleration to position
+for k = 1:(K-1)
+    add_b = [zeros(size(b,1),size(b,2)*(k-1)) b zeros(size(b,1),size(b,2)*(K-k))];
+    new_row = A*prev_row + add_b;   
+    A_p = [A_p; new_row(1:3,:)];
+    A_v = [A_v; new_row(4:6,:)];
+    prev_row = new_row; 
+end
 
 % Empty list of obstacles
 l = [];
@@ -60,7 +57,7 @@ tic %measure the time it gets to solve the optimization problem
 for i = 1:N 
     poi = po(:,:,i);
     pfi = pf(:,:,i);
-    [pi, vi, ai,success] = singleiSCP(poi,pfi,h,K,pmin,pmax,rmin,alim,l);
+    [pi, vi, ai,success] = singleiSCP(poi,pfi,h,K,pmin,pmax,rmin,alim,l,A_p,A_v);
     if ~success
         break;
     end

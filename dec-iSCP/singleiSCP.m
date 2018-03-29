@@ -1,7 +1,6 @@
-function [p,v,a,success] = singleiSCP(po,pf,h,K,pmin,pmax,rmin,alim,l)
+function [p,v,a,success] = singleiSCP(po,pf,h,K,pmin,pmax,rmin,alim,l,A_p,A_v)
 
 prev_p = initSolution(po,pf,h,K);
-tol = 2;
 ub = alim*ones(3*K,1);
 lb = -ub; 
 i = 1;
@@ -46,7 +45,7 @@ while (i <= K && fail)
         success = 0;
         return
     end
-    [p,v] = propState(po,a,h);
+    [p,v] = propState(po,a,A_p,A_v,K);
     p = vec2mat(p,3)';
     v = vec2mat(v,3)';
     a = vec2mat(a,3)';

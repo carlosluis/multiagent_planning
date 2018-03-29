@@ -41,7 +41,7 @@ for k = 1:k_hor
     A_init = Aux*A_init;
     A_initp = [A_initp; A_init(1:3,:)];  
 end
-tol = [20,0.8,0.5,0.3,0.1];
+tol = [0.8,0.5,0.3];
 
 for q = 1:length(N_vector)
     N = N_vector(q);
