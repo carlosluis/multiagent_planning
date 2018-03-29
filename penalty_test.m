@@ -13,7 +13,7 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 success = 1;
 N_vector = 2:2:30; % number of vehicles
-trials = 20;
+trials = 30;
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
 pmax = [2.5,2.5,2.2];
@@ -42,8 +42,8 @@ for k = 1:k_hor
     A_initp = [A_initp; A_init(1:3,:)];  
 end
 
-Q = [100,500,1000,5000,10000];
-S = [100,100,100,100,1000];
+Q = [100,100,100,5000,10000];
+S = [1,10,100,100,100];
 tol = 2;
 
 for q = 1:length(N_vector)
@@ -52,7 +52,7 @@ for q = 1:length(N_vector)
         fprintf("Doing trial #%i with %i vehicles\n",r,N)
         % Initial positions
         [po,pf] = randomTest(N,pmin,pmax,rmin);
-        for m = 1:length(tol)
+        for m = 1:length(Q)
             %DMPC just one iteration i.e really high tolerance
             % Empty list of obstacles
             l = [];

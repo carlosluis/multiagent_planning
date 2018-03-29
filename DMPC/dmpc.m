@@ -29,6 +29,10 @@ rmin = 0.75;
 l = [];
 success = 1;
 
+% Penalty matrices when there're predicted collisions
+Q = 1000;
+S = 10;
+
 % Maximum acceleration in m/s^2
 alim = 0.7;
 
@@ -61,7 +65,7 @@ for k = 1:K
             pok = pk(:,k-1,n);
             vok = vk(:,k-1,n);
             aok = ak(:,k-1,n);
-            [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol); 
+            [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q,S); 
         end
         if ~success
             break;

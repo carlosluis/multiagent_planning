@@ -36,7 +36,7 @@ while (i <= k_hor && val > tol)
     
     % Setup the QP
     if(isempty(Ain_total)) % Case of no collisions
-        Q = 100000*[zeros(3*(K-1),3*K);
+        Q = 1000*[zeros(3*(K-1),3*K);
                 zeros(3,3*(K-1)) eye(3)];
         R = 1*eye(3*K);
         S = 10*eye(3*K);
