@@ -12,7 +12,7 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 success = 1;
-N_vector = 2:2:30; % number of vehicles
+N_vector = 10:2:14; % number of vehicles
 trials = 30;
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];

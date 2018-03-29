@@ -1,4 +1,4 @@
-function [p,v,a,success] = solveDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,tol)
+function [p,v,a,success] = solveDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q1,S1)
 
 success = 1;
 k_hor = size(l,2);
@@ -41,10 +41,10 @@ while (i <= k_hor && val > tol)
         R = 1*eye(3*K);
         S = 10*eye(3*K);
     else
-        Q = 500*[zeros(3*(K-1),3*K);
+        Q = Q1*[zeros(3*(K-1),3*K);
                 zeros(3,3*(K-1)) eye(3)];
         R = 1*eye(3*K);
-        S = 100*eye(3*K);
+        S = S1*eye(3*K);
     end
     
     Ain_total = [Ain_total; A; -A];

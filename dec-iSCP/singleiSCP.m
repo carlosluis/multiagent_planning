@@ -24,7 +24,7 @@ while (i <= K && fail)
             bin_total = [bin_total; binr];
         
         elseif (newConstrCount==0 && violation)
-            [Ainr, binr] = CollConstr(prev_p(:,k-1),po,k,l,A,rmin);
+            [Ainr, binr] = CollConstr(prev_p(:,k),po,k,l,A,rmin);
             Ain_total = [Ain_total; Ainr];
             bin_total = [bin_total; binr];  
             addConstr = [addConstr k];

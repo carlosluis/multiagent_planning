@@ -10,7 +10,7 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 success = 1;
-N = 30; % number of vehicles
+N = 10; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -22,7 +22,7 @@ rmin = 0.75;
 % Initial positions
 [po,pf] = randomTest(N,pmin,pmax,rmin);
 
-% Some Precomputations
+%% Some Precomputations
 % Kinematic model A,b matrices
 A = [1 0 0 h 0 0;
      0 1 0 0 h 0;
