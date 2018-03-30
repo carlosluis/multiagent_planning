@@ -12,8 +12,8 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 success = 1;
-N_vector = 10:2:14; % number of vehicles
-trials = 30;
+N_vector = 2:2:30; % number of vehicles
+trials = 50;
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
 pmax = [2.5,2.5,2.2];
@@ -60,6 +60,8 @@ Aux = [1 0 0 h 0 0;
 A_initp = [];
 A_init = eye(6);
 tol = 2;
+Q = 100;
+S = 100;
 
 Delta = getDeltaMat(k_hor); 
 
@@ -124,7 +126,7 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol); 
+                    [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q,S); 
                 end
                 if ~success
                     break;

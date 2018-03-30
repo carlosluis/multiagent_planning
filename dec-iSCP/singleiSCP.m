@@ -8,7 +8,7 @@ success = 1;
 H = eye(3*K);
 A = getPosMat(h,K);
 Aeq = getPosVelMat(h,K);
-options = optimset('Display', 'off');
+options = []; % optimset('Display', 'off');
 fail = true;
 addConstr = [];
 
@@ -24,7 +24,7 @@ while (i <= K && fail)
             bin_total = [bin_total; binr];
         
         elseif (newConstrCount==0 && violation)
-            [Ainr, binr] = CollConstr(prev_p(:,k),po,k,l,A,rmin);
+            [Ainr, binr] = CollConstr(prev_p(:,k-1),po,k,l,A,rmin);
             Ain_total = [Ain_total; Ainr];
             bin_total = [bin_total; binr];  
             addConstr = [addConstr k];
@@ -53,5 +53,5 @@ while (i <= K && fail)
     prev_p = p;
     i = i + 1;   
 end
-% fprintf("Number of SCP iterations = %i\n",i-1)
+fprintf("Number of SCP iterations = %i\n",i-1)
 end

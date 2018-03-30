@@ -13,7 +13,7 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 tol = 2;
 
-N = 20; % number of vehicles
+N = 25; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -30,8 +30,8 @@ l = [];
 success = 1;
 
 % Penalty matrices when there're predicted collisions
-Q = 1000;
-S = 10;
+Q = 100;
+S = 100;
 
 % Maximum acceleration in m/s^2
 alim = 0.7;
