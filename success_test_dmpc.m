@@ -136,3 +136,13 @@ errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Average Computation time [s]');
 legend('DMPC');
+
+% Average number of tries
+tries_mean = mean(tries,2);
+tries_std = std(tries,1,2);
+figure(3)
+grid on;
+hold on;
+errorbar(N_vector,tries_mean,tries_std,'LineWidth',2);
+xlabel('Number of Vehicles');
+ylabel('Average number of DMPC iterations');
