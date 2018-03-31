@@ -24,31 +24,6 @@ rmin = 0.75;
 % Maximum acceleration in m/s^2
 alim = 0.7;
 
-% Some Precomputations dec-iSCP
-% Kinematic model A,b matrices
-A = [1 0 0 h 0 0;
-     0 1 0 0 h 0;
-     0 0 1 0 0 h;
-     0 0 0 1 0 0;
-     0 0 0 0 1 0;
-     0 0 0 0 0 1];
-
-b = [h^2/2*eye(3);
-     h*eye(3)];
- 
-prev_row = zeros(6,3*K); % For the first iteration of constructing matrix Ain
-A_p = [];
-A_v = [];
-
-% Build matrix to convert acceleration to position
-for k = 1:(K-1)
-    add_b = [zeros(size(b,1),size(b,2)*(k-1)) b zeros(size(b,1),size(b,2)*(K-k))];
-    new_row = A*prev_row + add_b;   
-    A_p = [A_p; new_row(1:3,:)];
-    A_v = [A_v; new_row(4:6,:)];
-    prev_row = new_row; 
-end
-
 % Some pre computations DMPC
 A = getPosMat(h,k_hor);
 Aux = [1 0 0 h 0 0;
@@ -60,7 +35,7 @@ Aux = [1 0 0 h 0 0;
 A_initp = [];
 A_init = eye(6);
 tol = 2;
-
+fail = 0;
 
 Delta = getDeltaMat(k_hor); 
 
@@ -77,38 +52,6 @@ for q = 1:length(N_vector)
         fprintf("Doing trial #%i with %i vehicles\n",r,N)
         % Initial positions
         [po,pf] = randomTest(N,pmin,pmax,rmin);
-
-        % Empty list of obstacles
-        l = [];
-        
-        % DEC-ISCP
-        t_start = tic; 
-        for i = 1:N 
-            poi = po(:,:,i);
-            pfi = pf(:,:,i);
-            [pi, vi, ai,success] = singleiSCP(poi,pfi,h,K,pmin,pmax,rmin,alim,l,A_p,A_v);
-            if ~success
-                break;
-            end
-            l = cat(3,l,pi);
-            pk(:,:,i) = pi;
-            vk(:,:,i) = vi;
-            ak(:,:,i) = ai;
-
-            % Interpolate solution with a 100Hz sampling
-            p(:,:,i) = spline(tk,pi,t);
-            v(:,:,i) = spline(tk,vi,t);
-            a(:,:,i) = spline(tk,ai,t);
-        end
-        if success
-            t_dec(q,r) = toc(t_start);
-            totdist_dec(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
-        
-        else
-            t_dec(q,r) = nan;
-            totdist_dec(q,r) = nan;
-        end
-        success_dec(q,r) = success;
         
         %DMPC
         % Empty list of obstacles
@@ -143,6 +86,9 @@ for q = 1:length(N_vector)
                 if ~success
                     tries(q,r) = tries(q,r) + 1;
                     Q = Q+100;
+                    if (tries > 5)
+                        S = S - 20;
+                    end
                     break;
                 end
                 l = new_l;
@@ -160,6 +106,8 @@ for q = 1:length(N_vector)
         else
             t_dmpc(q,r) = nan;
             totdist_dmpc(q,r) = nan;
+            save(['Fail_' num2str(fail)]);
+            fail = fail + 1;
         end
         success_dmpc(q,r) = success;
     end
@@ -168,41 +116,23 @@ fprintf("Finished!")
 %% Post-Processing
 
 % Probability of success plots
-prob_dec = sum(success_dec,2)/trials;
 prob_dmpc = sum(success_dmpc,2)/trials;
 figure(1)
-plot(N_vector,prob_dec','Linewidth',2);
 grid on;
 hold on;
 ylim([0,1.05])
 plot(N_vector,prob_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Success Probability');
-legend('dec-iSCP','DMPC');
+legend('DMPC');
 
 % Computation time
-tmean_dec = nanmean(t_dec,2);
-tstd_dec = nanstd(t_dec,1,2);
 tmean_dmpc = nanmean(t_dmpc,2);
 tstd_dmpc = nanstd(t_dmpc,1,2);
 figure(2)
-errorbar(N_vector,tmean_dec,tstd_dec,'Linewidth',2);
 grid on;
 hold on;
 errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Average Computation time [s]');
-legend('dec-iSCP','DMPC');
-
-% Percentage increase/decrease on travelled dist of dmpc wrt dec
-% Positive number means that dmpc path was longer
-diff_dist = (totdist_dmpc-totdist_dec)./totdist_dmpc;
-avg_diff = nanmean(diff_dist,2);
-std_diff = nanstd(diff_dist,1,2);
-figure(3)
-errorbar(N_vector,100*avg_diff,100*std_diff,'Linewidth',2);
-grid on;
-xlabel('Number of Vehicles');
-ylabel('Average % increase/decrease');
-title('Percentual increase/decrease on total travelled distance of DMPC wrt dec-iSCP');
-
+legend('DMPC');
