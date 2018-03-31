@@ -8,7 +8,7 @@ success = 1;
 H = eye(3*K);
 A = getPosMat(h,K);
 Aeq = getPosVelMat(h,K);
-options = []; % optimset('Display', 'off');
+options = optimset('Display', 'off');
 fail = true;
 addConstr = [];
 
@@ -53,5 +53,5 @@ while (i <= K && fail)
     prev_p = p;
     i = i + 1;   
 end
-fprintf("Number of SCP iterations = %i\n",i-1)
+% fprintf("Number of SCP iterations = %i\n",i-1)
 end

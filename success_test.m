@@ -175,9 +175,9 @@ legend('dec-iSCP','DMPC');
 
 % Computation time
 tmean_dec = nanmean(t_dec,2);
-tstd_dec = 0*nanstd(t_dec,1,2);
+tstd_dec = nanstd(t_dec,1,2);
 tmean_dmpc = nanmean(t_dmpc,2);
-tstd_dmpc = 0*nanstd(t_dec,1,2);
+tstd_dmpc = nanstd(t_dmpc,1,2);
 figure(2)
 errorbar(N_vector,tmean_dec,tstd_dec,'Linewidth',2);
 grid on;

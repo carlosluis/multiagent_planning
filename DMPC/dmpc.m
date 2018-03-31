@@ -1,5 +1,5 @@
 clc
-clear all
+% clear all
 close all
 warning('off','all')
 
@@ -13,7 +13,7 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 tol = 2;
 
-N = 25; % number of vehicles
+N = 30; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -25,9 +25,9 @@ rmin = 0.75;
 % Initial positions
 [po,pf] = randomTest(N,pmin,pmax,rmin);
 
-%% Empty list of obstacles
+% Empty list of obstacles
 l = [];
-success = 1;
+success = 0;
 
 % Penalty matrices when there're predicted collisions
 Q = 100;
@@ -54,33 +54,39 @@ for k = 1:k_hor
     A_initp = [A_initp; A_init(1:3,:)];  
 end
 
+tries = 1;
 tic %measure the time it gets to solve the optimization problem
-for k = 1:K
-    for n = 1:N
-        if k==1
-            poi = po(:,:,n);
-            pfi = pf(:,:,n);
-            [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
-        else
-            pok = pk(:,k-1,n);
-            vok = vk(:,k-1,n);
-            aok = ak(:,k-1,n);
-            [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q,S); 
+while tries <= 10 && ~success
+    for k = 1:K
+        for n = 1:N
+            if k==1
+                poi = po(:,:,n);
+                pfi = pf(:,:,n);
+                [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
+                success = 1;
+            else
+                pok = pk(:,k-1,n);
+                vok = vk(:,k-1,n);
+                aok = ak(:,k-1,n);
+                [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q,S); 
+            end
+            if ~success
+                break;
+            end
+            new_l(:,:,n) = pi;
+            pk(:,k,n) = pi(:,1);
+            vk(:,k,n) = vi(:,1);
+            ak(:,k,n) = ai(:,1);
         end
-        if ~success
-            break;
-        end
-        new_l(:,:,n) = pi;
-        pk(:,k,n) = pi(:,1);
-        vk(:,k,n) = vi(:,1);
-        ak(:,k,n) = ai(:,1);
+         if ~success
+             tries = tries + 1;
+             Q = Q+100;
+             break;
+         end
+        l = new_l;
+        pred(:,:,:,k) = l;
     end
-     if ~success
-            break;
-     end
-    l = new_l;
-    pred(:,:,:,k) = l;
-end      
+end
        
 toc
 if success
