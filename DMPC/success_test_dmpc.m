@@ -12,8 +12,8 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 success = 1;
-N_vector = 2:2:30; % number of vehicles
-trials = 50;
+N_vector = 20:2:30; % number of vehicles
+trials = 30;
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
 pmax = [2.5,2.5,2.2];
@@ -36,6 +36,7 @@ A_initp = [];
 A_init = eye(6);
 tol = 2;
 fail = 0;
+error_tol = 0.05; % 5cm destination tolerance
 
 Delta = getDeltaMat(k_hor); 
 
@@ -57,17 +58,20 @@ for q = 1:length(N_vector)
         % Empty list of obstacles
         l = [];
         success = 0;
-        Q = 100;
+        at_goal = 0;
+        Q = 10;
         S = 100; 
         tries(q,r) = 1;
+        failed_goal(q,r) = 0;
+        epsilon = 0;
         t_start = tic;
-        while tries(q,r) <= 10 && ~success
+        while tries(q,r) <= 10 && ~at_goal
             for k = 1:K
                 for n = 1:N
                     if k==1
                         poi = po(:,:,n);
                         pfi = pf(:,:,n);
-                        [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
+                        [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K,epsilon);
                         success = 1;
                     else
                         pok = pk(:,k-1,n);
@@ -85,17 +89,23 @@ for q = 1:length(N_vector)
                 end
                 if ~success
                     tries(q,r) = tries(q,r) + 1;
-                    Q = Q+100;
-                    if (tries > 5)
-                        S = S - 20;
-                    end
+                    Q = Q+50;
+                    epsilon = epsilon + 5;
                     break;
                 end
                 l = new_l;
-            end   
+            end
+            pass = ReachedGoal(pk,pf,K,error_tol);
+            if success && pass
+                at_goal = 1;
+            elseif success && ~pass
+                failed_goal(q,r) = failed_goal(q,r) + 1;
+                tries(q,r) = tries(q,r) + 1;
+                Q = Q+100;
+            end
         end
 
-        if success
+        if success && at_goal
             for i = 1:N
                 p(:,:,i) = spline(tk,pk(:,:,i),t);
                 v(:,:,i) = spline(tk,vk(:,:,i),t);
@@ -109,7 +119,7 @@ for q = 1:length(N_vector)
             save(['Fail_' num2str(fail)]);
             fail = fail + 1;
         end
-        success_dmpc(q,r) = success;
+        success_dmpc(q,r) = success && at_goal;
     end
 end
 fprintf("Finished!")
@@ -146,3 +156,13 @@ hold on;
 errorbar(N_vector,tries_mean,tries_std,'LineWidth',2);
 xlabel('Number of Vehicles');
 ylabel('Average number of DMPC iterations');
+
+% Average number of goal failures
+goal_mean = mean(failed_goal,2);
+goal_std = std(failed_goal,1,2);
+figure(4)
+grid on;
+hold on;
+errorbar(N_vector,goal_mean,goal_std,'LineWidth',2);
+xlabel('Number of Vehicles');
+ylabel('Average number of Failures at reaching the goal');

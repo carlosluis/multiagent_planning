@@ -1,5 +1,5 @@
 clc
-% clear all
+clear all
 close all
 warning('off','all')
 
@@ -25,12 +25,16 @@ rmin = 0.75;
 % Initial positions
 [po,pf] = randomTest(N,pmin,pmax,rmin);
 
-% Empty list of obstacles
+%% Empty list of obstacles
 l = [];
-success = 0;
+tol = 2;
+success = 0; %check if QP was feasible
+at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
+error_tol = 0.05; % 5cm destination tolerance
+epsilon = 0; % heuristic variable to initialize DMPC more conservative
 
 % Penalty matrices when there're predicted collisions
-Q = 100;
+Q = 10;
 S = 100;
 
 % Maximum acceleration in m/s^2
@@ -54,15 +58,16 @@ for k = 1:k_hor
     A_initp = [A_initp; A_init(1:3,:)];  
 end
 
-tries = 1;
+failed_goal = 0; %how many times the algorithm failed to reach goal
+tries = 1; % how many iterations it took the DMPC to find a solution
 tic %measure the time it gets to solve the optimization problem
-while tries <= 10 && ~success
+while tries <= 10 && ~at_goal
     for k = 1:K
         for n = 1:N
             if k==1
                 poi = po(:,:,n);
                 pfi = pf(:,:,n);
-                [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
+                [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K,epsilon);
                 success = 1;
             else
                 pok = pk(:,k-1,n);
@@ -70,7 +75,7 @@ while tries <= 10 && ~success
                 aok = ak(:,k-1,n);
                 [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q,S); 
             end
-            if ~success
+            if ~success %problem was infeasible, exit and retry
                 break;
             end
             new_l(:,:,n) = pi;
@@ -78,18 +83,27 @@ while tries <= 10 && ~success
             vk(:,k,n) = vi(:,1);
             ak(:,k,n) = ai(:,1);
         end
-         if ~success
-             tries = tries + 1;
-             Q = Q+100;
-             break;
-         end
+        if ~success %Heuristic: increase Q, make init more slowly, 
+            tries = tries + 1;
+            epsilon = epsilon + 5;
+            Q = Q+50;
+            break;
+        end
         l = new_l;
         pred(:,:,:,k) = l;
     end
+    pass = ReachedGoal(pk,pf,K,error_tol); %check if agents reached goal
+    if success && pass
+        at_goal = 1;
+    elseif success && ~pass %if not at goal, retry with more aggressive behaviour
+        failed_goal = failed_goal + 1;
+        tries = tries + 1;
+        Q = Q+100;
+    end
 end
-       
+passed = success && at_goal %DMPC was successful or not      
 toc
-if success
+if passed
     for i = 1:N
         p(:,:,i) = spline(tk,pk(:,:,i),t);
         v(:,:,i) = spline(tk,vk(:,:,i),t);
