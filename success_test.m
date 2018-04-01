@@ -14,6 +14,7 @@ k_hor = 15;
 success = 1;
 N_vector = 2:2:30; % number of vehicles
 trials = 50;
+fail = 0;
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
 pmax = [2.5,2.5,2.2];
@@ -149,7 +150,6 @@ for q = 1:length(N_vector)
                 if ~success
                     tries(q,r) = tries(q,r) + 1;
                     Q = Q+50;
-                    epsilon = epsilon + 5;
                     break;
                 end
                 l = new_l;

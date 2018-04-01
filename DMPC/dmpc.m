@@ -13,7 +13,7 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 tol = 2;
 
-N = 30; % number of vehicles
+N = 20; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -85,7 +85,7 @@ while tries <= 10 && ~at_goal
         end
         if ~success %Heuristic: increase Q, make init more slowly, 
             tries = tries + 1;
-            epsilon = epsilon + 5;
+            epsilon = epsilon + 0;
             Q = Q+50;
             break;
         end
