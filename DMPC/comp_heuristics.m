@@ -11,7 +11,6 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
-success = 1;
 N_vector = 2:2:30; % number of vehicles
 trials = 50;
 % Workspace boundaries
@@ -35,7 +34,7 @@ Aux = [1 0 0 h 0 0;
 A_initp = [];
 A_init = eye(6);
 tol = 2;
-fail = 0;
+error_tol = 0.05; % 5cm destination tolerance
 
 Delta = getDeltaMat(k_hor); 
 
@@ -57,6 +56,7 @@ for q = 1:length(N_vector)
         % Empty list of obstacles
         l = [];
         success = 0;
+        epsilon = 0;
         Q = 1000;
         S = 10; 
         t_start = tic;
@@ -65,7 +65,7 @@ for q = 1:length(N_vector)
                 if k==1
                     poi = po(:,:,n);
                     pfi = pf(:,:,n);
-                    [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
+                    [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K,epsilon);
                     success = 1;
                 else
                     pok = pk(:,k-1,n);
@@ -87,7 +87,7 @@ for q = 1:length(N_vector)
             l = new_l;  
         end
 
-        if success
+        if success && ReachedGoal(pk,pf,K,error_tol)
             for i = 1:N
                 p(:,:,i) = spline(tk,pk(:,:,i),t);
                 v(:,:,i) = spline(tk,vk(:,:,i),t);
@@ -99,71 +99,30 @@ for q = 1:length(N_vector)
             t_dmpc1(q,r) = nan;
             totdist_dmpc1(q,r) = nan;
         end
-        success_dmpc1(q,r) = success;
+        success_dmpc1(q,r) = success && ReachedGoal(pk,pf,K,error_tol);
         
-        %DMPC No heuristic
+        
+        %DMPC All heuristics
         % Empty list of obstacles
-        l = [];
-        success = 0;
-        Q = 100;
-        S = 100; 
-        t_start = tic;
-        for k = 1:K
-            for n = 1:N
-                if k==1
-                    poi = po(:,:,n);
-                    pfi = pf(:,:,n);
-                    [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
-                    success = 1;
-                else
-                    pok = pk(:,k-1,n);
-                    vok = vk(:,k-1,n);
-                    aok = ak(:,k-1,n);
-                    [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q,S); 
-                end
-                if ~success
-                    break;
-                end
-                new_l(:,:,n) = pi;
-                pk(:,k,n) = pi(:,1);
-                vk(:,k,n) = vi(:,1);
-                ak(:,k,n) = ai(:,1);
-            end
-            if ~success
-                break;
-            end
-            l = new_l;  
-        end
+        tol = 2;
+        success = 0; %check if QP was feasible
+        at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
+        error_tol = 0.05; % 5cm destination tolerance
+        epsilon = 0; % heuristic variable to initialize DMPC more conservative
 
-        if success
-            for i = 1:N
-                p(:,:,i) = spline(tk,pk(:,:,i),t);
-                v(:,:,i) = spline(tk,vk(:,:,i),t);
-                a(:,:,i) = spline(tk,ak(:,:,i),t); 
-            end
-            t_dmpc2(q,r) = toc(t_start);
-            totdist_dmpc2(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
-        else
-            t_dmpc2(q,r) = nan;
-            totdist_dmpc2(q,r) = nan;
-        end
-        success_dmpc2(q,r) = success;
-        
-        %DMPC Heuristics 1 and 2
-        % Empty list of obstacles
-        l = [];
-        success = 0;
-        Q = 100;
+        % Penalty matrices when there're predicted collisions
+        Q = 10;
         S = 100; 
         tries(q,r) = 1;
+        failed_goal(q,r) = 0;
         t_start = tic;
-        while tries(q,r) <= 10 && ~success
+        while tries(q,r) <= 10 && ~at_goal
             for k = 1:K
                 for n = 1:N
                     if k==1
                         poi = po(:,:,n);
                         pfi = pf(:,:,n);
-                        [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
+                        [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K,epsilon);
                         success = 1;
                     else
                         pok = pk(:,k-1,n);
@@ -181,31 +140,37 @@ for q = 1:length(N_vector)
                 end
                 if ~success
                     tries(q,r) = tries(q,r) + 1;
-                    Q = Q+100;
-                    if (tries > 5)
-                        S = S - 20;
-                    end
+                    Q = Q+50;
+                    epsilon = epsilon + 5;
                     break;
                 end
                 l = new_l;
             end   
+            pass = ReachedGoal(pk,pf,K,error_tol);
+            if success && pass
+                at_goal = 1;
+            elseif success && ~pass
+                failed_goal(q,r) = failed_goal(q,r) + 1;
+                tries(q,r) = tries(q,r) + 1;
+                Q = Q+100;
+            end
         end
 
-        if success
+        if success && at_goal
             for i = 1:N
                 p(:,:,i) = spline(tk,pk(:,:,i),t);
                 v(:,:,i) = spline(tk,vk(:,:,i),t);
                 a(:,:,i) = spline(tk,ak(:,:,i),t); 
             end
-            t_dmpc3(q,r) = toc(t_start);
-            totdist_dmpc3(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
+            t_dmpc2(q,r) = toc(t_start);
+            totdist_dmpc2(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
         else
-            t_dmpc3(q,r) = nan;
-            totdist_dmpc3(q,r) = nan;
+            t_dmpc2(q,r) = nan;
+            totdist_dmpc2(q,r) = nan;
             save(['Fail_' num2str(fail)]);
             fail = fail + 1;
         end
-        success_dmpc3(q,r) = success;
+        success_dmpc2(q,r) = success && at_goal;
     end
 end
 fprintf("Finished!")
@@ -214,17 +179,17 @@ fprintf("Finished!")
 % Probability of success plots
 prob_dmpc1 = sum(success_dmpc1,2)/trials;
 prob_dmpc2 = sum(success_dmpc2,2)/trials;
-prob_dmpc3 = sum(success_dmpc3,2)/trials;
+% prob_dmpc3 = sum(success_dmpc3,2)/trials;
 figure(1)
 grid on;
 hold on;
 ylim([0,1.05])
 plot(N_vector,prob_dmpc1,'Linewidth',2);
 plot(N_vector,prob_dmpc2,'Linewidth',2);
-plot(N_vector,prob_dmpc3,'Linewidth',2);
+% plot(N_vector,prob_dmpc3,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Success Probability');
-legend('No Heuristic','Heuristic 1','Heuristic 1+2');
+legend('No Heuristic','Heuristic');
 
 % Computation time
 tmean_dmpc1 = nanmean(t_dmpc1,2);
@@ -241,7 +206,7 @@ errorbar(N_vector,tmean_dmpc2,tstd_dmpc2,'Linewidth',2);
 errorbar(N_vector,tmean_dmpc3,tstd_dmpc3,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Average Computation time [s]');
-legend('No Heuristic','Heuristic 1','Heuristic 1+2');
+legend('No Heuristic','Heuristic');
 
 % Average number of tries
 tries_mean = mean(tries,2);

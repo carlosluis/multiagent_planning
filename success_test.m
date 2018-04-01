@@ -110,21 +110,27 @@ for q = 1:length(N_vector)
         end
         success_dec(q,r) = success;
         
-        %DMPC
+        %DMPC All heuristics
         % Empty list of obstacles
-        l = [];
-        success = 0;
-        Q = 100;
+        tol = 2;
+        success = 0; %check if QP was feasible
+        at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
+        error_tol = 0.05; % 5cm destination tolerance
+        epsilon = 0; % heuristic variable to initialize DMPC more conservative
+
+        % Penalty matrices when there're predicted collisions
+        Q = 10;
         S = 100; 
         tries(q,r) = 1;
+        failed_goal(q,r) = 0;
         t_start = tic;
-        while tries(q,r) <= 10 && ~success
+        while tries(q,r) <= 10 && ~at_goal
             for k = 1:K
                 for n = 1:N
                     if k==1
                         poi = po(:,:,n);
                         pfi = pf(:,:,n);
-                        [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
+                        [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K,epsilon);
                         success = 1;
                     else
                         pok = pk(:,k-1,n);
@@ -142,14 +148,23 @@ for q = 1:length(N_vector)
                 end
                 if ~success
                     tries(q,r) = tries(q,r) + 1;
-                    Q = Q+100;
+                    Q = Q+50;
+                    epsilon = epsilon + 5;
                     break;
                 end
                 l = new_l;
             end   
+            pass = ReachedGoal(pk,pf,K,error_tol);
+            if success && pass
+                at_goal = 1;
+            elseif success && ~pass
+                failed_goal(q,r) = failed_goal(q,r) + 1;
+                tries(q,r) = tries(q,r) + 1;
+                Q = Q+100;
+            end
         end
 
-        if success
+        if success && at_goal
             for i = 1:N
                 p(:,:,i) = spline(tk,pk(:,:,i),t);
                 v(:,:,i) = spline(tk,vk(:,:,i),t);
@@ -160,8 +175,10 @@ for q = 1:length(N_vector)
         else
             t_dmpc(q,r) = nan;
             totdist_dmpc(q,r) = nan;
+            save(['Fail_' num2str(fail)]);
+            fail = fail + 1;
         end
-        success_dmpc(q,r) = success;
+        success_dmpc(q,r) = success && at_goal;
     end
 end
 fprintf("Finished!")
