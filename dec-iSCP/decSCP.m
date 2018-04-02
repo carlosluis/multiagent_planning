@@ -10,7 +10,7 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 success = 1;
-N = 6; % number of vehicles
+N = 20; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];

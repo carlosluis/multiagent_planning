@@ -13,7 +13,7 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 success = 1;
 N_vector = 2:2:30; % number of vehicles
-trials = 50;
+trials = 30;
 fail = 0;
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
