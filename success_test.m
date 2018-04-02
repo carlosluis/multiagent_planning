@@ -13,7 +13,7 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 success = 1;
 N_vector = 2:2:30; % number of vehicles
-trials = 30;
+trials = 50;
 fail = 0;
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -192,6 +192,7 @@ plot(N_vector,prob_dec','Linewidth',2);
 grid on;
 hold on;
 ylim([0,1.05])
+xlim([0,27])
 plot(N_vector,prob_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Success Probability');
@@ -206,9 +207,10 @@ figure(2)
 errorbar(N_vector,tmean_dec,tstd_dec,'Linewidth',2);
 grid on;
 hold on;
+xlim([0,27])
 errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
-ylabel('Average Computation time [s]');
+ylabel('Average Computation Time [s]');
 legend('dec-iSCP','DMPC');
 
 % Percentage increase/decrease on travelled dist of dmpc wrt dec

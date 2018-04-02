@@ -56,7 +56,7 @@ while (i <= K && check)
     prev_p = p;
     i = i + 1;   
 end
-if (i >= K && check)
+if (check)
     success = 0;
 end
 % fprintf("Number of SCP iterations = %i\n",i-1)
