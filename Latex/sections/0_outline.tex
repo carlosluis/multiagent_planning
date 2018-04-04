@@ -1,0 +1,326 @@
+\section{INTRODUCTION (0.5)}
+%\label{sec:introduction}
+\begin{itemize}
+\item Introduce reference tracking/trajectory formation problem and applications, and point out the importance of achieving high performance in impromptu/unrehearsed/one-shot manner.
+% \question Should we keep tracking as the targeting problem? yes.
+\item Objective of this research: To formalize a neural-network-based control architecture that is generalizable to different platforms. This includes characterizing conditions which the architecture is applicable, guidelines for efficient feature selection, as well as conditions that allows for improving efficiency of training
+\item Challenges in standard controller design (link to difficulties in tunning, modeling unknown factors, capability of achieving good performance on arbitrary trajectories).
+\begin{itemize}
+\item Tunning PI and PID controller based on step response (\r{A}str\"{o}m and H\"{a}gglund, 2004): rules not universal, may need more accurate models in some cases, may be conservative in some cases
+\item Point out cases where controller is not accessible (off-the-shelf products)
+\end{itemize}
+\item Introduce incorporation of machine learning (summarize/model experience and enable taking advantage of previous experience -- using knowledge not just from starting of a trial); introduce neural network and advantages (machine learning, robotics, control), and point out the potential of modeling non-linearities.
+%\item In contrast with image classification and natural language recognition problems, dynamical systems are governed by relatively more well-defined functions (?), which can be exploited in DNN design especially feature selection process; based on theory to guide feature selection (also, comment from practical aspect -- convenient to test etc.).
+%\item Brief introduction of neural-network based architectures in literature
+%\item Angela -- add somewhere, something like: Finding the optimal structure of DNNS as been considered for other application areas such as image classification, speech, ...
+\item Discuss efficient feature selection or extraction or optimization techniques (e.g., convolutional structure and PCA -- link to incorporation of invariance in input) developed in image classification. (In control literature, not much discussion in efficient feature selection; most focus is on control architecture design and training -- check this)
+\item Brief introduction of summer research work, and refer to Related Work section for details (inverse-dynamics-based model approach, and achieved error reduction about 40\%-50\% on average) \cite{DNNimpromptuTrack}. \color{blue}{Fig. 1. Summer research paper architecture illustration}\color{grey1}
+\item Contributions: (1) with respect to summer research work, justifications of design decisions and generalization of the approach; (2) with respect to intelligent control, an approach of efficiently selecting features for inverse-dynamics-modeling-based architectures; (3) with respect to general control, formulation of an enhancement-based architecture with guidelines can be potentially continently adapted to industrial applications \textbf{(?)}
+\item Roadmap: (1) introduce recent work (summer research), (2) review of intelligent control literature (point out concerned points that are alleviated with current approach), (3) formulation/generalization of the approach proposed in summer research, (4) Illustration with simulation/experiment example
+% \item Potential introduction points
+% \begin{itemize}
+% \item Connection with PID tunning: (\r{A}str\"{o}m and H\"{a}gglund, 2004) PID popular controller. Tunning methods based on step responses (to determine parameters). Proposed approach enhances of PID based control based on step responses (to select input feature -- $r$ and difference vs direct signal).
+% \end{itemize}
+\end{itemize}
+
+\section{Background (1)}
+%\label{sec:background}
+\subsection{Related Work}
+%\label{subsec:relatedWork}
+\begin{itemize}
+\item Summarize neural-network-based and neural-network-inverse-modeling-based architectures and training procedures in literature 
+
+\todo Check what happened in recent 20 years. Abbeel and Goldberg.
+
+%\question Is it necessary to discuss other neural-network-based architectures?
+\begin{itemize}
+\item Brief summary of architectures (point is to show stability advantages of current approach)
+\item Architectures with inverse-modeling and discussion 
+\item Training methods and discussion
+\end{itemize}
+\item Other recent work with experimental results
+
+%\question Include details here or briefly summarize in introduction? here.
+\begin{itemize}
+\item Forward dynamics learning and LQR-based/MPC approaches (stability -- proposed approach, under special conditions (no feedback of reference and current state), can be modeled by feedfoward static network and is stable)
+\end{itemize}
+\end{itemize}
+\subsection{Details of Previous Work}
+\label{subsec:previousWork}
+%\item Description of summer research work
+\begin{itemize}
+\item Proposed approach: control architecture and training process \color{blue}Fig. 2. Block diagrams illustrating control architecture and training\color{grey1}
+\item Results: testing platform (quadrotor) and achievements (average of 40-50\% error reduction on 30 trajectories)
+\item Note the features of the design here (3 things helps with stability, difference used to introduce translational invariance -- training efficiency, ...); separate the ones that are practical and the ones that are backed with theoretical results (refer to the result section)
+\item Comparisons with other approaches:
+\begin{itemize}
+\item Less prone to stability issue for both training and testing phrases as compared with \textit{feedback error learning approach}
+\item More goal-directed as compared with \textit{general inverse learning} approach, not necessary to compute Jacobian as compared with \textit{specialized learning approach}, does not depend on a well-tuned controller as compared with \textit{feedback error learning approach}
+\end{itemize}
+\item Limitations (motivations of this paper): feature selections are based on experimental tryouts, tested on one system and assumptions are not explicitly identified
+\end{itemize}
+
+%learning in general, neural nets based, inverse based, summer research paper
+
+%a review of what is done and achieved in summer research paper
+
+\section{PROBLEM STATEMENT (0.125)}
+%\label{sec:problemStatement}
+The problem to be addressed in this paper is to formulate the deep-neural-network-based approach developed in Ref(summer research paper) in a framework that is generalizable to other applications. This includes a platform-independent formulation for both feature selection and model training, identification of assumptions implicitly applied in the implementation, as well as characterizing conditions under which the efficiency of training process can be improved. 
+%Summer research good results; decisions are experimentally obtained
+%Formulate the approach such that it can be generalized to other applications/platforms; identify assumptions (stable inverse, difference-learning, unnecessity of using past reference (relative degree = degree, or use current internal state feedback) )
+
+% \section{ASSUMPTIONS (0.25}
+% \label{sec:assumptions}
+% \begin{itemize}
+% \item Invertability (?)
+% \end{itemize}
+
+\section{RESULTS (2-3)}
+%\label{sec:results}
+% \note I included discussions associated with the transfer function (will remove if not necessary). The reasons I thought this might be useful are that (1) it is an alternative for identifying input-output to neural networks that uses a series of states rather than the current internal state, and (2) it may help to discuss the point about learning difference. % Conclusion: do not include detailed derivations
+
+
+% sunday: this part + validity, figure list, 
+\begin{itemize}
+% \item Define feedback loop dynamics in the form of controllable controllable canonical form (with initial conditions)
+% \item Derive $z$-transform and discuss the effect of initial condition; arrive at the transfer function with assumption of zero initial values
+\color{grey1} 
+\item State normal form with the expression of $u$ dependency
+\item Roadmap (point to generalization to nonlinear system discussion)
+\end{itemize}
+
+
+
+
+%Mathematical preliminaries (form of feedback loop system SISO)
+% \noindent\question Explanation of choosing SISO for derivations?
+
+% \noindent\question Is controllable canonical form sufficient for discussion (this would be easier to discuss the TF derivations, if it would be used for discussing learning difference)? Is it alright to assume strictly proper system ($r>$0)? Or, should it be kept as general ($\mathbf{A}$,$\mathbf{b}$,$\mathbf{c}$)?
+
+% \noindent\question Assumption on invertability?
+
+\subsection{Validity/Efficiency/Efficacy of approach}
+%\label{subsec:stability}
+\begin{itemize}
+\color{grey1}
+% \item Normal form of forward and inverse dynamics
+% \item Discussion on stability (connection between state-space ($\textrm{eig}(Q)$) and transfer function (zeros) conclusions)
+\item Comments the applicability of the approach requires (1) there is a well-defined relative degree and (2) stable inverse dynamics
+
+\noindent\todo Find practical example of cases/platforms where relative degree is defined and not defined
+
+\item For linear system, stability of zero dynamics can be checked by step input response tests (minimal-phase) 
+
+\noindent\todo Check finiteness of relative degree for discrete linear system
+\item For nonlinear systems, there are conditions which the constant input stability does not imply stability of general inputs
+
+\noindent\todo Check reference cited in Chapter 3.3 of the textbook
+\item For nonlinear systems, it is also possible to relative degree may be variable for different operational ranges
+
+\noindent\todo Think about simulation for this point
+\end{itemize}
+%\vspace{1em}
+% \fbox{
+% \begin{minipage}{24em}
+\textbf{Key message}
+\begin{itemize}
+\color{grey1}
+\item The validity of the proposed approach requires a well-defined relative degree (inherent delay) and stable zero dynamics.
+\item For nonlinear systems, the relative degree may be locally defined.
+\end{itemize}
+% \end{minipage}}
+
+
+% ---------------------------------------------
+\subsection{Feature selection}
+%\label{subsec:featureSelection}
+\begin{itemize}
+\color{grey1}
+\item Point out that the experimental tryouts involved in the summer research paper; the system is tuned for the quadrotor platform. The object here is to draw insights from the theoretical result that allows for both efficient feature selection and identification of assumptions that were implicitly made in the implementation.
+\item Discussion on the feature selection based on state-space representation, which has following advantages
+\begin{itemize}
+\item Account for disturbances and initial errors
+\item Allow for feedforward neural network structure. Benefits: From implementation perspective, feedforward NNs are easier to train; from control perspective, neural network is static, and thus BIBO stable.
+\item Does not need to know order (based on knowledge about $r$, which can be determined experimentally)
+\item Potential reduction of input dimension; ($n+1$ for state-space, $2n-r-1$ for transfer function)
+\end{itemize}
+\item Comment on the derivation depends on internal state; if not known, either use state estimation to construct full state or use an alternative expression derived based on transfer function
+\item Introduce the expression based on transfer function (does not need internal states, but require potentially more states, less capable of disturbance rejection)
+% \item Identify dependencies of current reference state (state-space and transfer function)
+% \item Comment that if current internal state is accessible, the dimension of input features can be reduced
+\item Conclusions of nonlinear systems (relative degree)
+\item Practical comments:
+\begin{itemize}
+\item State-space: comment on identification of relative degree $r$
+\item $z$-transform: if possible, outline experimental procedure for determining the degree $n$; otherwise, comment that this needs to be chosen conservatively (more states)
+\item Note about the loop frequencies: Lower outer loop frequency needed for not causing instabilities. The identification of $r$ should be based on outer loop rate not the rate of data collection (at inner loop rate)
+\end{itemize}
+\end{itemize}
+
+%with state-space, only need to know the relative degree
+
+%otherwise, conservatively chose number of future states
+
+%dependence on past input states
+% \subsection{Applicability of using feedfoward neural networks}
+% \begin{itemize}
+% \item Benefits: From implementation perspective, feedforward NNs are easier to train; from control perspective, neural network is static, and thus BIBO stable 
+
+% \todo Think about the case with feedback; make this point stronger
+% \item The applicability of this structure depends on whether the inverse dynamics has dependency on past reference states; this is possible in two scenarios (1) having access to current internal state such that the state-space approach can be used, and (2) the order and relative order of the system are equal $r=n$.
+
+% \question The second conclusion is based on the linear SISO system; I am not sure if it is good to state it here. Is it possible to assume nonlinear systems can have linearized feedback loop dynamics like the point-ahead-linearized unicycle system?
+% \end{itemize}
+
+%unnecessity of using past reference (relative degree = degree, or use current internal state feedback) 
+
+
+% \fbox{\begin{minipage}{24em}
+\textbf{Key messages}
+\begin{itemize}
+\color{grey1}
+\item There are two approaches of identifying dependencies based on system inverse dynamics. One approach is based on state-space representation and leads to expression involving feedback of $\mathbf{x}(k)$, while a second approach is based on $z$-transform and leads to an expression involving series of $u$ and $y$.
+% \begin{itemize}
+% \item Number of inputs: former has less inputs, especially for cases with (large $n$ and) small $r$ 
+\item Initial condition and disturbance rejection: if loop stable, effect of initial condition decays. Former additionally compensates for non-zero initial conditions and disturbances with feedback (better performance).
+%\item Simplification of training process: latter possible to learn difference if zero steady state error for unity DC gain (point of next section)
+% \end{itemize}
+\end{itemize}
+% \end{minipage}}
+
+
+% -----------------------------------
+\subsection{Learning difference}
+%\label{subsec:learningDifference}
+\begin{itemize}
+\color{grey1}
+\item Comment on being able to learn difference the possibility of having ``translational invariance'' in the model, which helps the efficiency of modeling and the training process
+\item Comment following derivation aims to establish a practical connection between the conditions which this is possible and the properties of the control loop that can be easily tested/designed
+\item State-space and $z$-transform based discussion of possibility of learning difference
+\item Comment the condition is implied from achieving unity DC gain
+
+\todo Theoretical insights of the connection + conclusion for the nonlinear case
+% \question Should the results for state-space (the left-eigenvalue form) be included here? No, unless complete.
+\end{itemize}
+
+\textbf{Key message}
+\begin{itemize}
+\item The training dataset size can be potentially optimized by learning the input-output of the inverse dynamics relative to current state. This optimization is possible for cases where the feedback control loop has unity DC gain.
+\end{itemize}
+%further simplification of using yd to approximate current yc to enable offline learning
+
+% \subsection{Possibility of offline computation}
+% \label{subsec:offlineComputation}
+% \begin{itemize}
+% \item Current state can be approximated by current desired state for possibility of offline adjustments of reference trajectory
+% \item Feasibility is discussed in the summer research paper
+
+% \noindent\question I am not sure if this should be mentioned here since it is discussed in the summer research paper and verified with experiments
+% \end{itemize}
+
+% \subsection{Nonlinear systems}
+% \label{subsec:learningDifference}
+% \begin{itemize}
+% \item Relative degree derivation
+% \item Comment on connections with linear system derivations
+
+% \todo More details
+% \end{itemize}
+
+\section{SIMULATION/EXPERIMENT (2-3)}
+% show a case when the inverse (zero dynamics for linear case, or a nonlinear scenario) is not stable
+%\label{sec:simulationExperiment}
+% \noindent Figures...
+\begin{itemize}
+\item Point 1: Zero-dynamics stability
+\begin{itemize}
+\item Simulation: Linearized system with feedback loop transfer function $\frac{k_ps+k_d}{(1+k_d)s+k_p}$ with stable pole and unstable zero. \color{blue}{Fig. 2D trajectory plot ($y$ and $y_d$ versus time) showing instability}
+\end{itemize}
+\item Point 2: Disturbance and initial error compensation with feedback of $\mathbf{x}$
+\begin{itemize}
+\item Experimental comparison 1: (1) with feedback of current state and (2) using series of $y_d$ instead. \color{blue}{Fig. Error plots in two directions showing benefits of using current state feedback.}\color{grey1}
+\item Note: try to avoid the case requiring recurrent structure (dependencies on previous $u$) (?)
+\end{itemize}
+\item Point 3: Learning difference condition and comparison
+\begin{itemize}
+\item Experimental comparison 2: (1) with steady state error and (2) without steady state error. \color{blue}{Fig. Error plots for case with constant input or arbitrary.}\color{grey1}
+\item Experimental comparison 3: (1) with difference and (2) without difference. \color{blue}{Fig. Scatter plots of training points that correspond to similar performance}\color{grey1}, or \color{blue}{Fig. Error plots showing performance comparison for same number of training points.}
+\end{itemize}
+\end{itemize}
+
+
+% \begin{itemize}
+% \color{grey1}
+% \item unstable zero dynamics (a simulation): linear (trajectory, error, etc. showing the learned function) and nonlinear (operational range change...think about generation of this case)
+% \begin{itemize}
+% \item Linear system 
+% \end{itemize}
+% \item disturbance: error plot(s) of using state feedback versus not
+% \item learning difference: trajectory plots showing performance (figure/performance measure) or profile plots, operating range coverage scatter plots in some input space (difference in number of points needed) - a 1D/2D example here (smaller dim easier to illustrate)?
+% \item ...
+% \item \todo think about what are the cases can be generated with the platforms
+% \end{itemize}
+
+%\noindent\question Unicycle as the main problem instead of quadrotor; since the point is to show generalization, (also able to show unstable case by controller selection) (?)
+
+\subsection{Simulation/Experiment setup}
+\begin{itemize}
+\color{grey1}
+\item Introduce problem, plant model \color{blue}{Fig. Experimental setup illustration}\color{grey1}
+\item Introduce study cases
+\item Roadmap and summary table (case, controller, input-output of NN)
+\end{itemize}
+
+\subsection{Derivations}
+\begin{itemize}
+\color{grey1}
+\item Derive feedback-loop dynamics
+\item Inverse dynamics stability
+\item Feature selection
+\item Condition of learning differences
+\end{itemize}
+
+\subsection{Training details}
+\begin{itemize}
+\color{grey1}
+\item Data generation
+\item Structure of training
+\end{itemize}
+
+\subsection{Discussions}
+\begin{itemize}
+\color{grey1}
+\item Zero-dynamics stability
+\item Disturbance and initial error compensation
+\item Condition for learning difference
+\item Training efficiency with difference-learning
+\end{itemize}
+
+\section{CONCLUSIONS (0.25)}
+\label{sec:conclusions}
+\begin{itemize}
+\color{grey1}
+\item Formulation summary and identification of conditions for applicability (echo problem statement)
+\item Summarize simulation results
+\end{itemize}
+
+\section*{REFERENCES (0.25-0.5)}
+
+\color{grey5}
+\section*{Reminders}
+\begin{itemize}
+% \item DNN
+% \item Check Abstract word count
+\item General guidelines for the training process [Result Section Intro]: ``Should this be mentioned here with the essential input features in Section  IV-B before you start the discussion on improving the efficiency of training in Section IV-C''
+\item Robustness of assuming $y=y_d$
+\item Rewrite the part about feedforward vs. recurrent networks
+\item Title: the word `design'
+\item unity DC gain of nonlinear systems
+% \item update simulation figure
+% \item make `dsl' plot smaller, update title of trajectory plots
+\item learning difference figure need to re-run and include longer time
+% \item define unseen trajectory
+% \item revise the subsection on ss and tf comparison
+% \item move figures to top of pages
+\end{itemize}

@@ -1,0 +1,196 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%2345678901234567890123456789012345678901234567890123456789012345678901234567890
+%        1         2         3         4         5         6         7         8
+
+%\documentclass[letterpaper, 10 pt, conference]{ieeeconf}  % Comment this line out if you need a4paper
+
+%\documentclass[a4paper, 10pt, conference]{ieeeconf}      % Use this line for a4 paper
+
+\documentclass[letterpaper,10pt,conference,twocolumn]{ieeeconf} 
+\IEEEoverridecommandlockouts
+%\documentclass[11pt,reqno]{amsart} 
+%\documentclass[conference]{IEEEtran}
+%\documentclass[11pt,onecolumn]{IEEEtran}  
+
+\usepackage{verbatim}
+\usepackage[pdftex]{graphicx}
+\usepackage{epsfig,subfigure}
+\usepackage{amsmath,amssymb,amsfonts,bm,amscd} 
+\usepackage{mathrsfs}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+%\usepackage{algorithm} 
+\usepackage{psfrag}
+\usepackage{cite}
+\usepackage{tikz}
+\usepackage[utf8]{inputenc}
+\usepackage[ruled,vlined,linesnumbered,noresetcount]{algorithm2e}
+\usepackage{pgfplots} 
+\usepackage{pgfgantt}
+\usepackage{pdflscape}
+\usepackage[short]{optidef}
+\pgfplotsset{compat=newest} 
+\pgfplotsset{plot coordinates/math parser=false}
+
+\newlength\fwidth
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+%\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{example}{Example}[section]
+\newtheorem{assumption}{Assumption}[section]
+%\theoremstyle{remark}
+\newtheorem{remark}{Remark}[section]
+\newtheorem{problem}{Problem}[section]
+%\newtheorem{algorithm}{Algorithm}[section]
+
+\newcommand{\scale}{0.8}
+\newcommand{\norm}[1]{\left\Vert#1\right\Vert}
+\newcommand{\abs}[1]{\left\vert#1\right\vert}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\Real}{\mathbb R}
+\newcommand{\Complex}{\mathbb C}
+\newcommand{\eps}{\varepsilon}
+
+% Mireille's defs
+\newcommand{\Zero}{{\mathbf{0}}}
+\newcommand{\CC}{{\mathbb C}}
+\newcommand{\NN}{{\mathbb N}}
+\newcommand{\RR}{{\mathbb R}}
+\newcommand{\TT}{{\mathbb T}}
+\newcommand{\UU}{{\mathbb U}}
+\newcommand{\ZZ}{{\mathbb Z}}
+
+\newcommand{\cA}{{\mathcal A}}
+\newcommand{\cB}{{\mathcal B}}
+\newcommand{\cC}{{\mathcal C}}
+\newcommand{\cD}{{\mathcal D}}
+\newcommand{\cE}{{\mathcal E}}
+\newcommand{\cF}{{\mathcal F}}
+\newcommand{\cG}{{\mathcal O}_{\mathcal P}}
+\newcommand{\cH}{{\mathcal H}}
+\newcommand{\cI}{{\mathcal I}}
+\newcommand{\cK}{{\mathcal K}}
+\newcommand{\cM}{{\mathcal M}}
+\newcommand{\cN}{{\mathcal N}}
+\newcommand{\cO}{{\mathcal O}}
+\newcommand{\cP}{{\mathcal P}}
+\newcommand{\cQ}{{\mathcal Q}}
+\newcommand{\cS}{{\mathcal S}}
+\newcommand{\cT}{{\mathcal T}}
+\newcommand{\cU}{{\mathcal U}}
+\newcommand{\cW}{{\mathcal W}}
+\newcommand{\cX}{{\mathcal X}}
+\newcommand{\cY}{{\mathcal Y}}
+
+\newcommand{\rI}{{\mathrm{I}}}
+\newcommand{\iI}{{\mathit{I}}}
+\newcommand{\fI}{{\mathfrak{I}}}
+\newcommand{\sI}{{\mathscr{I}}}
+\newcommand{\sfI}{{\mathsf{I}}}
+\newcommand{\eI}{{\EuScript{I}}}
+\newcommand{\Bs}{{\mathscr{B}}}
+\newcommand{\Ms}{{\mathscr{M}}}
+\newcommand{\Us}{{\mathscr{U}}}
+\newcommand{\Zs}{{\mathscr{Z}}}
+
+\newcommand{\ks}{\kappa^{\star}}
+\newcommand{\ms}{m^{\star}}
+\newcommand{\vs}{v^{\star}}
+\newcommand{\xs}{x^{\star}}
+\newcommand{\ys}{y^{\star}}
+
+
+\newcommand{\Tau}{\mathrm{T}}
+\newcommand{\la}{\langle}
+\newcommand{\ra}{\rangle}
+\newcommand{\ol}{\overline}
+\newcommand{\One}{\rm 1}
+\newcommand{\p}{\partial}
+\newcommand{\df}{\stackrel{\vartriangle}{=}}
+\renewcommand{\Im}{\textup{Im }}
+\newcommand{\Ker}{\textup{Ker }}
+\newcommand{\conv}{\textup{co}}
+\newcommand{\aff}{\textup{aff}}
+\newcommand{\lin}{\textup{lin }}
+\newcommand{\cone}{\textup{cone}}
+\newcommand{\spn}{\textup{span}}
+\newcommand{\rank}{\textup{rank}}
+\newcommand{\inter}{\textup{int }}
+\newcommand{\ri}{\textup{ri }}
+\newcommand{\To}{\longrightarrow}
+\newcommand\xqed[1]{%
+  \leavevmode\unskip\penalty9999 \hbox{}\nobreak\hfill
+  \quad\hbox{#1}}
+\newcommand\demo{\xqed{$\triangleleft$}}
+
+
+\title{\LARGE \bf
+Trajectory Generation for Multiagent Point-to-Point Transitions via Distributed Model Predictive Control
+}
+
+\author{Carlos E. Luis% <-this % stops a space
+% \thanks{*This work was not supported by any organization}% <-this % stops a space
+\thanks{The author is with the Dynamic Systems Lab at the University of Toronto Institute for Aerospace Studies (UTIAS), Canada. Email: carlos.luis@robotics.utias.utoronto.ca}%
+% \thanks{$^{2}$Bernard D. Researcheris with the Department of %Electrical Engineering, Wright State University,
+%        Dayton, OH 45435, USA
+%        {\tt\small b.d.researcher@ieee.org}}%
+}
+
+% Color definitions
+\usepackage{xcolor,colortbl}
+\definecolor{grey1}{RGB}{192,192,192}
+\definecolor{grey2}{RGB}{178,178,178}
+\definecolor{grey3}{RGB}{150,150,150}
+\definecolor{grey4}{RGB}{119,119,119}
+\definecolor{grey5}{RGB}{77,77,77}
+\definecolor{green}{RGB}{112,173,71}
+\definecolor{blue}{RGB}{68,115,196}
+\definecolor{red}{RGB}{192,0,0}
+\definecolor{yellow}{RGB}{255,192,0}
+
+% Shortcuts
+% \newcommand{\todo}{\textsf{\textbf{Todo (self-note): }}}
+\newcommand{\question}{\textsf{\textbf{Question: }}}
+\newcommand{\note}{\textsf{\textbf{Note: }}}
+
+% Comment
+\usepackage[colorinlistoftodos]{todonotes}
+
+% Bold math
+\usepackage{bm}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+\pagestyle{empty}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{abstract}
+Here goes the abstract
+\end{abstract}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\setcounter{section}{0}
+\input{sections/1_introduction.tex}
+\input{sections/2_problem_formulation.tex}
+\input{sections/3_the_algorithm.tex}
+\input{sections/4_simulation_analysis.tex}
+\input{sections/5_conclusions.tex}
+
+\bibliographystyle{IEEEtran}
+\bibliography{IEEEabrv,reference}
+
+% \clearpage
+% \color{grey1}{
+% \input{sections/0_outline.tex}
+% }
+\end{document}

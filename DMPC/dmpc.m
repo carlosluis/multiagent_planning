@@ -13,7 +13,7 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 tol = 2;
 
-N = 20; % number of vehicles
+N = 35; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
