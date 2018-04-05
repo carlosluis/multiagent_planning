@@ -122,6 +122,26 @@ I_3 & 0 & 0 & \ldots & 0 & 0 \\
 \end{equation}
 and define a vector $U_{-1} \in \RR^{3K}$ to include the term $u[-1]$ (which is a known constant at iteration $k$)
 
+ \begin{figure*}
+ 	\centering
+ 	\begin{subfloat}[]{
+ 		\includegraphics[width=0.26\textwidth]{figures/rail_a}}
+ 	\end{subfloat} \hspace{-5ex}
+ 	%
+ 	\begin{subfloat}[]{
+ 			\includegraphics[width=0.26\textwidth]{figures/rail_b}}
+ 	\end{subfloat} \hspace{-5ex}
+ 	%
+ 	\begin{subfloat}[]{
+ 			\includegraphics[width=0.26\textwidth]{figures/rail_c}}
+ 	\end{subfloat} \hspace{-5ex}
+ 	%
+ 	\begin{subfloat}[]{
+ 			\includegraphics[width=0.26\textwidth]{figures/rail_d}}
+ 	\end{subfloat} 
+ 	\caption{The caption goes here}
+ \end{figure*}
+
 \begin{equation}
 U_{-1} = \begin{bmatrix}
 u[-1] & 0 & \ldots & 0
@@ -193,6 +213,7 @@ Finally, we define $A_{coll,j} \in \RR^{1 \times 3K}$ and $b_{coll,j} \in \RR$
 A_{coll,j} = \Upsilon_j \Lambda ; \quad b_{coll,j} = \rho_j - \Upsilon_j A_0 x_i[0]
 \end{equation}
 The complete collision constraint matrices for agent $i$, $A_{coll} \in \RR^{(N-1) \times 3K}$ and $b_{coll} \in \RR^{(N-1)}$, can be obtained by stacking vertically the matrices in Eqn.~(\ref{eqn: coll}) for all the $N-1$ neighbours of agent $i$.
+
 
 \subsection{Physical Limits}
 The agents must remain within a specified volume and respecting acceleration limits, hence inequality constraints must be enforced both in the position and acceleration at each time step of the prediction horizon. Let $p_{min}, p_{max}, a_{min}, a_{max} \in \RR^3$ be the physical limits of the system, define $P_{min}, P_{max}, U_{min}, U_{max} \in \RR^{3K}$:
