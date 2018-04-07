@@ -1,13 +1,13 @@
 \section{Distributed Model Predictive Control Algorithm}
 \label{sec:problemStatement}
-The proposed DMPC algorithm for point-to-point transitions is outlined in Alg. 1. It requires as input several parameters used in Section~\ref{sec:formulation}: $h$, $K$, $N$, $Q$, $R$, $S$, $p_{min}$, $p_{max}$, $a_{min}$, $a_{max}$, $r_{min}$. Also, a simulation duration $T$, in seconds, needs to be specified. In line 1, the algorithm initializes a list of prediction horizons for all vehicles by specifying linear trajectories from initial positions to final positions. While it hasn't converged or the maximum number of iterations is not exceeded, the algorithm goes through each time step of the trajectory ($k_T = {1,...,K_T}$ with $K_T = T/h + 1$), and through every agent, solving the corresponding QP as derived in Eqn.~(\ref{eqn:convex}). If a solution is found, then it executes a state propagation by applying the first input of the optimization variable $U$, to the model in  Eqn.~(\ref{eqn: model}) (lines 6-8). If a solution was not found due to infeasibility of the problem (or exceeding the maximum number of iterations of the QP solver), then a heuristic approach was introduced to retry solving the problem.
+The proposed DMPC algorithm for point-to-point transitions is outlined in Alg. 1. It requires as input several parameters used in Section~\ref{sec:formulation}: $h$, $K$, $N$, $Q$, $R$, $S$, $p_{min}$, $p_{max}$, $a_{min}$, $a_{max}$, $r_{min}$. Also, a simulation duration $T$, in seconds, needs to be specified. In line 1, the algorithm initializes a list of prediction horizons for all vehicles by specifying linear trajectories from initial positions to final positions. The algorithm goes through each time step of the trajectory ($k_T = {1,...,K_T}$ with $K_T = T/h + 1$), and through every agent, solving the corresponding QP as derived in Eqn.~(\ref{eqn:convex}). If a solution is found, then it executes a state propagation by applying the first input of the optimization variable $U$, to the model in  Eqn.~(\ref{eqn: model}) (lines 6-8). If a solution was not found due to infeasibility of the problem or exceeding the maximum number of iterations of the QP solver, then a heuristic approach was introduced to retry solving the problem.
 
 \begin{algorithm}
 	\SetKwData{Left}{left}\SetKwData{This}{this}\SetKwData{Up}{up}
 	\SetKwFunction{Union}{Union}\SetKwFunction{FindCompress}{FindCompress}
 	\SetKwInOut{Input}{Input}\SetKwInOut{Output}{Output}
 	\Input {Initial and final positions, DMPC parameters}
-	\Output {Position, velocity and acceleration trajectories for all vehicles}
+	\Output {Position, velocity and acceleration trajectories}
 	
 	$l \leftarrow$ Initialize predictions
 	
@@ -24,7 +24,7 @@ The proposed DMPC algorithm for point-to-point transitions is outlined in Alg. 1
 				exit loop}	
 		}
 		\If{QP not solved}{
-			$Q \leftarrow$ Increase $Q$
+			$Q_{coll} \leftarrow$ Increase $Q_{coll}$
 			
 			$trials \leftarrow$ $trials +1$ 
 			
@@ -36,7 +36,7 @@ The proposed DMPC algorithm for point-to-point transitions is outlined in Alg. 1
 		converged $\leftarrow$ true;
 	}
 	\uElseIf{QP solved and not all vehicles reached goal}{
-		$Q \leftarrow$ Increase $Q$
+		$Q_{coll} \leftarrow$ Increase $Q_{coll}$
 		
 		$trials \leftarrow$ $trials +1$ 
 	}			
@@ -52,12 +52,12 @@ The proposed DMPC algorithm for point-to-point transitions is outlined in Alg. 1
 \end{algorithm}
 
 \subsection{Heuristic approach for improved feasibility}
-The heuristic approach considers two different scenarios for choosing the values of the $Q$ matrix.
+The heuristic approach considers two different scenarios for choosing the values of the $Q$ and $S$ matrices.
 \begin{enumerate}
-	\item No collisions are detected in the horizon: the agent has a more aggressive behaviour towards the goal. Uses matrix $Q_{agg}$ with high enough value to procure good trajectory tracking.
-	\item Collisions in the horizon: a more conservative behaviour is required to safely circumvent future collisions. Use matrix $Q_{coll}$ with reduced diagonal values with respect to $Q_{agg}$.
+	\item No collisions in the horizon: more aggressive behaviour towards the goal. Use matrices $Q_{agg}$ with higher value and $S_{agg}$ with a lower value (less penalty in acceleration change).
+	\item Collisions in the horizon: more conservative behaviour is required. Use matrices $Q_{coll}$ with reduced values and $S_{coll}$ with higher values.
 \end{enumerate}
 
-Although this approach helps in some cases, in others the conservativeness of the agents is counterproductive to avoid collisions. In those cases, (lines 11-14) a more aggressive behaviour during predicted collisions is enforced, and the algorithm tries to solve the problem with the new matrix $Q_{coll}$. In some other cases, the conservative behaviour can avoid collisions but is unable to reach the waypoint within the simulation duration $T$, in those cases a more aggressive behaviour is also induced to the agents and the problem is resolved (lines 17-19). 
+Sometimes the conservativeness of the agents is counterproductive to avoid collisions. In those cases, (lines 11-14) a more aggressive behaviour during predicted collisions is enforced, and the algorithm tries to solve the problem with the new matrix $Q_{coll}$. In other cases, the conservative behaviour is unable to drive the agents to the waypoint within the simulation duration $T$; in those cases a more aggressive behaviour is also induced (lines 17-19). 
 
-Convergence of Alg. 1 is declared when the trajectories for all agents respect all the constraints, and the point-to-point transition was completed within $T$ seconds. If the algorithm coverged, the last step (lines 20-21) is to interpolate the resulting trajectory to obtain a better resolution (say, time step $T_s = 0.01s$).
+Convergence of Alg. 1 is declared when the trajectories for all agents respect all the constraints, and the point-to-point transition was completed within $T$ seconds (vehicles within 5cm of the desired location). If the algorithm coverged, the last step (lines 20-21) is to interpolate the resulting trajectory to obtain a better resolution (say, time step $T_s = 0.01s$).

@@ -13,9 +13,12 @@ hold on;
 ylim([0,1.05])
 xlim([0,27])
 plot(N_vector,prob_dmpc,'b','Linewidth',2);
-xlabel('Number of Vehicles');
-ylabel('Success Probability');
-legend('dec-iSCP','DMPC');
+xlabel('Number of Vehicles','FontSize',12);
+ylabel('Success Probability','FontSize',12);
+set(gca,'FontSize',16)
+lg = legend('dec-iSCP','DMPC');
+lg.FontSize = 14;
+% export_fig('test.pdf', '-pdf','-transparent');
 
 % Computation time
 tmean_dec = nanmean(t_dec,2);
@@ -28,6 +31,9 @@ box on;
 hold on;
 xlim([0,27])
 errorbar(N_vector,tmean_dmpc,tstd_dmpc,'b','Linewidth',2);
-xlabel('Number of Vehicles');
-ylabel('Average Computation Time [s]');
+xlabel('Number of Vehicles','FontSize',14);
+ylabel('Computation Time [s]','FontSize',14);
+set(gca,'FontSize',16)
 legend('dec-iSCP','DMPC');
+lg = legend('dec-iSCP','DMPC');
+lg.FontSize = 14;

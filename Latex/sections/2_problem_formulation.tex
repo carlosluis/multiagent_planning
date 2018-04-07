@@ -4,7 +4,7 @@
 This section introduces the different components of the optimization problem to be solved. The formulation must accomplish the following criteria:
 \begin{enumerate}
 	\item Drive all agents from their starting position to their desired final positions.
-	\item Respect a minimum pair-wise distance at each time step of the trajectory (collision constraint).
+	\item Respect a minimum pair-wise distance throughout the trajectory (collision constraint).
 	\item The position and acceleration of the agents must be within specified boundaries.
 \end{enumerate}
 
@@ -30,7 +30,7 @@ where vectors $p$, $v$ and $a$ are the discretized position, velocity and accele
 \begin{equation}
 x[k+1] = Ax[k] + Bu[k] 
 \end{equation}
-where $x \in \RR^{6}$, $A \in \RR^{6\times 6} $, $B \in \RR^{6\times 3}$ and $u[k] \in \RR^{3}$. Furthermore, a closer look into each time step gives the following set of equations:
+where $x \in \RR^{6}$, $A \in \RR^{6\times 6} $, $B \in \RR^{6\times 3}$ and $u[k] \in \RR^{3}$. Expanding the model gives
 \begin{equation}
 \label{eqn:expand}
 \begin{aligned}
@@ -45,7 +45,7 @@ From Eqn.~(\ref{eqn:expand}), we can write the position sequence $P \in \RR^{3K}
 \label{eqn:model}
 P = A_0X_0 + \Lambda U
 \end{equation}
-where $X_0 \in \RR^{6K}$ is the repeated sequence of initial states, and $\Lambda \in \RR^{3K \times 3K}$ is defined as follows
+where $X_0 \in \RR^{6K}$ is the repeated sequence of initial states, and $\Lambda \in \RR^{3K \times 3K}$ is defined as
 \begin{equation}
 \Lambda = \begin{bmatrix}
 \Psi B & 0 & \ldots & 0\\
@@ -65,14 +65,14 @@ A_0 = \begin{bmatrix}
 \end{equation}
 
 \subsection{Objective function}
-The objective function has three main components: trajectory error, control effort and input variation.
+The objective function has three main components: trajectory error, control effort and input variation. A similar formulation can be found in \cite{ru2017nonlinear}.
 
 \subsubsection{Trajectory error penalty}
-this term drives the agents towards its waypoint. We want to minimize the error between the position at the final time step of the prediction horizon $p[K]$, and the desired final position $p_d$. The error term is given by
+this term drives the agents to their goals. We want to minimize the error between the position at the final time step of the prediction horizon $p[K]$, and the desired final position $p_d$. The error term is given by
 \begin{equation}
 e = \norm {p[K]-p_d}_2
 \end{equation}
-Which can be casted into a quadratic cost function of the input sequence, using Eqn.~(\ref{eqn:model}):
+which can be casted into a quadratic cost function of the input sequence, using Eqn.~(\ref{eqn:model}):
 \begin{equation}
 \label{eqn:error}
 J_e = U^\top(\Lambda^{\top} \tilde{Q} \Lambda)U - 2(P_d^\top \tilde{Q} \Lambda -  A_0X_0 \tilde{Q} \Lambda)U
@@ -93,7 +93,7 @@ we also want to minimize the total control effort throughout the trajectory, thr
 \label{eqn:input}
 J_u = U^\top \tilde{R} U 
 \end{equation}
-Similarly, $\tilde{R} \in \RR^{3K \times 3K} $ is positive semidefinite and weights the penalty on control effort, and is usually selected with the block diagonal form
+Similarly, $\tilde{R} \in \RR^{3K \times 3K} $ is positive semidefinite and weights the penalty on control effort
 \begin{equation}
 \tilde{R} = \begin{bmatrix}
 R & 0& \ldots & 0 \\
@@ -102,10 +102,10 @@ R & 0& \ldots & 0 \\
 0 & 0 & \ldots & R
 \end{bmatrix}
 \end{equation}
-with $R \in \RR^{3 \times 3}$, chosen to be a diagonal positive definite matrix.
+with $R \in \RR^{3 \times 3}$, a diagonal positive definite matrix.
 
 \subsubsection{Input variation penalty}
-this term is used to minimize variations of the acceleration (jerk), which leads to smooth trajectories in position. First we define the quadratic cost
+this term is used to minimize variations of the acceleration, leading to smooth trajectories in position. Define the quadratic cost
 \begin{equation}
 \label{eqn:delta}
 J_\delta = \sum_{k=0}^{K-1}\norm{u[k]-u[k-1]}^2
@@ -124,24 +124,25 @@ and define a vector $U_{-1} \in \RR^{3K}$ to include the term $u[-1]$ (which is 
 
  \begin{figure*}
  	\centering
- 	\begin{subfloat}[]{
+ 	
+ 	\begin{subfloat}{
  		\includegraphics[width=0.26\textwidth]{figures/rail_a}}
  	\end{subfloat} \hspace{-5ex}
  	%
- 	\begin{subfloat}[]{
+ 	\begin{subfloat}{
  			\includegraphics[width=0.26\textwidth]{figures/rail_b}}
  	\end{subfloat} \hspace{-5ex}
  	%
- 	\begin{subfloat}[]{
+ 	\begin{subfloat}{
  			\includegraphics[width=0.26\textwidth]{figures/rail_c}}
  	\end{subfloat} \hspace{-5ex}
  	%
- 	\begin{subfloat}[]{
+ 	\begin{subfloat}{
  			\includegraphics[width=0.26\textwidth]{figures/rail_d}}
  	\end{subfloat} 
- 	\caption{The caption goes here}
+ 	\caption{4-vehicle position exchange scenario in 2D, solved using DMPC. The vehicles predict future collisions and slow down to safely circumvent the congested area. The result is a successful point-to-point transition, respecting all the constraints of the problem. }
+ 	\label{fig:four}
  \end{figure*}
-
 \begin{equation}
 U_{-1} = \begin{bmatrix}
 u[-1] & 0 & \ldots & 0
@@ -162,10 +163,9 @@ S & 0& \ldots & 0 \\
 0 & 0 & \ldots & S
 \end{bmatrix}
 \end{equation}
-with $S \in \RR^{3 \times 3}$, chosen to be a diagonal positive definite matrix.
+with $S \in \RR^{3 \times 3}$, a diagonal matrix.
 
-The total cost function $\mathcal{J}$ is obtained by combining Eqns.~(\ref{eqn:error},\ref{eqn:input},\ref{eqn:var})
-
+The total cost function $\mathcal{J}$ is obtained by adding together Eqns.~(\ref{eqn:error},\ref{eqn:input},\ref{eqn:var})
 \begin{equation}
 \begin{aligned}
 \mathcal{J}(U) &=  U^\top (\Lambda^{\top} \tilde{Q} \Lambda + \tilde{R} + \Delta^\top \tilde{S} \Delta) U \\
@@ -174,18 +174,18 @@ The total cost function $\mathcal{J}$ is obtained by combining Eqns.~(\ref{eqn:e
 \end{equation}	
 
 \subsection{Collision avoidance}
-To procure collision avoidance, each agent can access information of the most up-to-date prediction horizon of every other agent ($p_j$). When agent $i$ predicts a future collision at time step $k$ of the current prediction horizon, then agent $i$ must solve the optimization problem with the following inequality constraint.
+To procure collision avoidance, each agent can access information of the most up-to-date prediction horizon of every other agent ($p_j$). When agent $i$ predicts a future collision at time step $k$ of the current prediction horizon, then it these collision constraints to its optimization problem
 \begin{equation}
 \label{eqn:coll}
 \norm{p_i[k]-p_j[k]}_2 \geq r_{min} \quad \forall i,j = 1,2,\ldots,N \quad i \neq j
 \end{equation}	
 
-The non-convex constraint in Eqn.~(\ref{eqn:coll}) must be first linearized. For that, we use a Taylor series expansion about the previous iterate $q$ of the predicted position horizon of agent $i$, $p_i^q$. Note that this is different than the linearization proposed in \cite{chen2015decoupled}, in that the linearization is done about a small portion of the total trajectory, given by the previous prediction horizon.
+The non-convex constraint in Eqn.~(\ref{eqn:coll}) is linearized using a Taylor series expansion about the previous iterate $q$ of the predicted position horizon of agent $i$, $p_i^q$.
 \begin{equation}
 \label{eqn: taylor}
 \norm{p^q_i[k] - p_j[k]}_2 + \frac{(p_i^q[k]-p_j[k])^\top}{\norm{p^q_i[k] - p_j[k]}_2}(p_i[k]-p_i^q[k]) \geq r_{min}
 \end{equation}
-Note that in Eqn.~(\ref{eqn: taylor}), the only variable is $p_i[k]$, hence we can simplify the expression
+The only variable in Eqn.~(\ref{eqn: taylor}) is $p_i[k]$, then it can can be expressed as
 \begin{equation}
 \label{eqn: bla}
 (p_i^q[k]-p_j[k])^\top p_i[k] \geq \rho_j
@@ -197,17 +197,17 @@ with
 & \hspace{1em}+ (p_i^q[k]-p_j[k])^\top p^q_i[k]
 \end{aligned}
 \end{equation}
-Now, we cast Eqn.~(\ref{eqn: bla}) into an affine inequality of the input sequence $U$:
+Now, cast Eqn.~(\ref{eqn: bla}) into an affine function of the input $U$:
 \begin{equation}
 \Upsilon_j \Lambda U_i \geq \rho_j - \Upsilon_j A_0 x_i[0]
 \end{equation}
-where $\Upsilon_j \in \RR^{1 \times 3K}$ is
+where $\Upsilon_j \in \RR^{1 \times 3K}$ is defined as
 \begin{equation}
 \Upsilon_j = \begin{bmatrix}
 0_{1\times 3k} & (p_i^q[k]-p_j[k])^\top & 0_{1 \times 3(K-1-k)}
 \end{bmatrix}
 \end{equation}
-Finally, we define $A_{coll,j} \in \RR^{1 \times 3K}$ and $b_{coll,j} \in \RR$
+Finally, introduce $A_{coll,j} \in \RR^{1 \times 3K}$ and $b_{coll,j} \in \RR$
 \begin{equation}
 \label{eqn: coll}
 A_{coll,j} = \Upsilon_j \Lambda ; \quad b_{coll,j} = \rho_j - \Upsilon_j A_0 x_i[0]
@@ -216,7 +216,7 @@ The complete collision constraint matrices for agent $i$, $A_{coll} \in \RR^{(N-
 
 
 \subsection{Physical Limits}
-The agents must remain within a specified volume and respecting acceleration limits, hence inequality constraints must be enforced both in the position and acceleration at each time step of the prediction horizon. Let $p_{min}, p_{max}, a_{min}, a_{max} \in \RR^3$ be the physical limits of the system, define $P_{min}, P_{max}, U_{min}, U_{max} \in \RR^{3K}$:
+The agents must remain within a specified volume and respecting acceleration limits, hence inequality constraints must be enforced both in the position and acceleration at each time step of the prediction horizon. Let $p_{min}, p_{max}, a_{min}, a_{max} \in \RR^3$ be the physical limits of the system. Define $P_{min}, P_{max}, U_{min}, U_{max} \in \RR^{3K}$:
 \begin{equation}
 \begin{aligned}
 P_{min} = [p_{min} \ldots p_{min}]^\top; \quad  P_{max} = [p_{max} \ldots p_{max}]^\top \\
@@ -238,6 +238,6 @@ The complete inequality constraints for agent $i$ are obtained by stacking verti
 	{\label{eqn:convex}}{}
 	\addConstraint{A_{in}U}{\leq b_{in}}
 \end{mini}
-with $A_{in} \in \RR^{(6K+N-1)\times 3K}$ and $b_{in} \in \RR^{6K+N-1}$. The formulation in Eqn.~(\ref{eqn:convex}) results in a Quadratic Programming problem, that can be computed efficiently by QP solvers. 
+If collisions are predicted, then the problem would have $6K+N-1$ inequality constraints, otherwise the number is reduced to $6K$. The formulation in Eqn.~(\ref{eqn:convex}) results in a Quadratic Programming problem that can be computed efficiently. 
 	
 	

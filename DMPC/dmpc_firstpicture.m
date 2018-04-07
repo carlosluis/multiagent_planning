@@ -13,7 +13,7 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 tol = 2;
 
-N = 25; % number of vehicles
+N = 15; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -153,7 +153,7 @@ for i = 1:N
     xticks([-2.5  2.5]);
     yticks([-2.5  2.5]);
     zticks([0  2.5]);
-    h_plot(i) = plot3(p(1,:,i), p(2,:,i), p(3,:,i), 'LineWidth',1.5,...
+    h_plot(i) = plot3(p(1,:,i), p(2,:,i), p(3,:,i), 'LineWidth',1.3,...
                 'Color',colors(i,:));
     h_label{i} = ['Vehicle #' num2str(i)];
     hold on;
@@ -165,10 +165,11 @@ for i = 1:N
     xlabel('x [m]')
     ylabel('y [m]');
     zlabel('z [m]')
+    set(gca,'FontSize',14)
     plot3(po(1,1,i), po(1,2,i), po(1,3,i),'^',...
-                  'LineWidth',1,'Color',colors(i,:));
-%     plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'x',...
-%                   'LineWidth',5,'Color',colors(i,:)); 
+                  'LineWidth',1.5,'Color',colors(i,:),'markers',12);
+    plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'o',...
+                  'LineWidth',1.5,'Color',colors(i,:),'markers',12); 
 end 
 %%
     figure(2)

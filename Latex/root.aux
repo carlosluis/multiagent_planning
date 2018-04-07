@@ -1,4 +1,6 @@
 \relax 
+\citation{vallejo2009multi}
+\citation{carbone2018swarm}
 \citation{guizzo2008three}
 \citation{schouwenaars2001mixed,augugliaro2012generation}
 \citation{turpin2012decentralized}
@@ -6,17 +8,22 @@
 \citation{boyd2008sequential}
 \citation{augugliaro2012generation}
 \citation{chen2015decoupled}
+\citation{preiss}
+\citation{tang2018complete}
+\citation{wang2017safety}
+\citation{bhattacharya2011distributed}
 \citation{camponogara2002distributed}
-\citation{dai2017distributed}
-\citation{van2017distributed,turpin2012decentralized}
+\citation{dai2017distributed,wang2014synthesis}
+\citation{van2017distributed,sayyaadi2017decentralized}
 \@writefile{toc}{\contentsline {section}{\numberline {I}Introduction}{1}}
 \newlabel{sec:introduction}{{I}{1}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces A 25-vehicle point-to-point transition solved using our DMPC algorithm. The initial and final positions were chosen randomly within a convex volume of $5 \times 5 \times 2$ m. The agents were required to maintain a minimum distance of 0.75m of each other throughout the whole trajectory. Even in this highly cluttered dynamic environment, the proposed algorithm is capable of quickly finding a collision-free trajectory for all agents.}}{1}}
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces A 15-vehicle point-to-point transition solved using our DMPC algorithm. The initial and final positions (denoted with triangles and circles, respectively) were chosen randomly within a convex volume of $5 \times 5 \times 2$ m. Triangles denote the initial positions. The agents were required to maintain a minimum distance of 0.75m of each other throughout the whole trajectory. Even in this highly cluttered dynamic environment, the proposed algorithm is capable of quickly finding a collision-free trajectory for all agents.}}{1}}
 \newlabel{fig:30_random}{{1}{1}}
 \@writefile{toc}{\contentsline {section}{\numberline {II}Problem Statement}{1}}
 \newlabel{sec:formulation}{{II}{1}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {II-A}The model}{1}}
-\newlabel{eqn: model}{{1}{1}}
+\citation{ru2017nonlinear}
+\@writefile{toc}{\contentsline {subsection}{\numberline {II-A}The model}{2}}
+\newlabel{eqn: model}{{1}{2}}
 \newlabel{eqn:expand}{{3}{2}}
 \newlabel{eqn:model}{{4}{2}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {II-B}Objective function}{2}}
@@ -27,13 +34,9 @@
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {II-B.3}Input variation penalty}{2}}
 \newlabel{eqn:delta}{{12}{2}}
 \newlabel{eqn:var}{{15}{2}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {II-C}Collision avoidance}{2}}
-\citation{chen2015decoupled}
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces The caption goes here}}{3}}
-\@writefile{lof}{\contentsline {subfigure}{\numberline{(a)}{\ignorespaces {}}}{3}}
-\@writefile{lof}{\contentsline {subfigure}{\numberline{(b)}{\ignorespaces {}}}{3}}
-\@writefile{lof}{\contentsline {subfigure}{\numberline{(c)}{\ignorespaces {}}}{3}}
-\@writefile{lof}{\contentsline {subfigure}{\numberline{(d)}{\ignorespaces {}}}{3}}
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces 4-vehicle position exchange scenario in 2D, solved using DMPC. The vehicles predict future collisions and slow down to safely circumvent the congested area. The result is a successful point-to-point transition, respecting all the constraints of the problem. }}{3}}
+\newlabel{fig:four}{{2}{3}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {II-C}Collision avoidance}{3}}
 \newlabel{eqn:coll}{{18}{3}}
 \newlabel{eqn: taylor}{{19}{3}}
 \newlabel{eqn: bla}{{20}{3}}
@@ -43,24 +46,38 @@
 \newlabel{eqn:convex}{{27}{3}}
 \@writefile{toc}{\contentsline {section}{\numberline {III}Distributed Model Predictive Control Algorithm}{3}}
 \newlabel{sec:problemStatement}{{III}{3}}
-\bibstyle{IEEEtran}
-\bibdata{IEEEabrv,reference}
-\bibcite{guizzo2008three}{1}
-\bibcite{schouwenaars2001mixed}{2}
-\bibcite{augugliaro2012generation}{3}
-\bibcite{turpin2012decentralized}{4}
-\bibcite{boyd2008sequential}{5}
-\bibcite{chen2015decoupled}{6}
-\bibcite{camponogara2002distributed}{7}
-\bibcite{dai2017distributed}{8}
-\bibcite{van2017distributed}{9}
+\citation{chen2015decoupled}
+\citation{chen2015decoupled}
 \@writefile{loa}{\contentsline {algocf}{\numberline {1}{\ignorespaces DMPC for Point-to-Point Transitions}}{4}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {III-A}Heuristic approach for improved feasibility}{4}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces bla bla}}{4}}
-\newlabel{fig:comp_time}{{3}{4}}
 \@writefile{toc}{\contentsline {section}{\numberline {IV}Main Results}{4}}
 \newlabel{sec:results}{{IV}{4}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {IV-A}Four corner exchange}{4}}
-\@writefile{toc}{\contentsline {section}{\numberline {V}Conclusions}{4}}
-\newlabel{sec:conclusions}{{V}{4}}
-\@writefile{toc}{\contentsline {section}{References}{4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {IV-A}Four corner position exchange scenario}{4}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {IV-B}DMPC vs dec-iSCP}{4}}
+\bibstyle{IEEEtran}
+\bibdata{IEEEabrv,reference}
+\bibcite{vallejo2009multi}{1}
+\bibcite{carbone2018swarm}{2}
+\bibcite{guizzo2008three}{3}
+\bibcite{schouwenaars2001mixed}{4}
+\bibcite{augugliaro2012generation}{5}
+\bibcite{turpin2012decentralized}{6}
+\bibcite{boyd2008sequential}{7}
+\bibcite{chen2015decoupled}{8}
+\bibcite{preiss}{9}
+\bibcite{tang2018complete}{10}
+\bibcite{wang2017safety}{11}
+\bibcite{bhattacharya2011distributed}{12}
+\bibcite{camponogara2002distributed}{13}
+\bibcite{dai2017distributed}{14}
+\bibcite{wang2014synthesis}{15}
+\bibcite{van2017distributed}{16}
+\bibcite{sayyaadi2017decentralized}{17}
+\bibcite{ru2017nonlinear}{18}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Probability of success comparison on randomly generated scenarios in a $5 \times 5 \times 2$ workspace. For each one of the number of vehicles cases considered, 50 random initial and final points were generated within the feasible set of the optimization problem.}}{5}}
+\newlabel{fig:comp_prob}{{3}{5}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Average computation time for the same randomly generated trials as in Fig.\nobreakspace  {}(3\hbox {}). DMPC scales better than dec-iSCP, }}{5}}
+\newlabel{fig:comp_time}{{4}{5}}
+\@writefile{toc}{\contentsline {section}{\numberline {V}Conclusions}{5}}
+\newlabel{sec:conclusions}{{V}{5}}
+\@writefile{toc}{\contentsline {section}{References}{5}}
