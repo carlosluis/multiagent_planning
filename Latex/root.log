@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.12.6)  7 APR 2018 13:26
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (TeX Live 2015/Debian) (preloaded format=pdflatex 2017.12.6)  10 APR 2018 17:48
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1675,17 +1675,13 @@ Package pdftex.def Info: figures/rail_d-eps-converted-to.pdf used on input line
  141.
 (pdftex.def)             Requested size: 131.52861pt x 98.64717pt.
  [2]
-Underfull \hbox (badness 1803) in paragraph at lines 219--220
+Underfull \hbox (badness 1803) in paragraph at lines 218--219
 []\OT1/ptm/m/n/10 The agents must re-main within a spec-i-fied vol-ume
  []
 
-
-Underfull \vbox (badness 6141) has occurred while \output is active []
-
-)
-(./sections/3_the_algorithm.tex [3 <./figures/rail_a-eps-converted-to.pdf> <./f
-igures/rail_b-eps-converted-to.pdf> <./figures/rail_c-eps-converted-to.pdf> <./
-figures/rail_d-eps-converted-to.pdf>]) (./sections/4_simulation_analysis.tex
+) (./sections/3_the_algorithm.tex [3 <./figures/rail_a-eps-converted-to.pdf> <.
+/figures/rail_b-eps-converted-to.pdf> <./figures/rail_c-eps-converted-to.pdf> <
+./figures/rail_d-eps-converted-to.pdf>]) (./sections/4_simulation_analysis.tex
 <figures/comp_prob.pdf, id=59, 377.41pt x 273.02pt>
 File: figures/comp_prob.pdf Graphic file (type pdf)
 
@@ -1721,7 +1717,7 @@ Before submitting the final camera ready copy, remember to:
 Here is how much of TeX's memory you used:
  35221 strings out of 493029
  824255 string characters out of 6136234
- 953171 words of memory out of 5000000
+ 954171 words of memory out of 5000000
  38132 multiletter control sequences out of 15000+600000
  47122 words of font info for 106 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
@@ -1741,7 +1737,7 @@ exlive/texmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texlive/texmf-di
 st/fonts/type1/urw/times/utmbi8a.pfb></usr/share/texlive/texmf-dist/fonts/type1
 /urw/times/utmr8a.pfb></usr/share/texlive/texmf-dist/fonts/type1/urw/times/utmr
 i8a.pfb>
-Output written on root.pdf (5 pages, 428251 bytes).
+Output written on root.pdf (5 pages, 428391 bytes).
 PDF statistics:
  122 PDF objects out of 1000 (max. 8388607)
  86 compressed objects within 1 object stream
