@@ -4,7 +4,7 @@ close all
 warning('off','all')
 
 % Time settings and variables
-T = 20; % Trajectory final time
+T = 15; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -13,7 +13,7 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 tol = 2;
 
-N = 100; % number of vehicles
+N = 2; % number of vehicles
 
 % Workspace boundaries
 pmin = [-5,-5,0.2];
@@ -23,7 +23,21 @@ pmax = [5,5,5];
 rmin = 0.5;
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin);
+% [po,pf] = randomTest(N,pmin,pmax,rmin);
+
+% Initial positions
+po1 = [2.001,2,0.76];
+po2 = [-2,-2,1.5];
+po3 = [-2,2,1.5];
+po4 = [2,-2,1.5];
+po = cat(3,po1,po2);
+
+% Final positions
+pf1 = [-2,-2,0.76];
+pf2 = [2,2,1.5];
+pf3 = [2,-2,1.5];
+pf4 = [-2,2,1.5];
+pf  = cat(3, pf1, pf2);
 
 %% Empty list of obstacles
 l = [];
@@ -73,7 +87,7 @@ while tries <= 10 && ~at_goal
                 pok = pk(:,k-1,n);
                 vok = vk(:,k-1,n);
                 aok = ak(:,k-1,n);
-                [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q,S); 
+                [pi,vi,ai,success] = solveEllipDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q,S); 
             end
             if ~success %problem was infeasible, exit and retry
                 break;
@@ -260,19 +274,19 @@ for i = 1:N
    
 end
 
-% figure(6)
-% for i = 1:N
-%     for j = 1:N
-%         if(i~=j)
-%             differ = p(:,:,i) - p(:,:,j);
-%             dist = sqrt(sum(differ.^2,1));
-%             plot(t, dist, 'LineWidth',1.5);
-%             grid on;
-%             hold on;
-%             xlabel('t [s]')
-%             ylabel('Inter-agent distance [m]');
-%         end
-%     end
-% end
-% plot(t,rmin*ones(length(t),1),'--r','LineWidth',1.5);
-% legend(h_plot,h_label);
+figure(6)
+for i = 1:N
+    for j = 1:N
+        if(i~=j)
+            differ = p(:,:,i) - p(:,:,j);
+            dist = sqrt(sum(differ.^2,1));
+            plot(t, dist, 'LineWidth',1.5);
+            grid on;
+            hold on;
+            xlabel('t [s]')
+            ylabel('Inter-agent distance [m]');
+        end
+    end
+end
+plot(t,rmin*ones(length(t),1),'--r','LineWidth',1.5);
+legend(h_plot,h_label);
