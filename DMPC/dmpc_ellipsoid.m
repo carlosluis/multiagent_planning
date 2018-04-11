@@ -13,14 +13,20 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 tol = 2;
 
-N = 80; % number of vehicles
+N = 35; % number of vehicles
 
 % Workspace boundaries
-pmin = [-5,-5,0.2];
-pmax = [5,5,5];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
 % Minimum distance between vehicles in m
 rmin = 0.75;
+
+% Matrices for ellipsoid constraint
+c = 2;
+E = diag([1,1,c]);
+E1 = E^(-1);
+E2 = E^(-2);
 
 % Initial positions
 [po,pf] = randomTest(N,pmin,pmax,rmin);
@@ -73,7 +79,7 @@ while tries <= 10 && ~at_goal
                 pok = pk(:,k-1,n);
                 vok = vk(:,k-1,n);
                 aok = ak(:,k-1,n);
-                [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q,S); 
+                [pi,vi,ai,success] = solveEllipDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q,S,E1,E2); 
             end
             if ~success %problem was infeasible, exit and retry
                 break;
@@ -264,9 +270,9 @@ figure(6)
 for i = 1:N
     for j = 1:N
         if(i~=j)
-            differ = p(:,:,i) - p(:,:,j);
+            differ = E1*(pk(:,:,i) - pk(:,:,j));
             dist = sqrt(sum(differ.^2,1));
-            plot(t, dist, 'LineWidth',1.5);
+            plot(tk, dist, 'LineWidth',1.5);
             grid on;
             hold on;
             xlabel('t [s]')
@@ -274,5 +280,5 @@ for i = 1:N
         end
     end
 end
-plot(t,rmin*ones(length(t),1),'--r','LineWidth',1.5);
+plot(tk,0.35*ones(length(tk),1),'--r','LineWidth',1.5);
 % legend(h_plot,h_label);

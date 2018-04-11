@@ -1,4 +1,4 @@
-function [Ain_total, bin_total] = CollConstrEllipDMPC(p,po,vo,n, k, l, Ain,E,A_initp)
+function [Ain_total, bin_total] = CollConstrEllipDMPC(p,po,vo,n, k, l, Ain,A_initp,E1,E2)
 bin = [];
 diff_mat = [];
 Ain_total = [];
@@ -9,11 +9,11 @@ if (~isempty(l))
             pj = l(:,:,i); %position vector of the i-th neighbour over k iterations
             K = size(pj,2);
 
-            dist = norm(E^(-1)*(p-pj(:,k))); %distance at time step k
-            diff = (E^(-2)*(p-pj(:,k)))'; % Transpose of the difference
+            dist = norm(E1*(p-pj(:,k))); %distance at time step k
+            diff = (E2*(p-pj(:,k)))'; % Transpose of the difference
 
             % Right side of inequality constraint (bin)
-            r = dist*(0.5 - dist + diff*p/dist) - diff*A_initp(3*(k-1)+1:3*k,:)*[po';vo'];
+            r = dist*(0.35 - dist + diff*p/dist) - diff*A_initp(3*(k-1)+1:3*k,:)*[po';vo'];
             bin = [bin; r];
 
             % Construct diagonal matrix with vector difference

@@ -1,4 +1,4 @@
-function [p,v,a,success] = solveEllipDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q1,S1)
+function [p,v,a,success] = solveEllipDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q1,S1,E1,E2)
 
 success = 1;
 k_hor = size(l,2);
@@ -6,8 +6,6 @@ val = tol + 2;
 ub = alim*ones(3*K,1);
 lb = -ub; 
 i = 1;
-c = 1.5;
-E = diag([1,1,c]);
 addConstr = [];
 prev_p = l(:,:,n);
 Aeq = [];
@@ -21,14 +19,14 @@ while (i <= k_hor && val > tol)
     Ain_total = [];
     bin_total = [];
     for k = 1: k_hor
-        violation = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E);
+        violation = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1);
         if (ismember(k,addConstr))
-            [Ainr, binr] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,A,E,A_initp);
+            [Ainr, binr] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,A,A_initp,E1,E2);
             Ain_total = [Ain_total; Ainr];
             bin_total = [bin_total; binr];
             
         elseif (newConstrCount==0 && violation)
-            [Ainr, binr] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,A,E,A_initp);
+            [Ainr, binr] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,A,A_initp,E1,E2);
             Ain_total = [Ain_total; Ainr];
             bin_total = [bin_total; binr];  
             addConstr = [addConstr k];
