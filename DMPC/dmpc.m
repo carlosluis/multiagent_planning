@@ -4,7 +4,7 @@ close all
 warning('off','all')
 
 % Time settings and variables
-T = 15; % Trajectory final time
+T = 20; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -13,14 +13,14 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 tol = 2;
 
-N = 35; % number of vehicles
+N = 100; % number of vehicles
 
 % Workspace boundaries
-pmin = [-2.5,-2.5,0.2];
-pmax = [2.5,2.5,2.2];
+pmin = [-5,-5,0.2];
+pmax = [5,5,5];
 
 % Minimum distance between vehicles in m
-rmin = 0.75;
+rmin = 0.5;
 
 % Initial positions
 [po,pf] = randomTest(N,pmin,pmax,rmin);
@@ -86,11 +86,15 @@ while tries <= 10 && ~at_goal
         if ~success %Heuristic: increase Q, make init more slowly, 
             tries = tries + 1;
             epsilon = epsilon + 0;
-            Q = Q+50;
+            Q = Q+100;
+            fprintf("Failed - problem unfeasible @ k = %i, n = %i: trial #%i\n",k,n,tries-1)
             break;
         end
         l = new_l;
         pred(:,:,:,k) = l;
+    end
+    if ~success
+        continue
     end
     pass = ReachedGoal(pk,pf,K,error_tol); %check if agents reached goal
     if success && pass
@@ -99,6 +103,7 @@ while tries <= 10 && ~at_goal
         failed_goal = failed_goal + 1;
         tries = tries + 1;
         Q = Q+100;
+        fprintf("Failed - Did not reach goal: trial #%i\n",tries-1)
     end
 end
 passed = success && at_goal %DMPC was successful or not      
@@ -127,9 +132,9 @@ while get(gcf,'currentchar')==' '
             addpoints(h_line(i),pred(1,:,i,k),pred(2,:,i,k),pred(3,:,i,k));     
             hold on;
             grid on;
-            xlim([-3,3])
-            ylim([-3,3])
-            zlim([0,3.5])
+            xlim([pmin(1),pmax(1)])
+            ylim([pmin(2),pmax(2)])
+            zlim([0,pmax(3)])
             plot3(pk(1,k,i),pk(2,k,i),pk(3,k,i),'o',...
                 'LineWidth',2,'Color',colors(i,:));
             plot3(po(1,1,i), po(1,2,i), po(1,3,i),'^',...
@@ -154,9 +159,9 @@ for i = 1:N
     h_label{i} = ['Vehicle #' num2str(i)];
     hold on;
     grid on;
-    xlim([-3,3])
-    ylim([-3,3])
-    zlim([0,3.5])
+    xlim([pmin(1),pmax(1)])
+    ylim([pmin(2),pmax(2)])
+    zlim([0,pmax(3)])
     xlabel('x[m]')
     ylabel('y[m]');
     zlabel('z[m]')
@@ -255,19 +260,19 @@ for i = 1:N
    
 end
 
-figure(6)
-for i = 1:N
-    for j = 1:N
-        if(i~=j)
-            differ = p(:,:,i) - p(:,:,j);
-            dist = sqrt(sum(differ.^2,1));
-            plot(t, dist, 'LineWidth',1.5);
-            grid on;
-            hold on;
-            xlabel('t [s]')
-            ylabel('Inter-agent distance [m]');
-        end
-    end
-end
-plot(t,rmin*ones(length(t),1),'--r','LineWidth',1.5);
-legend(h_plot,h_label);
+% figure(6)
+% for i = 1:N
+%     for j = 1:N
+%         if(i~=j)
+%             differ = p(:,:,i) - p(:,:,j);
+%             dist = sqrt(sum(differ.^2,1));
+%             plot(t, dist, 'LineWidth',1.5);
+%             grid on;
+%             hold on;
+%             xlabel('t [s]')
+%             ylabel('Inter-agent distance [m]');
+%         end
+%     end
+% end
+% plot(t,rmin*ones(length(t),1),'--r','LineWidth',1.5);
+% legend(h_plot,h_label);
