@@ -13,17 +13,17 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 
 % Matrices for ellipsoid constraint
-rmin = 0.35; % X-Y protection radius for collisions
+rmin = 0.5; % X-Y protection radius for collisions
 c = 1.5;
 E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-4);
 
-N = 2; % number of vehicles
+N = 10; % number of vehicles
 
 % Workspace boundaries
-pmin = [-2.5,-2.5,1.5];
-pmax = [2.5,2.5,1.5];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
 % Minimum distance between vehicles in m
 rmin_init = 0.75;
@@ -32,18 +32,31 @@ rmin_init = 0.75;
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % Initial positions
-po1 = [2,2,1.5];
-po2 = [-2,-2,1.5];
-po3 = [-2,2.01,1.5];
-po4 = [2,-2,1.5];
-po = cat(3,po1,po2);
+po1 = [-1,-1,1.5];
+po2 = [0,-1,1.5];
+po3 = [1,-1,1.5];
+po4 = [2, -1,1.5];
+po5 = [-1,1,1.5];
+po6 = [2,0,1.5];
+po7 = [-1,0,1.5];
+po8 = [2,1,1.5];
+po9 = [-1,2,1.5];
+po10 = [2,2,1.5];
+
+po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9,po10);
 
 % Final positions
-pf1 = [-2,-2,1.5];
-pf2 = [2,2,1.5];
-pf3 = [2,-2,1.5];
-pf4 = [-2,2,1.5];
-pf  = cat(3,pf1,pf2);
+pf1 = [2,2,1.5];
+pf2 = [1,2,1.5];
+pf3 = [0,2,1.5];
+pf4 = [-1,2,1.5];
+pf5 = [2,1,1.5];
+pf6 = [-1,0,1.5];
+pf7 = [2,0,1.5];
+pf8 = [-1,1,1.5];
+pf9 = [0,-1,1.5];
+pf10 = [1,-1,1.5];
+pf  = cat(3,pf1,pf2,pf3,pf4,pf5,pf6,pf7,pf8,pf9,pf10);
 
 %% Empty list of obstacles
 l = [];
@@ -141,7 +154,7 @@ set(gcf, 'Position', get(0, 'Screensize'));
 set(gcf,'currentchar',' ')
 while get(gcf,'currentchar')==' '
     for i = 1:N
-    h_line(i) = animatedline('LineWidth',2,'Color',[0,0.8,0],'LineStyle','--');
+    h_line(i) = animatedline('LineWidth',2,'Color',colors(i,:),'LineStyle',':');
     end
     for k = 1:K
         for i = 1:N
@@ -281,9 +294,9 @@ figure(6)
 for i = 1:N
     for j = 1:N
         if(i~=j)
-            differ = E1*(p(:,:,i) - p(:,:,j));
+            differ = E1*(pk(:,:,i) - pk(:,:,j));
             dist = sqrt(sum(differ.^2,1));
-            plot(t, dist, 'LineWidth',1.5);
+            plot(tk, dist, 'LineWidth',1.5);
             grid on;
             hold on;
             xlabel('t [s]')
@@ -291,5 +304,5 @@ for i = 1:N
         end
     end
 end
-plot(t,0.35*ones(length(t),1),'--r','LineWidth',1.5);
+plot(tk,0.35*ones(length(tk),1),'--r','LineWidth',1.5);
 % legend(h_plot,h_label);

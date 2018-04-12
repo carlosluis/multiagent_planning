@@ -13,14 +13,14 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 tol = 2;
 
-N = 80; % number of vehicles
+N = 100; % number of vehicles
+
+% Minimum distance between vehicles in m
+rmin = 1;
 
 % Workspace boundaries
 pmin = [-5,-5,0.2];
 pmax = [5,5,5];
-
-% Minimum distance between vehicles in m
-rmin = 0.75;
 
 % Initial positions
 [po,pf] = randomTest(N,pmin,pmax,rmin);
@@ -32,6 +32,9 @@ success = 0; %check if QP was feasible
 at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
 error_tol = 0.05; % 5cm destination tolerance
 epsilon = 0; % heuristic variable to initialize DMPC more conservative
+
+% Minimum distance between vehicles in m
+rmin = 0.75;
 
 % Penalty matrices when there're predicted collisions
 Q = 10;
@@ -67,7 +70,7 @@ while tries <= 10 && ~at_goal
             if k==1
                 poi = po(:,:,n);
                 pfi = pf(:,:,n);
-                [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K,epsilon);
+                [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
                 success = 1;
             else
                 pok = pk(:,k-1,n);

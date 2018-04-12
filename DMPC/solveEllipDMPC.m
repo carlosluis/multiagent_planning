@@ -22,15 +22,20 @@ for k = 1: k_hor
 end
 
 % Setup the QP
-if(isempty(Ain_total)) % Case of no collisions
+if(isempty(Ain_total) && norm(po-pf) > 1) % Case of no collisions far from sp
     Q = 1000*[zeros(3*(K-1),3*K);
             zeros(3,3*(K-1)) eye(3)];
     R = 1*eye(3*K);
     S = 10*eye(3*K);
-else
+elseif (isempty(Ain_total) && norm(po-pf) < 1) % no collisions close to sp
+    Q = 1000*[zeros(3*(K-1),3*K);
+            zeros(3,3*(K-1)) eye(3)];
+    R = 1*eye(3*K);
+    S = 10*eye(3*K); 
+else     % collisions
     Q = Q1*[zeros(3*(K-1),3*K);
             zeros(3,3*(K-1)) eye(3)];
-    R = 10*eye(3*K);
+    R = 1*eye(3*K);
     S = S1*eye(3*K);
 end
 
