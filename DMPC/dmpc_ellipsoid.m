@@ -11,33 +11,45 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
-tol = 2;
-
-N = 35; % number of vehicles
-
-% Workspace boundaries
-pmin = [-2.5,-2.5,0.2];
-pmax = [2.5,2.5,2.2];
-
-% Minimum distance between vehicles in m
-rmin = 0.75;
 
 % Matrices for ellipsoid constraint
-c = 2;
+rmin = 0.35; % X-Y protection radius for collisions
+c = 1.5;
 E = diag([1,1,c]);
 E1 = E^(-1);
-E2 = E^(-2);
+E2 = E^(-4);
+
+N = 2; % number of vehicles
+
+% Workspace boundaries
+pmin = [-2.5,-2.5,1.5];
+pmax = [2.5,2.5,1.5];
+
+% Minimum distance between vehicles in m
+rmin_init = 0.75;
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin);
+% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+
+% Initial positions
+po1 = [2,2,1.5];
+po2 = [-2,-2,1.5];
+po3 = [-2,2.01,1.5];
+po4 = [2,-2,1.5];
+po = cat(3,po1,po2);
+
+% Final positions
+pf1 = [-2,-2,1.5];
+pf2 = [2,2,1.5];
+pf3 = [2,-2,1.5];
+pf4 = [-2,2,1.5];
+pf  = cat(3,pf1,pf2);
 
 %% Empty list of obstacles
 l = [];
-tol = 2;
 success = 0; %check if QP was feasible
 at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
 error_tol = 0.05; % 5cm destination tolerance
-epsilon = 0; % heuristic variable to initialize DMPC more conservative
 
 % Penalty matrices when there're predicted collisions
 Q = 10;
@@ -66,20 +78,20 @@ end
 
 failed_goal = 0; %how many times the algorithm failed to reach goal
 tries = 1; % how many iterations it took the DMPC to find a solution
-tic %measure the time it gets to solve the optimization problem
+tic % measure the time it gets to solve the optimization problem
 while tries <= 10 && ~at_goal
     for k = 1:K
         for n = 1:N
             if k==1
                 poi = po(:,:,n);
                 pfi = pf(:,:,n);
-                [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K,epsilon);
+                [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
                 success = 1;
             else
                 pok = pk(:,k-1,n);
                 vok = vk(:,k-1,n);
                 aok = ak(:,k-1,n);
-                [pi,vi,ai,success] = solveEllipDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q,S,E1,E2); 
+                [pi,vi,ai,success] = solveEllipDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2); 
             end
             if ~success %problem was infeasible, exit and retry
                 break;
@@ -91,7 +103,6 @@ while tries <= 10 && ~at_goal
         end
         if ~success %Heuristic: increase Q, make init more slowly, 
             tries = tries + 1;
-            epsilon = epsilon + 0;
             Q = Q+100;
             fprintf("Failed - problem unfeasible @ k = %i, n = %i: trial #%i\n",k,n,tries-1)
             break;
@@ -270,9 +281,9 @@ figure(6)
 for i = 1:N
     for j = 1:N
         if(i~=j)
-            differ = E1*(pk(:,:,i) - pk(:,:,j));
+            differ = E1*(p(:,:,i) - p(:,:,j));
             dist = sqrt(sum(differ.^2,1));
-            plot(tk, dist, 'LineWidth',1.5);
+            plot(t, dist, 'LineWidth',1.5);
             grid on;
             hold on;
             xlabel('t [s]')
@@ -280,5 +291,5 @@ for i = 1:N
         end
     end
 end
-plot(tk,0.35*ones(length(tk),1),'--r','LineWidth',1.5);
+plot(t,0.35*ones(length(t),1),'--r','LineWidth',1.5);
 % legend(h_plot,h_label);

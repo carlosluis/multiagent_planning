@@ -1,6 +1,6 @@
-function [p,v,a] = initDMPC(po,pf,h,k_hor,K,epsilon)
+function [p,v,a] = initDMPC(po,pf,h,k_hor,K)
 diff = pf-po;
-K = K + epsilon;
+K = K;
 t = 0:h:(K-1)*h;
 
 for i = 1:length(t)
