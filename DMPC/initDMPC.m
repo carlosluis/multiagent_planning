@@ -4,7 +4,7 @@ K = K;
 t = 0:h:(K-1)*h;
 
 for i = 1:length(t)
-    p(:,i) = po + t(i)*diff/((K-1)*h);
+    p(:,i) = po + 1*t(i)*diff/((K-1)*h);
 end
 
 p = p(:,1:k_hor);
