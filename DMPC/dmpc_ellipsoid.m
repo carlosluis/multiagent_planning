@@ -37,7 +37,7 @@ rmin_init = 0.75;
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % Initial positions
-po1 = [2.01,2,1.5];
+po1 = [2,2,1.5];
 po2 = [-2,-2,1.5];
 po3 = [-2,2,1.5];
 po4 = [2,-2,1.5];
@@ -84,7 +84,7 @@ end
 failed_goal = 0; %how many times the algorithm failed to reach goal
 tries = 1; % how many iterations it took the DMPC to find a solution
 tic % measure the time it gets to solve the optimization problem
-while tries <= 1 && ~at_goal
+while tries <= 10 && ~at_goal
     pred = [];
     for k = 1:K
         for n = 1:N
