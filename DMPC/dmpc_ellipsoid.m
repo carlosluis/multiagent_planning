@@ -22,11 +22,11 @@ E2 = E^(-order);
 
 N = 30; % number of vehicles
 
-% % Workspace boundaries
+% Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
 pmax = [2.5,2.5,2.2];
 
-% Workspace boundaries
+% % Workspace boundaries
 % pmin = [-5,-5,0.2];
 % pmax = [5,5,5];
 
@@ -84,7 +84,7 @@ end
 failed_goal = 0; %how many times the algorithm failed to reach goal
 tries = 1; % how many iterations it took the DMPC to find a solution
 tic % measure the time it gets to solve the optimization problem
-while tries <= 1 && ~at_goal
+while tries <= 10 && ~at_goal
     pred = [];
     for k = 1:K
         for n = 1:N
@@ -146,6 +146,7 @@ colors = distinguishable_colors(N);
 set(gcf, 'Position', get(0, 'Screensize'));
 set(gcf,'currentchar',' ')
 while get(gcf,'currentchar')==' '
+   
     for i = 1:N
     h_line(i) = animatedline('LineWidth',2,'Color',colors(i,:),'LineStyle',':');
     end
