@@ -1,4 +1,4 @@
-This is BibTeX, Version 0.99d (TeX Live 2015/Debian)
+This is BibTeX, Version 0.99d (TeX Live 2013/Debian)
 Capacity: max_strings=35307, hash_size=35307, hash_prime=30011
 The top-level auxiliary file: root.aux
 The style file: IEEEtran.bst
@@ -13,23 +13,23 @@ Repeated entry---line 495 of file reference.bib
  : @incollection{tang2018complete
  :                               ,
 I'm skipping whatever remains of this entry
--- IEEEtran.bst version 1.14 (2015/08/26) by Michael Shell.
+-- IEEEtran.bst version 1.13 (2008/09/30) by Michael Shell.
 -- http://www.michaelshell.org/tex/ieeetran/bibtex/
 -- See the "IEEEtran_bst_HOWTO.pdf" manual for usage information.
 Warning--missing school in ru2017nonlinear
 
 Done.
 You've used 18 entries,
-            4087 wiz_defined-function locations,
-            1450 strings with 21071 characters,
-and the built_in function-call counts, 14144 in all, are:
+            4039 wiz_defined-function locations,
+            1312 strings with 18359 characters,
+and the built_in function-call counts, 14089 in all, are:
 = -- 1137
 > -- 314
 < -- 129
 + -- 176
 - -- 49
 * -- 678
-:= -- 2083
+:= -- 2082
 add.period$ -- 42
 call.type$ -- 18
 change.case$ -- 18
@@ -38,7 +38,7 @@ cite$ -- 19
 duplicate$ -- 999
 empty$ -- 1158
 format.name$ -- 64
-if$ -- 3312
+if$ -- 3258
 int.to.chr$ -- 0
 int.to.str$ -- 18
 missing$ -- 163

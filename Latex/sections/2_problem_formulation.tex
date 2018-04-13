@@ -26,11 +26,11 @@ h^2/2 \\
 h
 \end{bmatrix}a[k]
 \end{equation}
-where vectors $p$, $v$ and $a$ are the discretized position, velocity and acceleration of the mass at time step $k = {0,1,\ldots,K-1}$, with $K$ being the length of the horizon and $h$ the time step duration in seconds. A compact representation is given by
+Vectors $p$, $v$ and $a$ are the discretized position, velocity and acceleration of the mass at time step $k = {0,1,\ldots,K-1}$, with $K$ being the length of the horizon and $h$ the time step duration in seconds. A compact representation is given by
 \begin{equation}
 x[k+1] = Ax[k] + Bu[k] 
 \end{equation}
-where $x \in \RR^{6}$, $A \in \RR^{6\times 6} $, $B \in \RR^{6\times 3}$ and $u[k] \in \RR^{3}$. Expanding the model gives
+where $x \in \RR^{6}$, $A \in \RR^{6\times 6} $, $B \in \RR^{6\times 3}$ and $u[k] \in \RR^{3}$. Expanding the model derives in
 \begin{equation}
 \label{eqn:expand}
 \begin{aligned}
@@ -211,7 +211,7 @@ Finally, introduce $A_{coll,j} \in \RR^{1 \times 3K}$ and $b_{coll,j} \in \RR$
 \label{eqn: coll}
 A_{coll,j} = \Upsilon_j \Lambda ; \quad b_{coll,j} = \rho_j - \Upsilon_j A_0 x_i[0]
 \end{equation}
-The complete collision constraint matrices for agent $i$, $A_{coll} \in \RR^{(N-1) \times 3K}$ and $b_{coll} \in \RR^{(N-1)}$, can be obtained by stacking vertically the matrices in Eqn.~(\ref{eqn: coll}) for all the $N-1$ neighbours of agent $i$.
+The complete collision constraint for agent $i$, $A_{coll} \in \RR^{(N-1) \times 3K}$ and $b_{coll} \in \RR^{(N-1)}$, can be obtained by stacking vertically the matrices in Eqn.~(\ref{eqn: coll}) for all the $N-1$ neighbours of agent $i$.
 
 
 \subsection{Physical Limits}
@@ -231,7 +231,7 @@ U_{min} &\leq  U \leq U_{max}
 \end{equation}
 
 \subsection{Convex optimization problem}
-The complete inequality constraints for agent $i$ are obtained by stacking vertically the collision avoidance and physical limits constraints. At each time step, agent $i$ solves the following convex optimization problem to update its prediction horizon
+The complete inequality constraints for agent $i$ are obtained by stacking vertically the collision avoidance and physical limits constraints. At each time step of the trajectory, agent $i$ solves the following convex optimization problem to update its prediction horizon
 \begin{mini}|l|
 	{U}{\mathcal{J}(U)}{}{}
 	{\label{eqn:convex}}{}
