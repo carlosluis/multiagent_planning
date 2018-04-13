@@ -31,7 +31,7 @@ elseif (isempty(Ain_total) && norm(po-pf) < 1) % no collisions close to sp
     Q = 1000*[zeros(3*(K-1),3*K);
             zeros(3,3*(K-1)) eye(3)];
     R = 1*eye(3*K);
-    S = 1*eye(3*K); 
+    S = 10*eye(3*K); 
 else     % collisions
     Q = Q1*[zeros(3*(K-1),3*K);
             zeros(3,3*(K-1)) eye(3)];

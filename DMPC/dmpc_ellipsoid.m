@@ -13,18 +13,22 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 
 % Matrices for ellipsoid constraint
-order = 4;
+order = 4; % choose between 2 or 4 for the order of the super ellipsoid
 rmin = 0.5; % X-Y protection radius for collisions
-c = 1.5;
+c = 1.5; % make this one for spherical constraint
 E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
 N = 4; % number of vehicles
 
+% % Workspace boundaries
+% pmin = [-2.5,-2.5,0.2];
+% pmax = [2.5,2.5,2.2];
+
 % Workspace boundaries
-pmin = [-2.5,-2.5,0.2];
-pmax = [2.5,2.5,2.2];
+pmin = [-5,-5,0.2];
+pmax = [5,5,5];
 
 % Minimum distance between vehicles in m
 rmin_init = 0.75;
@@ -33,7 +37,7 @@ rmin_init = 0.75;
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % Initial positions
-po1 = [2.001,2,1.5];
+po1 = [2.01,2,1.5];
 po2 = [-2,-2,1.5];
 po3 = [-2,2,1.5];
 po4 = [2,-2,1.5];
@@ -57,7 +61,7 @@ Q = 10;
 S = 100;
 
 % Maximum acceleration in m/s^2
-alim = 0.7;
+alim = 0.5;
 
 % Some pre computations
 A = getPosMat(h,k_hor);
@@ -80,7 +84,8 @@ end
 failed_goal = 0; %how many times the algorithm failed to reach goal
 tries = 1; % how many iterations it took the DMPC to find a solution
 tic % measure the time it gets to solve the optimization problem
-while tries <= 10 && ~at_goal
+while tries <= 1 && ~at_goal
+    pred = [];
     for k = 1:K
         for n = 1:N
             if k==1
@@ -292,5 +297,5 @@ for i = 1:N
         end
     end
 end
-plot(tk,0.35*ones(length(tk),1),'--r','LineWidth',1.5);
+plot(tk,rmin*ones(length(tk),1),'--r','LineWidth',1.5);
 % legend(h_plot,h_label);
