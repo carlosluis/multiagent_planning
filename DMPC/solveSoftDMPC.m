@@ -16,7 +16,7 @@ for k = 1: k_hor
     violation = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
     if (violation)
         [Ainr, binr] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order);
-        Ainr = [Ainr eye(N-1,N-1);
+        Ainr = [Ainr 1e-7*eye(N-1,N-1);
                 zeros(N-1,3*K) eye(N-1)];
         binr = [binr; zeros(N-1,1)];
         Ain_total = [Ain_total; Ainr];
@@ -58,8 +58,9 @@ Delta = [Delta zeros(3*K,N-1);
 bin_total = [bin_total; repmat((pmax)',K,1) - A_initp*([po';vo']); zeros(N-1,1); repmat(-(pmin)',K,1) + A_initp*([po';vo']); zeros(N-1,1)];
 ao_1 = [ao zeros(1,3*(K-1)+N-1)];
 A_initp = [A_initp; zeros(N-1,6)];
-f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) ;
-EPS = 1e7*[zeros(3*K,3*K) zeros(3*K,N-1);
+f_eps = 1000*[zeros(3*K,1); ones(N-1,1)]';
+f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
+EPS = 1000*[zeros(3*K,3*K) zeros(3*K,N-1);
        zeros(N-1,3*K) eye(N-1,N-1)];
 else
     bin_total = [bin_total; repmat((pmax)',K,1) - A_initp*([po';vo']); repmat(-(pmin)',K,1) + A_initp*([po';vo'])];

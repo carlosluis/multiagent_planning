@@ -20,35 +20,35 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 4; % number of vehicles
+N = 30; % number of vehicles
 
 % % Workspace boundaries
-% pmin = [-2.5,-2.5,0.2];
-% pmax = [2.5,2.5,2.2];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
 % Workspace boundaries
-pmin = [-5,-5,0.2];
-pmax = [5,5,5];
+% pmin = [-5,-5,0.2];
+% pmax = [5,5,5];
 
 % Minimum distance between vehicles in m
-rmin_init = 0.75;
+rmin_init = 0.85;
 
 % Initial positions
-% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
-% Initial positions
-po1 = [2,2,1.5];
-po2 = [-2,-2,1.5];
-po3 = [-2,2,1.5];
-po4 = [2,-2,1.5];
-po = cat(3,po1,po2,po3,po4);
-
-% Final positions
-pf1 = [-2,-2,1.5];
-pf2 = [2,2,1.5];
-pf3 = [2,-2,1.5];
-pf4 = [-2,2,1.5];
-pf  = cat(3, pf1,pf2,pf3,pf4);
+% % Initial positions
+% po1 = [2,2,1.5];
+% po2 = [-2,-2,1.5];
+% po3 = [-2,2,1.5];
+% po4 = [2,-2,1.5];
+% po = cat(3,po1,po2,po3,po4);
+% 
+% % Final positions
+% pf1 = [-2,-2,1.5];
+% pf2 = [2,2,1.5];
+% pf3 = [2,-2,1.5];
+% pf4 = [-2,2,1.5];
+% pf  = cat(3, pf1,pf2,pf3,pf4);
 
 %% Empty list of obstacles
 l = [];
@@ -57,8 +57,8 @@ at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
 error_tol = 0.05; % 5cm destination tolerance
 
 % Penalty matrices when there're predicted collisions
-Q = 10;
-S = 100;
+Q = 1000;
+S = 10;
 
 % Maximum acceleration in m/s^2
 alim = 0.5;
@@ -84,7 +84,7 @@ end
 failed_goal = 0; %how many times the algorithm failed to reach goal
 tries = 1; % how many iterations it took the DMPC to find a solution
 tic % measure the time it gets to solve the optimization problem
-while tries <= 10 && ~at_goal
+while tries <= 1 && ~at_goal
     pred = [];
     for k = 1:K
         for n = 1:N
@@ -97,7 +97,7 @@ while tries <= 10 && ~at_goal
                 pok = pk(:,k-1,n);
                 vok = vk(:,k-1,n);
                 aok = ak(:,k-1,n);
-                [pi,vi,ai,success] = solveEllipDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
+                [pi,vi,ai,success] = solveSoftDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
             end
             if ~success %problem was infeasible, exit and retry
                 break;
@@ -288,7 +288,7 @@ for i = 1:N
     for j = 1:N
         if(i~=j)
             differ = E1*(pk(:,:,i) - pk(:,:,j));
-            dist = sqrt(sum(differ.^2,1));
+            dist = (sum(differ.^order,1)).^(1/order);
             plot(tk, dist, 'LineWidth',1.5);
             grid on;
             hold on;
