@@ -32,7 +32,7 @@ if(isempty(Ain_total) && norm(po-pf) > 1) % Case of no collisions far from sp
     R = 1*eye(3*K);
     S = 10*eye(3*K);
 elseif (isempty(Ain_total) && norm(po-pf) < 1) % no collisions close to sp
-    Q = 1000*[zeros(3*(K-1),3*K);
+    Q = 10000*[zeros(3*(K-1),3*K);
             zeros(3,3*(K-1)) eye(3)];
     R = 1*eye(3*K);
     S = 10*eye(3*K); 
@@ -43,7 +43,7 @@ else     % collisions
     S = S1*eye(3*K);
 end
 
-if (violation)
+if (violation) % In case of collisions, we relax the constraint with slack variable
     % Add dimensions for slack variable
     Q = [Q zeros(3*K,N-1);
          zeros(N-1,3*K) zeros(N-1,N-1)];
@@ -58,11 +58,17 @@ if (violation)
     bin_total = [bin_total; repmat((pmax)',K,1) - A_initp*([po';vo']); zeros(N-1,1); repmat(-(pmin)',K,1) + A_initp*([po';vo']); zeros(N-1,1)];
     ao_1 = [ao zeros(1,3*(K-1)+N-1)];
     A_initp = [A_initp; zeros(N-1,6)];
-    f_eps = (k_hor/k)*10^6*[zeros(3*K,1); ones(N-1,1)]';
-    f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
-    EPS = (k_hor/k)*10^6*[zeros(3*K,3*K) zeros(3*K,N-1);
+    
+    % Linear penalty on collision constraint relaxation
+    f_eps = 0.5*(k_hor/k)^1*10^2*[zeros(3*K,1); ones(N-1,1)]';
+    
+    % Quadratic penalty on collision constraint relaxation
+    EPS = 1*(k_hor/k)^1*10^3*[zeros(3*K,3*K) zeros(3*K,N-1);
            zeros(N-1,3*K) eye(N-1,N-1)];
-else
+       
+    f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
+    
+else % case of no collisions, we don't even add collision constraints
     bin_total = [bin_total; repmat((pmax)',K,1) - A_initp*([po';vo']); repmat(-(pmin)',K,1) + A_initp*([po';vo'])];
     ao_1 = [ao zeros(1,3*(K-1))];
     f = -2*(repmat((pf)',K,1)'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) ;
@@ -79,11 +85,12 @@ if (isempty(x) || exitflag == 0)
     v = [];
     a = [];
     success = 0;
+    fprintf("Failed @ horizon step k = %i \n",k)
     return
 end
 success = exitflag;
 a = x(1:3*K);
-if violation
+if violation % extract the value of the slack variable (not used atm)
     epsilon = x(3*K+1:end);
 end
 [p,v] = propStatedmpc(po,vo,a,h);

@@ -4,15 +4,15 @@ close all
 warning('off','all')
 
 % Time settings and variables
-T = 15; % Trajectory final time
+T = 20; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
-k_hor = 15;
+k_hor = 15; % horizon length
 
-% Matrices for ellipsoid constraint
+% Variables for ellipsoid constraint
 order = 4; % choose between 2 or 4 for the order of the super ellipsoid
 rmin = 0.5; % X-Y protection radius for collisions
 c = 1.5; % make this one for spherical constraint
@@ -20,7 +20,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 30; % number of vehicles
+N = 40; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -31,7 +31,7 @@ pmax = [2.5,2.5,2.2];
 % pmax = [5,5,5];
 
 % Minimum distance between vehicles in m
-rmin_init = 0.85;
+rmin_init = 0.9;
 
 % Initial positions
 [po,pf] = randomTest(N,pmin,pmax,rmin_init);
@@ -57,8 +57,8 @@ at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
 error_tol = 0.05; % 5cm destination tolerance
 
 % Penalty matrices when there're predicted collisions
-Q = 1000;
-S = 10;
+Q = 100;
+S = 100;
 
 % Maximum acceleration in m/s^2
 alim = 0.5;
@@ -84,7 +84,7 @@ end
 failed_goal = 0; %how many times the algorithm failed to reach goal
 tries = 1; % how many iterations it took the DMPC to find a solution
 tic % measure the time it gets to solve the optimization problem
-while tries <= 10 && ~at_goal
+while tries <= 1 && ~at_goal
     pred = [];
     for k = 1:K
         for n = 1:N
@@ -110,7 +110,7 @@ while tries <= 10 && ~at_goal
         if ~success %Heuristic: increase Q, make init more slowly, 
             tries = tries + 1;
             Q = Q+100;
-            fprintf("Failed - problem unfeasible @ k = %i, n = %i: trial #%i\n",k,n,tries-1)
+            fprintf("Failed - problem unfeasible @ k_T = %i, n = %i: trial #%i\n",k,n,tries-1)
             break;
         end
         l = new_l;
