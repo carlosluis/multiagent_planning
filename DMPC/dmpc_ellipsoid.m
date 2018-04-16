@@ -4,7 +4,7 @@ close all
 warning('off','all')
 
 % Time settings and variables
-T = 20; % Trajectory final time
+T = 15; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -20,7 +20,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 40; % number of vehicles
+N = 30; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -31,7 +31,7 @@ pmax = [2.5,2.5,2.2];
 % pmax = [5,5,5];
 
 % Minimum distance between vehicles in m
-rmin_init = 0.9;
+rmin_init = 0.91;
 
 % Initial positions
 [po,pf] = randomTest(N,pmin,pmax,rmin_init);
@@ -58,8 +58,8 @@ error_tol = 0.05; % 5cm destination tolerance
 violation = 0; % checks if violations occured at end of algorithm
 
 % Penalty matrices when there're predicted collisions
-Q = 100;
-S = 100;
+Q = 1000;
+S = 10;
 
 % Maximum acceleration in m/s^2
 alim = 0.5;
@@ -133,29 +133,25 @@ end
 passed = success && at_goal %DMPC was successful or not      
 toc
 
-% Check if collision constraints were not violated
-for i = 1:N
-    for j = 1:N
-        if(i~=j)
-            differ = E1*(pk(:,:,i) - pk(:,:,j));
-            dist = (sum(differ.^order,1)).^(1/order);
-            if dist < (rmin - 0.05)
-                violation = 1;
-                fprintf("Collision constraint violated\n")
-                break;
+if passed
+    % Check if collision constraints were not violated
+    for i = 1:N
+        for j = 1:N
+            if(i~=j)
+                differ = E1*(pk(:,:,i) - pk(:,:,j));
+                dist = (sum(differ.^order,1)).^(1/order);
+                if min(dist) < (rmin - 0.05)
+                    [value,index] = min(dist);
+                    violation = 1;
+                    fprintf("Collision constraint violated by %.2fcm: vehicles %i and %i @ k = %i \n", (rmin -value)*100,i,j,index)
+                end
             end
         end
     end
-    if violation
-        break;
+
+    if ~violation
+        fprintf("No collisions found! Successful computation\n")
     end
-end
-
-if ~violation
-    fprintf("No collisions found! Successful computation\n")
-end
-
-if passed
     for i = 1:N
         p(:,:,i) = spline(tk,pk(:,:,i),t);
         v(:,:,i) = spline(tk,vk(:,:,i),t);
