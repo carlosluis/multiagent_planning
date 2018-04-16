@@ -55,6 +55,7 @@ l = [];
 success = 0; %check if QP was feasible
 at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
 error_tol = 0.05; % 5cm destination tolerance
+violation = 0; % checks if violations occured at end of algorithm
 
 % Penalty matrices when there're predicted collisions
 Q = 100;
@@ -131,6 +132,29 @@ while tries <= 1 && ~at_goal
 end
 passed = success && at_goal %DMPC was successful or not      
 toc
+
+% Check if collision constraints were not violated
+for i = 1:N
+    for j = 1:N
+        if(i~=j)
+            differ = E1*(pk(:,:,i) - pk(:,:,j));
+            dist = (sum(differ.^order,1)).^(1/order);
+            if dist < (rmin - 0.05)
+                violation = 1;
+                fprintf("Collision constraint violated\n")
+                break;
+            end
+        end
+    end
+    if violation
+        break;
+    end
+end
+
+if ~violation
+    fprintf("No collisions found! Successful computation\n")
+end
+
 if passed
     for i = 1:N
         p(:,:,i) = spline(tk,pk(:,:,i),t);
