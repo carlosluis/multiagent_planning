@@ -1,5 +1,5 @@
 function [p,v,a] = singleSCP(po,pf,h,K,pmin,pmax,rmin,alim,l)
-
+po = squeeze(po);
 prev_p = initSolution(po,pf,h,K);
 epsilon = 2; %to be tuned
 tol = 2;
