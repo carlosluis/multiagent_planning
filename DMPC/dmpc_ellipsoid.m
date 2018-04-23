@@ -20,7 +20,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 30; % number of vehicles
+N = 4; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -34,21 +34,21 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.91;
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin_init);
+% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
-% % Initial positions
-% po1 = [2,2,1.5];
-% po2 = [-2,-2,1.5];
-% po3 = [-2,2,1.5];
-% po4 = [2,-2,1.5];
-% po = cat(3,po1,po2,po3,po4);
-% 
-% % Final positions
-% pf1 = [-2,-2,1.5];
-% pf2 = [2,2,1.5];
-% pf3 = [2,-2,1.5];
-% pf4 = [-2,2,1.5];
-% pf  = cat(3, pf1,pf2,pf3,pf4);
+% Initial positions
+po1 = [2,2,1.5];
+po2 = [-2,-2,1.5];
+po3 = [-2,2,1.5];
+po4 = [2,-2,1.5];
+po = cat(3,po1,po2,po3,po4);
+
+% Final positions
+pf1 = [-2,-2,1.5];
+pf2 = [2,2,1.5];
+pf3 = [2,-2,1.5];
+pf4 = [-2,2,1.5];
+pf  = cat(3, pf1,pf2,pf3,pf4);
 
 %% Empty list of obstacles
 l = [];
@@ -59,7 +59,7 @@ violation = 0; % checks if violations occured at end of algorithm
 
 % Penalty matrices when there're predicted collisions
 Q = 1000;
-S = 10;
+S = 100;
 
 % Maximum acceleration in m/s^2
 alim = 0.5;
@@ -152,12 +152,26 @@ if passed
     if ~violation
         fprintf("No collisions found! Successful computation\n")
     end
+    
+    % Interpolate for better resolution
     for i = 1:N
         p(:,:,i) = spline(tk,pk(:,:,i),t);
         v(:,:,i) = spline(tk,vk(:,:,i),t);
         a(:,:,i) = spline(tk,ak(:,:,i),t); 
     end
+    
+    % Calculate how much time is required to complete the transition
+    % within a 5cm margin of the goal
+
+    for i = 1:N
+        diff = p(:,:,i) - repmat(pf(:,:,i),length(t),1)';
+        dist = sqrt(sum(diff.^2,1));
+        time_index(i) = find(dist > 0.05,1,'last') + 1;
+    end
+    max_time_index = max(time_index);
+    fprintf("The trajectory can be completed in %.2f seconds\n",max_time_index*Ts);
 end
+
 
 %%
 figure(1)

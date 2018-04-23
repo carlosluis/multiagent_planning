@@ -4,7 +4,7 @@ close all
 warning('off','all')
 
 % Time settings and variables
-T = 15; % Trajectory final time
+T = 20; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -12,8 +12,8 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 success = 1;
-N_vector = 30:5:40; % number of vehicles
-trials = 10;
+N_vector = 10:5:50; % number of vehicles
+trials = 100;
 
 % Variables for ellipsoid constraint
 order = 4; % choose between 2 or 4 for the order of the super ellipsoid
@@ -140,11 +140,19 @@ for q = 1:length(N_vector)
             end
             t_dmpc(q,r) = toc(t_start);
             totdist_dmpc(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
+            
+            for i = 1:N
+                diff_goal = p(:,:,i) - repmat(pf(:,:,i),length(t),1)';
+                dist_goal = sqrt(sum(diff_goal.^2,1));
+                time_index(i) = find(dist_goal > 0.05,1,'last') + 1;
+            end
+            traj_time(q,r) = max(time_index)*Ts;
         else
             t_dmpc(q,r) = nan;
             totdist_dmpc(q,r) = nan;
-            save(['Fail_' num2str(fail)]);
+%             save(['Fail_' num2str(fail)]);
             fail = fail + 1;
+            traj_time(q,r) = nan;
         end
         success_dmpc(q,r) = success && at_goal && ~violation(q,r);
     end
@@ -161,7 +169,6 @@ ylim([0,1.05])
 plot(N_vector,prob_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Success Probability');
-legend('DMPC');
 
 % Computation time
 tmean_dmpc = nanmean(t_dmpc,2);
@@ -172,23 +179,26 @@ hold on;
 errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Average Computation time [s]');
-legend('DMPC');
 
-% Probability of violating constraint
-prob_violation = sum(violation,2)/trials;
+% Completion time
+tmean_traj = nanmean(traj_time,2);
+tstd_traj = nanstd(traj_time,1,2);
 figure(3)
 grid on;
 hold on;
-plot(N_vector,prob_violation,'Linewidth',2);
+errorbar(N_vector,tmean_traj,tstd_traj,'Linewidth',2);
 xlabel('Number of Vehicles');
-ylabel('Probability of violating collision constraint');
+ylabel('Average Time for Transition [s]');
 
-% Average number of goal failures
-goal_mean = mean(failed_goal,2);
-goal_std = std(failed_goal,1,2);
+% Failure analysis
+violation_num = sum(violation,2);
+goal_num = sum(failed_goal,2);
+total_num = sum(~success_dmpc,2);
+infes_num = abs(total_num - goal_num);
 figure(4)
 grid on;
 hold on;
-errorbar(N_vector,goal_mean,goal_std,'LineWidth',2);
+bar(N_vector,[infes_num violation_num goal_num],'stacked');
 xlabel('Number of Vehicles');
-ylabel('Average number of Failures at reaching the goal');
+ylabel(['Number of failed trials (out of ' ,num2str(trials), ')']);
+legend('Infeasibility','Collisions','Incomplete Trajectory')
