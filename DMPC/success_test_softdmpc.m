@@ -72,7 +72,7 @@ for q = 1:length(N_vector)
 
         % Penalty matrices when there're predicted collisions
         Q = 1000;
-        S = 10;
+        S = 100;
         tries(q,r) = 1;
         failed_goal(q,r) = 0;
         t_start = tic;

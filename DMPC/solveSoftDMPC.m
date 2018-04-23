@@ -16,7 +16,7 @@ for k = 1: k_hor
     violation = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
     if (violation)
         [Ainr, binr] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order);
-        Ainr = [Ainr 1e-3*eye(N-1,N-1);
+        Ainr = [Ainr eye(N-1,N-1);
                 zeros(N-1,3*K) eye(N-1)];
         binr = [binr; zeros(N-1,1)];
         Ain_total = [Ain_total; Ainr];
@@ -60,10 +60,10 @@ if (violation) % In case of collisions, we relax the constraint with slack varia
     A_initp = [A_initp; zeros(N-1,6)];
     
     % Linear penalty on collision constraint relaxation
-    f_eps = 0.1*(k_hor/k)^1*10^1*[zeros(3*K,1); ones(N-1,1)]';
+    f_eps = 0*10^5*[zeros(3*K,1); ones(N-1,1)]';
     
     % Quadratic penalty on collision constraint relaxation
-    EPS = 0.5*(k_hor/k)^1*10^2*[zeros(3*K,3*K) zeros(3*K,N-1);
+    EPS = 8*10^9*[zeros(3*K,3*K) zeros(3*K,N-1);
            zeros(N-1,3*K) eye(N-1,N-1)];
        
     f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
@@ -85,7 +85,7 @@ if (isempty(x) || exitflag == 0)
     v = [];
     a = [];
     success = 0;
-    fprintf("Failed @ horizon step k = %i \n",k)
+%     fprintf("Failed @ horizon step k = %i \n",k)
     return
 end
 success = exitflag;

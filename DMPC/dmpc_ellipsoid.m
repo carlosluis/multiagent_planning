@@ -20,7 +20,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 50; % number of vehicles
+N = 40; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
