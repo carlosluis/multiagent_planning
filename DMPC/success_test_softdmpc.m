@@ -12,7 +12,7 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 success = 1;
-N_vector = 10:5:50; % number of vehicles
+N_vector = 10:2:50; % number of vehicles
 trials = 100;
 
 % Variables for ellipsoid constraint
