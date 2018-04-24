@@ -21,7 +21,7 @@ rmin = 0.75;
 % Maximum acceleration in m/s^2
 alim = 0.5;
 
-N = 10; % number of vehicles
+N = 15; % number of vehicles
 
 % Initial positions
 [po,pf] = randomTest(N,pmin,pmax,rmin);
@@ -53,16 +53,17 @@ b = [h^2/2*eye(3);
      h*eye(3)];
  
 prev_row = zeros(6,3*K); % For the first iteration of constructing matrix Ain
-A_p = [];
-A_v = [];
-
+A_p = zeros(3*(K-1),3*K);
+A_v = zeros(3*(K-1),3*K);
+idx=1;
 % Build matrix to convert acceleration to position
 for k = 1:(K-1)
     add_b = [zeros(size(b,1),size(b,2)*(k-1)) b zeros(size(b,1),size(b,2)*(K-k))];
     new_row = A*prev_row + add_b;   
-    A_p = [A_p; new_row(1:3,:)];
-    A_v = [A_v; new_row(4:6,:)];
-    prev_row = new_row; 
+    A_p(idx:idx+2,:) = new_row(1:3,:);
+    A_v(idx:idx+2,:) = new_row(4:6,:);
+    prev_row = new_row;
+    idx = idx+3;
 end
 
 tic

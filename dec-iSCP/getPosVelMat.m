@@ -11,7 +11,6 @@ A = [1 0 0 h 0 0;
 b = [h^2/2*eye(3);
      h*eye(3)];
  
-Aaug = [];
 prev_row = zeros(6,3*K); % For the first iteration of constructing matrix Ain
 
 % Build matrix to convert acceleration to position

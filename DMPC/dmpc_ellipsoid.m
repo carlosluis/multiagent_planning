@@ -20,7 +20,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 10; % number of vehicles
+N = 50; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -34,7 +34,7 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.91;
 
 % Initial positions
-% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % % Initial positions
 % po1 = [2,2,1.5];
@@ -52,6 +52,9 @@ rmin_init = 0.91;
 
 %% Empty list of obstacles
 l = [];
+p = [];
+v = [];
+a = [];
 success = 0; %check if QP was feasible
 at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
 error_tol = 0.05; % 5cm destination tolerance
@@ -170,10 +173,9 @@ if passed
     end
     max_time_index = max(time_index);
     fprintf("The trajectory can be completed in %.2f seconds\n",max_time_index*Ts);
+    totdist_dmpc = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
+    fprintf("The sum of trajectory length is %.2f\n",totdist_dmpc);
 end
-
-totdist_dmpc = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
-fprintf("The sum of trajectory length is %.2f\n",totdist_dmpc);
 
 %%
 figure(1)
