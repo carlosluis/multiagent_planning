@@ -13,14 +13,14 @@ t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length
 
 % Variables for ellipsoid constraint
-order = 4; % choose between 2 or 4 for the order of the super ellipsoid
+order = 2; % choose between 2 or 4 for the order of the super ellipsoid
 rmin = 0.5; % X-Y protection radius for collisions
 c = 1.5; % make this one for spherical constraint
 E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 40; % number of vehicles
+N = 70; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
