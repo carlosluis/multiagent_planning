@@ -20,7 +20,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 70; % number of vehicles
+N = 10; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -34,7 +34,7 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.91;
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin_init);
+% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % % Initial positions
 % po1 = [2,2,1.5];
@@ -164,14 +164,16 @@ if passed
     % within a 5cm margin of the goal
 
     for i = 1:N
-        diff = p(:,:,i) - repmat(pf(:,:,i),length(t),1)';
-        dist = sqrt(sum(diff.^2,1));
+        differ = p(:,:,i) - repmat(pf(:,:,i),length(t),1)';
+        dist = sqrt(sum(differ.^2,1));
         time_index(i) = find(dist > 0.05,1,'last') + 1;
     end
     max_time_index = max(time_index);
     fprintf("The trajectory can be completed in %.2f seconds\n",max_time_index*Ts);
 end
 
+totdist_dmpc = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
+fprintf("The sum of trajectory length is %.2f\n",totdist_dmpc);
 
 %%
 figure(1)
