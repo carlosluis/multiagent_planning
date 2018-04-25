@@ -11,12 +11,11 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
-success = 1;
-N_vector = 10:2:50; % number of vehicles
-trials = 100;
+N_vector = 50:5:60; % number of vehicles
+trials = 2;
 
 % Variables for ellipsoid constraint
-order = 4; % choose between 2 or 4 for the order of the super ellipsoid
+order = 2; % choose between 2 or 4 for the order of the super ellipsoid
 rmin = 0.5; % X-Y protection radius for collisions
 c = 1.5; % make this one for spherical constraint
 E = diag([1,1,c]);
@@ -65,7 +64,7 @@ for q = 1:length(N_vector)
         
         %DMPC
         l = [];
-        success = 0; %check if QP was feasible
+        feasible(q,r) = 0; %check if QP was feasible
         at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
         error_tol = 0.05; % 5cm destination tolerance
         violation(q,r) = 0; % checks if violations occured at end of algorithm
@@ -83,14 +82,14 @@ for q = 1:length(N_vector)
                         poi = po(:,:,n);
                         pfi = pf(:,:,n);
                         [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
-                        success = 1;
+                        feasible(q,r) = 1;
                     else
                         pok = pk(:,k-1,n);
                         vok = vk(:,k-1,n);
                         aok = ak(:,k-1,n);
-                        [pi,vi,ai,success] = solveSoftDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
+                        [pi,vi,ai,feasible(q,r)] = solveSoftDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
                     end
-                    if ~success
+                    if ~feasible(q,r)
                         break;
                     end
                     new_l(:,:,n) = pi;
@@ -98,27 +97,27 @@ for q = 1:length(N_vector)
                     vk(:,k,n) = vi(:,1);
                     ak(:,k,n) = ai(:,1);
                 end
-                if ~success
+                if ~feasible(q,r)
                     tries(q,r) = tries(q,r) + 1;
                     Q = Q+50;
                     break;
                 end
                 l = new_l;
             end
-            if ~success
+            if ~feasible(q,r)
                 continue
             end
             pass = ReachedGoal(pk,pf,K,error_tol);
-            if success && pass
+            if feasible(q,r) && pass
                 at_goal = 1;
-            elseif success && ~pass
+            elseif feasible(q,r) && ~pass
                 failed_goal(q,r) = failed_goal(q,r) + 1;
                 tries(q,r) = tries(q,r) + 1;
                 Q = Q+100;
             end
         end
 
-        if success && at_goal      
+        if feasible(q,r) && ~failed_goal(q,r)      
             % Check if collision constraints were not violated
             for i = 1:N
                 for j = 1:N
@@ -154,7 +153,7 @@ for q = 1:length(N_vector)
             fail = fail + 1;
             traj_time(q,r) = nan;
         end
-        success_dmpc(q,r) = success && at_goal && ~violation(q,r);
+        success_dmpc(q,r) = feasible(q,r) && ~failed_goal(q,r) && ~violation(q,r);
     end
 end
 fprintf("Finished! \n")
@@ -193,8 +192,7 @@ ylabel('Average Time for Transition [s]');
 % Failure analysis
 violation_num = sum(violation,2);
 goal_num = sum(failed_goal,2);
-total_num = sum(~success_dmpc,2);
-infes_num = abs(total_num - goal_num);
+infes_num = sum(~feasible,2);
 figure(4)
 grid on;
 hold on;
