@@ -12,7 +12,7 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
 N_vector = 50:5:60; % number of vehicles
-trials = 2; % number os trails per number of vehicles
+trials = 20; % number os trails per number of vehicles
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid

@@ -50,7 +50,7 @@ rmin_init = 0.91;
 % pf4 = [-2,2,1.5];
 % pf  = cat(3, pf1,pf2,pf3,pf4);
 
-%% Empty list of obstacles
+%% Solving the problem
 l = [];
 p = [];
 v = [];

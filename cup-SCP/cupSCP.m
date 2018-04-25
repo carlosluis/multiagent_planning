@@ -21,7 +21,7 @@ rmin = 0.75;
 % Maximum acceleration in m/s^2
 alim = 0.5;
 
-N = 15; % number of vehicles
+N = 10; % number of vehicles
 
 % Initial positions
 [po,pf] = randomTest(N,pmin,pmax,rmin);

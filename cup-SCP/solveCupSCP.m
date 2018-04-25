@@ -12,6 +12,9 @@ criteria = 2;
 epsilon = 0.1;
 
 options = optimset('Display', 'off');
+p_constr_h = zeros(3*K,N);
+p_constr_l = zeros(3*K,N);
+beq_i = zeros(12,N);
 
 for i = 1:N
     p_constr_h(:,i) = repmat((pmax-po(:,:,i))',K,1);

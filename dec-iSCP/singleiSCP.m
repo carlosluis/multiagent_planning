@@ -12,6 +12,7 @@ options = optimset('Display', 'off');
 check = true;
 addConstr = [];
 
+
 while (i <= K && check)
     newConstrCount = 0; 
     Ain_total = [];
@@ -35,6 +36,7 @@ while (i <= K && check)
     % Setup the QP
     Ain_total = [Ain_total; A; -A];
     bin_total = [bin_total; repmat((pmax-po)',K,1); repmat(-(pmin-po)',K,1)];
+
     beq = [(pf-po)' ; zeros(3,1); zeros(3,1); zeros(3,1)];
      
     %Solve and propagate states
