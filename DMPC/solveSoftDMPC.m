@@ -3,7 +3,6 @@ function [p,v,a,success] = solveSoftDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim
 k_hor = size(l,2);
 ub = alim*ones(3*K,1);
 lb = -ub; 
-addConstr = [];
 prev_p = l(:,:,n);
 Aeq = [];
 beq = [];
