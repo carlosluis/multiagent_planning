@@ -21,24 +21,24 @@ rmin = 0.75;
 % Maximum acceleration in m/s^2
 alim = 0.5;
 
-N = 10; % number of vehicles
+N = 4; % number of vehicles
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin);
+% [po,pf] = randomTest(N,pmin,pmax,rmin);
 
-% % Initial positions
-% po1 = [2,2,1.5];
-% po2 = [-2,-2,1.5];
-% po3 = [-2,2,1.5];
-% po4 = [2,-2,1.5];
-% po = cat(3,po1,po2,po3);
-% 
-% % Final positions
-% pf1 = [-2,-2,1.5];
-% pf2 = [2,2,1.5];
-% pf3 = [2,-2,1.5];
-% pf4 = [-2,2,1.5];
-% pf  = cat(3,pf1,pf2,pf3);
+% Initial positions
+po1 = [2,2,1.5];
+po2 = [-2,-2,1.5];
+po3 = [-2,2,1.5];
+po4 = [2,-2,1.5];
+po = cat(3,po1,po2,po3,po4);
+
+% Final positions
+pf1 = [-2,-2,1.5];
+pf2 = [2,2,1.5];
+pf3 = [2,-2,1.5];
+pf4 = [-2,2,1.5];
+pf  = cat(3,pf1,pf2,pf3,pf4);
 
 %% Some Precomputations
 % Kinematic model A,b matrices

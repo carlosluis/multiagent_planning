@@ -14,8 +14,8 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 50:5:60; % number of vehicles
-trials = 2; % number os trails per number of vehicles
+N_vector = 10:2:60; % number of vehicles
+trials = 50; % number os trails per number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -295,17 +295,18 @@ StackData2 = [infes_num2 violation_num2 goal_num2];
 StackData4 = [infes_num4 violation_num4 goal_num4];
 
 figure(4)
-h2=bar(N_vector-0.3,StackData4,'stacked','BarWidth',0.1);
+h2=bar(N_vector-0.3,StackData2,'stacked','BarWidth',0.3);
 grid on;
 hold on;
-h4 = bar(N_vector+0.3,StackData4,'stacked','BarWidth',0.1);
-myC2= summer(size(StackData4,1));
-myC4= winter(size(StackData4,1));
-for k = 1:size(StackData4,1)
+h4 = bar(N_vector+0.3,StackData4,'stacked','BarWidth',0.3);
+myC2= summer(size(StackData4,2));
+myC4= winter(size(StackData4,2));
+for k = 1:size(StackData4,2)
     set(h2(k),'facecolor',myC2(k,:));
-    set(h4(k),'facecolor',myC4(k,:))
+    set(h4(k),'facecolor',myC4(k,:));
 end
 xticks(N_vector);
+xlim([min(N_vector)-1, max(N_vector)+1])
 xlabel('Number of Vehicles');
 ylabel(['Number of failed trials (out of ' ,num2str(trials), ')']);
 legend('Infeasibility E_2','Collisions E_2','Incomplete Trajectory E_2',...
