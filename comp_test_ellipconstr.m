@@ -15,7 +15,7 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
 N_vector = 10:2:60; % number of vehicles
-trials = 50; % number os trails per number of vehicles
+trials = 100; % number os trails per number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -239,6 +239,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
+save('comp_ellipsoids_100')
 %% Post-Processing
 
 % Probability of success plots
