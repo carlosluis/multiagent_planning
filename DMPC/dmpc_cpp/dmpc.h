@@ -15,30 +15,51 @@ struct Constraint {
     VectorXd b;
 };
 
-struct State {
+struct Trajectory {
     MatrixXd pos;
     MatrixXd vel;
     MatrixXd acc;
 };
 
-bool CheckforColl(MatrixXd p, std::vector<MatrixXd> L, int k, int r_min);
+class SoftDMPC {
+public:
+    // Constructor
+    SoftDMPC();
+    // Destructor
+    ~SoftDMPC(){};
 
-MatrixXd getPosMat(int h, int K);
+    // Public methods
 
-MatrixXd getPosVelMat(int h, int K);
+private:
+    // Private Variables
 
-MatrixXd initSolution(MatrixXd po, MatrixXd pf, int h, int K);
+    float _h; // time step, in seconds
+    int _T; // Max time to complete trajectory
+    float _K; // number of time steps for the trajectory
+    int _k_hor; // length of the prediction horizon
+    int _order; // order of the ellipsoid for collision constraint
+    float _c; // multiplier for constraint in the Z direction
+    float _rmin;
+    float _alim;
+    Matrix3f _E;
+    Matrix3f _E1;
+    Matrix3f _E2;
+    Matrix<float, 6, 6> _A;
+    Matrix<float, 6, 3> _b;
 
-Constraint collConstr(MatrixXd p, MatrixXd po, int k, std::vector<MatrixXd> L, MatrixXd Ain, int r_min);
 
-State propState(MatrixXd po, MatrixXd a, int h);
+    // Private Methods
+    bool check_collisions(MatrixXd prev_p, std::vector<MatrixXd> obs, int n);
+    MatrixXd get_lambda_mat(int h, int K);
+    MatrixXd get_delta_mat (int k_hor);
+    Trajectory init_dmpc (MatrixXd po, MatrixXd pf);
+    Constraint build_constraint (MatrixXd prev_p,
+                                 MatrixXd po,
+                                 MatrixXd vo,
+                                 std::vector<MatrixXd> obs);
 
-int maxDeviation(MatrixXd p, MatrixXd);
 
 
-
-
-
-
+};
 
 #endif //DMPC_CPP_DMPC_H
