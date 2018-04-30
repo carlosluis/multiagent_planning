@@ -16,7 +16,16 @@ pmin = [-2.5,-2.5,0.2];
 pmax = [2.5,2.5,2.2];
 
 % Minimum distance between vehicles in m
-rmin = 0.75;
+rmin_init = 0.91;
+
+% Variables for ellipsoid constraint
+order = 2; % choose between 2 or 4 for the order of the super ellipsoid
+rmin = 0.5; % X-Y protection radius for collisions
+c = 1.5; % make this one for spherical constraint
+E = diag([1,1,c]);
+E1 = E^(-1);
+E2 = E^(-order);
+
 
 % Maximum acceleration in m/s^2
 alim = 0.5;
@@ -24,7 +33,7 @@ alim = 0.5;
 N = 4; % number of vehicles
 
 % Initial positions
-% [po,pf] = randomTest(N,pmin,pmax,rmin);
+% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % Initial positions
 po1 = [2,2,1.5];
@@ -68,7 +77,7 @@ end
 
 tic
 % Solve SCP
-[pk,vk,ak] = solveCupSCP(po,pf,h,K,N,pmin,pmax,rmin,alim,A_p,A_v);
+[pk,vk,ak] = solveCupSCP(po,pf,h,K,N,pmin,pmax,rmin,alim,A_p,A_v,E1,E2,order);
 toc
 
 % Interpolate solution with a 100Hz sampling
@@ -223,9 +232,9 @@ figure(6)
 for i = 1:N
     for j = 1:N
         if(i~=j)
-            diff = p(:,:,i) - p(:,:,j);
-            dist = sqrt(sum(diff.^2,1));
-            plot(t, dist, 'LineWidth',1.5);
+            differ = E1*(pk(:,:,i) - pk(:,:,j));
+            dist = (sum(differ.^order,1)).^(1/order);
+            plot(tk, dist, 'LineWidth',1.5);
             grid on;
             hold on;
             xlabel('t [s]')
@@ -233,5 +242,4 @@ for i = 1:N
         end
     end
 end
-plot(t,rmin*ones(length(t),1),'--r','LineWidth',1.5);
-% legend(h_plot,h_label);
+plot(tk,rmin*ones(length(tk),1),'--r','LineWidth',1.5);

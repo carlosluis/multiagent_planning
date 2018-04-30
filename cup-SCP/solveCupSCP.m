@@ -1,4 +1,4 @@
-function [p,v,a] = solveCupSCP(po,pf,h,K,N,pmin,pmax,rmin,alim,A_p, A_v)
+function [p,v,a] = solveCupSCP(po,pf,h,K,N,pmin,pmax,rmin,alim,A_p, A_v,E1,E2,order)
 
 prev_p = initAllSolutions(po,pf,h,K);
 ub = alim*ones(3*N*K,1);
@@ -29,7 +29,7 @@ k = 1;
 prev_f0 = 2;
 while criteria > epsilon
     % Inequality Constraints
-    [Ain, bin] = AddCollConstr(prev_p,po,K,rmin,Atot);
+    [Ain, bin] = AddCollConstr(prev_p,po,K,rmin,Atot,E1,E2,order);
     Ain_total = [Ain; Atot; -Atot];
     bin_total = [bin; bound_h; bound_l];
     
