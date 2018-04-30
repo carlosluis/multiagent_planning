@@ -14,7 +14,7 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 10:2:60; % number of vehicles
+N_vector = 10:2:70; % number of vehicles
 trials = 100; % number os trails per number of vehicles
 
 % Workspace boundaries
@@ -135,7 +135,12 @@ for q = 1:length(N_vector)
             for i = 1:N
                 diff_goal = p(:,:,i) - repmat(pf(:,:,i),length(t),1)';
                 dist_goal = sqrt(sum(diff_goal.^2,1));
-                time_index(i) = find(dist_goal > 0.05,1,'last') + 1;
+                hola = find(dist_goal >= 0.05,1,'last');
+                if isempty(hola)
+                    time_index(i) = 0;
+                else
+                    time_index(i) = hola + 1;
+                end
             end
             traj_time2(q,r) = max(time_index)*Ts;
         else
@@ -227,7 +232,12 @@ for q = 1:length(N_vector)
             for i = 1:N
                 diff_goal = p(:,:,i) - repmat(pf(:,:,i),length(t),1)';
                 dist_goal = sqrt(sum(diff_goal.^2,1));
-                time_index(i) = find(dist_goal > 0.05,1,'last') + 1;
+                hola = find(dist_goal >= 0.05,1,'last');
+                if isempty(hola)
+                    time_index(i) = 0;
+                else
+                    time_index(i) = hola + 1;
+                end
             end
             traj_time4(q,r) = max(time_index)*Ts;
         else
