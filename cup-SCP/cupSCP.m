@@ -19,13 +19,12 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.91;
 
 % Variables for ellipsoid constraint
-order = 2; % choose between 2 or 4 for the order of the super ellipsoid
+order = 4; % choose between 2 or 4 for the order of the super ellipsoid
 rmin = 0.5; % X-Y protection radius for collisions
 c = 1.5; % make this one for spherical constraint
 E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
-
 
 % Maximum acceleration in m/s^2
 alim = 0.5;
@@ -47,7 +46,7 @@ pf1 = [-2,-2,1.5];
 pf2 = [2,2,1.5];
 pf3 = [2,-2,1.5];
 pf4 = [-2,2,1.5];
-pf  = cat(3,pf1,pf2,pf3,pf4);
+pf  = cat(3, pf1,pf2,pf3,pf4);
 
 %% Some Precomputations
 % Kinematic model A,b matrices

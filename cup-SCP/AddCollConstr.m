@@ -14,7 +14,7 @@ for i = 1:N-1 % i-th vehicle
             diff = (E2*(pi(:,k)-pj(:,k)).^(order-1));
             
             % Right side of inequality constraint (bin)
-            r = dist^(order-1)*(rmin - dist) + diff'*diff - diff'*(po(:,:,i)'-po(:,:,j)');
+            r = dist^(order-1)*(rmin - dist) + diff'*(pi(:,k)-pj(:,k)) - diff'*(po(:,:,i)'-po(:,:,j)');
             bin = r;
             
             % Construct diagonal matrix with vector difference
