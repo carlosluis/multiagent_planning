@@ -1,9 +1,9 @@
 clc
-clear all
+% clear all
 close all
 
 % Time settings and variables
-T = 15; % Trajectory final time
+T = 10; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -19,7 +19,7 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.91;
 
 % Variables for ellipsoid constraint
-order = 4; % choose between 2 or 4 for the order of the super ellipsoid
+order = 2; % choose between 2 or 4 for the order of the super ellipsoid
 rmin = 0.5; % X-Y protection radius for collisions
 c = 1.5; % make this one for spherical constraint
 E = diag([1,1,c]);
@@ -29,26 +29,29 @@ E2 = E^(-order);
 % Maximum acceleration in m/s^2
 alim = 0.5;
 
-N = 4; % number of vehicles
+N = 20; % number of vehicles
 
 % Initial positions
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
-% Initial positions
-po1 = [2,2,1.5];
-po2 = [-2,-2,1.5];
-po3 = [-2,2,1.5];
-po4 = [2,-2,1.5];
-po = cat(3,po1,po2,po3,po4);
-
-% Final positions
-pf1 = [-2,-2,1.5];
-pf2 = [2,2,1.5];
-pf3 = [2,-2,1.5];
-pf4 = [-2,2,1.5];
-pf  = cat(3, pf1,pf2,pf3,pf4);
+% % Initial positions
+% po1 = [2,2,1.5];
+% po2 = [-2,-2,1.5];
+% po3 = [-2,2,1.5];
+% po4 = [2,-2,1.5];
+% po = cat(3,po1,po2,po3,po4);
+% 
+% % Final positions
+% pf1 = [-2,-2,1.5];
+% pf2 = [2,2,1.5];
+% pf3 = [2,-2,1.5];
+% pf4 = [-2,2,1.5];
+% pf  = cat(3, pf1,pf2,pf3,pf4);
 
 %% Some Precomputations
+p = [];
+v = [];
+a = [];
 % Kinematic model A,b matrices
 A = [1 0 0 h 0 0;
      0 1 0 0 h 0;
