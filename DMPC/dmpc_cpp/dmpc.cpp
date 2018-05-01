@@ -9,16 +9,16 @@
 using namespace Eigen;
 using namespace std;
 
-SoftDMPC::SoftDMPC():
-        _h(0.2),
-        _T(20),
-        _K(0),
-        _k_hor(15),
-        _order(2),
-        _c(1.5),
-        _rmin(0.5),
-        _alim(0.5)
+SoftDMPC::SoftDMPC(Params params)
 {
+    // Load parameters into private variables
+    _h = params.h;
+    _T = params.T;
+    _k_hor = params.k_hor;
+    _order = params.order;
+    _c = params.c;
+    _rmin = params.rmin;
+    _alim = params.alim;
     _K =  _T/_h + 1; // number of time steps
 
     // Ellipsoid definitions
@@ -49,8 +49,6 @@ SoftDMPC::SoftDMPC():
     _A0 = this->get_A0_mat(_k_hor);
     MatrixXd po = MatrixXd::Zero(3,1);
     MatrixXd pf = MatrixXd::Ones(3,1);
-
-    Trajectory bgsrtg = this->init_dmpc(po,pf);
 }
 
 MatrixXd SoftDMPC::get_lambda_mat(int h, int K)
@@ -151,7 +149,7 @@ MatrixXd SoftDMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
         }
         pass = false;
     }
-//    cout << "Random Points are:" << endl << pts << endl;
+    cout << "Random Points are:" << endl << pts << endl;
     return pts;
 }
 

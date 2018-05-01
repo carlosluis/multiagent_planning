@@ -22,12 +22,23 @@ struct Trajectory {
     MatrixXd acc;
 };
 
+struct Params {
+    float h; // time step, in seconds
+    int T; // Max time to complete trajectory
+    int k_hor; // length of the prediction horizon
+    int order; // order of the ellipsoid for collision constraint
+    float c; // multiplier for constraint in the Z direction
+    float rmin;
+    float alim;
+};
+
+static const Params default_params = {0.2,20,15,2,1.5,0.5,0.5};
 
 // Class definition
 class SoftDMPC {
 public:
     // Constructor
-    SoftDMPC();
+    SoftDMPC(Params params = default_params);
     // Destructor
     ~SoftDMPC(){};
 
