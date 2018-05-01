@@ -41,11 +41,13 @@ private:
     float _c; // multiplier for constraint in the Z direction
     float _rmin;
     float _alim;
-    Matrix3f _E;
-    Matrix3f _E1;
-    Matrix3f _E2;
-    Matrix<float, 6, 6> _A;
-    Matrix<float, 6, 3> _b;
+    Matrix3d _E;
+    Matrix3d _E1;
+    Matrix3d _E2;
+    Matrix<double, 6, 6> _A;
+    Matrix<double, 6, 3> _b;
+    MatrixXd _Lambda;
+    MatrixXd _Delta;
 
 
     // Private Methods

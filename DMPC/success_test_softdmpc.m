@@ -162,6 +162,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
+save('test_ellipsoids_100_f_10_5')
 %% Post-Processing
 
 % Probability of success plots
