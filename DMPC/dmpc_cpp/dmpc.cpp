@@ -42,8 +42,14 @@ SoftDMPC::SoftDMPC():
           0,_h,0,
           0,0,_h;
 
+    // Get matrices for MPC computation
     _Lambda = this->get_lambda_mat(_h,_k_hor);
-    _Delta = this->get_delta_mat(10);
+    _Delta = this->get_delta_mat(_k_hor);
+    _A0 = this->get_A0_mat(_k_hor);
+    MatrixXd po = MatrixXd::Zero(3,1);
+    MatrixXd pf = MatrixXd::Ones(3,1);
+
+    Trajectory bgsrtg = this->init_dmpc(po,pf);
 }
 
 MatrixXd SoftDMPC::get_lambda_mat(int h, int K)
@@ -82,5 +88,40 @@ MatrixXd SoftDMPC::get_delta_mat(int K)
     }
     return Delta;
 }
+
+MatrixXd SoftDMPC::get_A0_mat(int K)
+{
+    MatrixXd A0 = MatrixXd::Zero(3*K,6);
+    MatrixXd new_row = MatrixXd::Zero(6,6);
+    MatrixXd prev_row = MatrixXd::Identity(6,6);
+    int idx = 0;
+    for(int k=0; k<K; ++k)
+    {
+        new_row = _A*prev_row;
+        A0.middleRows(idx,3) = new_row.middleRows(0,3);
+        prev_row = new_row;
+        idx += 3;
+    }
+    return A0;
+}
+
+Trajectory SoftDMPC::init_dmpc(MatrixXd po, MatrixXd pf)
+{
+    Trajectory init;
+    MatrixXd diff = pf - po;
+    VectorXd t = VectorXd::LinSpaced(_K,0,(_K-1)*_h);
+    init.pos = MatrixXd::Zero(3,t.size());
+    init.vel = MatrixXd::Zero(3,t.size());
+    init.acc = MatrixXd::Zero(3,t.size());
+    for (int i=0; i<t.size(); ++i)
+    {
+        init.pos.col(i) = po + t[i]*diff/((_K-1)*_h);
+        cout << "init_pos = " << init.pos.col(i) << endl;
+    }
+
+    return init;
+}
+
+
 
 

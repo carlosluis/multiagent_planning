@@ -48,12 +48,14 @@ private:
     Matrix<double, 6, 3> _b;
     MatrixXd _Lambda;
     MatrixXd _Delta;
+    MatrixXd _A0;
 
 
     // Private Methods
     bool check_collisions(MatrixXd prev_p, std::vector<MatrixXd> obs, int n);
     MatrixXd get_lambda_mat(int h, int K);
-    MatrixXd get_delta_mat (int k_hor);
+    MatrixXd get_delta_mat (int K);
+    MatrixXd get_A0_mat (int K);
     Trajectory init_dmpc (MatrixXd po, MatrixXd pf);
     Constraint build_constraint (MatrixXd prev_p,
                                  MatrixXd po,
