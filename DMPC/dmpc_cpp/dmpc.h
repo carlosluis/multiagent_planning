@@ -10,6 +10,7 @@
 using namespace Eigen;
 using namespace std;
 
+// Structure definitions
 struct Constraint {
     MatrixXd A;
     VectorXd b;
@@ -21,6 +22,8 @@ struct Trajectory {
     MatrixXd acc;
 };
 
+
+// Class definition
 class SoftDMPC {
 public:
     // Constructor
@@ -28,8 +31,10 @@ public:
     // Destructor
     ~SoftDMPC(){};
 
-    // Public methods
+    // Public variables
 
+    // Public methods
+    MatrixXd gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin);
 private:
     // Private Variables
 
@@ -50,7 +55,6 @@ private:
     MatrixXd _Delta;
     MatrixXd _A0;
 
-
     // Private Methods
     bool check_collisions(MatrixXd prev_p, std::vector<MatrixXd> obs, int n);
     MatrixXd get_lambda_mat(int h, int K);
@@ -61,9 +65,6 @@ private:
                                  MatrixXd po,
                                  MatrixXd vo,
                                  std::vector<MatrixXd> obs);
-
-
-
 };
 
 #endif //DMPC_CPP_DMPC_H

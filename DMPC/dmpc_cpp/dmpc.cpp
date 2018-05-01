@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include "dmpc.h"
+#include <random>
 
 using namespace Eigen;
 using namespace std;
@@ -110,18 +111,48 @@ Trajectory SoftDMPC::init_dmpc(MatrixXd po, MatrixXd pf)
     Trajectory init;
     MatrixXd diff = pf - po;
     VectorXd t = VectorXd::LinSpaced(_K,0,(_K-1)*_h);
-    init.pos = MatrixXd::Zero(3,t.size());
-    init.vel = MatrixXd::Zero(3,t.size());
-    init.acc = MatrixXd::Zero(3,t.size());
-    for (int i=0; i<t.size(); ++i)
+    VectorXd t_hor = t.head(_k_hor);
+    init.pos = MatrixXd::Zero(3,t_hor.size());
+    init.vel = MatrixXd::Zero(3,t_hor.size());
+    init.acc = MatrixXd::Zero(3,t_hor.size());
+    for (int i=0; i<t_hor.size(); ++i)
     {
-        init.pos.col(i) = po + t[i]*diff/((_K-1)*_h);
-        cout << "init_pos = " << init.pos.col(i) << endl;
+        init.pos.col(i) = po + t_hor[i]*diff/((_K-1)*_h);
     }
-
     return init;
 }
 
+MatrixXd SoftDMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
+{
+    std::default_random_engine generator;
+    std::uniform_real_distribution<double> distribution(0.0,1.0);
+    MatrixXd pts = MatrixXd::Zero(3,N);
+    Vector3d candidate = MatrixXd::Zero(3,1);
+    VectorXd dist;
 
+    // Generate first point
+    std::srand((unsigned int) time(0));
+    pts.col(0) = pmin.array() + (pmax-pmin).array()*((MatrixXd::Random(3,1).array() + 1)/2);
+    bool pass = false;
+    for (int n=1; n < N; ++n)
+    {
+        while(!pass)
+        {
+            candidate = pmin.array() + (pmax-pmin).array()*((MatrixXd::Random(3,1).array() + 1)/2);
+            dist = ((((pts.leftCols(n)).colwise() - candidate).array().square()).colwise().sum()).array().sqrt();
+
+            for (int k=0; k < n; ++k){
+                pass = dist[k] > rmin;
+                if (!pass)
+                    break;
+            }
+            if (pass)
+                pts.col(n) = candidate.array();
+        }
+        pass = false;
+    }
+//    cout << "Random Points are:" << endl << pts << endl;
+    return pts;
+}
 
 
