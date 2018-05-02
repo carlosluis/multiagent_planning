@@ -20,7 +20,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 4; % number of vehicles
+N = 70; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -31,24 +31,24 @@ pmax = [2.5,2.5,2.2];
 % pmax = [5,5,5];
 
 % Minimum distance between vehicles in m
-rmin_init = 0.91;
+rmin_init = 0.75;
 
 % Initial positions
-% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomExchange(N,pmin,pmax,rmin_init);
 
-% Initial positions
-po1 = [2,2,1.5];
-po2 = [-2,-2,1.5];
-po3 = [-2,2,1.5];
-po4 = [2,-2,1.5];
-po = cat(3,po1,po2,po3,po4);
-
-% Final positions
-pf1 = [-2,-2,1.5];
-pf2 = [2,2,1.5];
-pf3 = [2,-2,1.5];
-pf4 = [-2,2,1.5];
-pf  = cat(3, pf1,pf2,pf3,pf4);
+% % Initial positions
+% po1 = [2,2,1.5];
+% po2 = [-2,-2,1.5];
+% po3 = [-2,2,1.5];
+% po4 = [2,-2,1.5];
+% po = cat(3,po1,po2,po3,po4);
+% 
+% % Final positions
+% pf1 = [-2,-2,1.5];
+% pf2 = [2,2,1.5];
+% pf3 = [2,-2,1.5];
+% pf4 = [-2,2,1.5];
+% pf  = cat(3, pf1,pf2,pf3,pf4);
 
 %% Solving the problem
 l = [];
@@ -137,11 +137,19 @@ passed = success && at_goal %DMPC was successful or not
 toc
 
 if passed
+    
+    % Interpolate for better resolution
+    for i = 1:N
+        p(:,:,i) = spline(tk,pk(:,:,i),t);
+        v(:,:,i) = spline(tk,vk(:,:,i),t);
+        a(:,:,i) = spline(tk,ak(:,:,i),t); 
+    end
+    
     % Check if collision constraints were not violated
     for i = 1:N
         for j = 1:N
             if(i~=j)
-                differ = E1*(pk(:,:,i) - pk(:,:,j));
+                differ = E1*(p(:,:,i) - p(:,:,j));
                 dist = (sum(differ.^order,1)).^(1/order);
                 if min(dist) < (rmin - 0.05)
                     [value,index] = min(dist);
@@ -156,20 +164,18 @@ if passed
         fprintf("No collisions found! Successful computation\n")
     end
     
-    % Interpolate for better resolution
-    for i = 1:N
-        p(:,:,i) = spline(tk,pk(:,:,i),t);
-        v(:,:,i) = spline(tk,vk(:,:,i),t);
-        a(:,:,i) = spline(tk,ak(:,:,i),t); 
-    end
-    
     % Calculate how much time is required to complete the transition
     % within a 5cm margin of the goal
 
     for i = 1:N
         differ = p(:,:,i) - repmat(pf(:,:,i),length(t),1)';
         dist = sqrt(sum(differ.^2,1));
-        time_index(i) = find(dist > 0.05,1,'last') + 1;
+        hola = find(dist >= 0.05,1,'last');
+        if isempty(hola)
+            time_index(i) = 0;
+        else
+            time_index(i) = hola + 1;
+        end
     end
     max_time_index = max(time_index);
     fprintf("The trajectory can be completed in %.2f seconds\n",max_time_index*Ts);

@@ -88,6 +88,7 @@ private:
                                  Vector3d po,
                                  Vector3d vo,
                                  std::vector<MatrixXd> obs, int n, int k);
+    std::vector<Trajectory> solve
 };
 
 #endif //DMPC_CPP_DMPC_H

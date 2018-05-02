@@ -27,7 +27,7 @@ pmin = [-2.5,-2.5,0.2];
 pmax = [2.5,2.5,2.2];
 
 % Minimum distance between vehicles in m
-rmin_init = 0.91;
+rmin_init = 0.75;
 
 % Maximum acceleration in m/s^2
 alim = 0.5;
@@ -60,7 +60,7 @@ for q = 1:length(N_vector)
     for r = 1:trials
         fprintf("Doing trial #%i with %i vehicles\n",r,N)
         % Initial positions
-        [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+        [po,pf] = randomExchange(N,pmin,pmax,rmin_init);
         
         %DMPC
         l = [];
@@ -118,11 +118,19 @@ for q = 1:length(N_vector)
         end
 
         if feasible(q,r) && ~failed_goal(q,r)      
+            
+            % Interpolate for better resolution
+            for i = 1:N
+                p(:,:,i) = spline(tk,pk(:,:,i),t);
+                v(:,:,i) = spline(tk,vk(:,:,i),t);
+                a(:,:,i) = spline(tk,ak(:,:,i),t); 
+            end
+            
             % Check if collision constraints were not violated
             for i = 1:N
                 for j = 1:N
                     if(i~=j)
-                        differ = E1*(pk(:,:,i) - pk(:,:,j));
+                        differ = E1*(p(:,:,i) - p(:,:,j));
                         dist = (sum(differ.^order,1)).^(1/order);
                         if min(dist) < (rmin - 0.05)
                             [value,index] = min(dist);
@@ -132,11 +140,6 @@ for q = 1:length(N_vector)
                 end
             end
             
-            for i = 1:N
-                p(:,:,i) = spline(tk,pk(:,:,i),t);
-                v(:,:,i) = spline(tk,vk(:,:,i),t);
-                a(:,:,i) = spline(tk,ak(:,:,i),t); 
-            end
             t_dmpc(q,r) = toc(t_start);
             totdist_dmpc(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
             
@@ -162,7 +165,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('test_ellipsoids_100_f_10_6')
+save('test_ellipsoids_100_f_10_5_exchange')
 %% Post-Processing
 
 % Probability of success plots
