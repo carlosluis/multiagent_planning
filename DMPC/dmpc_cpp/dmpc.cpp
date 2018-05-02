@@ -66,6 +66,10 @@ SoftDMPC::SoftDMPC(Params params)
     obs.push_back(agent2.pos);
     bool violation = check_collisions(agent1.pos.col(13),obs,0,13);
     cout << "violation = " << violation << endl;
+    Vector3d vo(0,0,0);
+    Constraint collisions = build_collconstraint(agent1.pos.col(13),po1,vo,obs,0,13);
+    cout << "Collision matrix A for agent 1" << endl << collisions.A << endl;
+    cout << "Collision matrix b for agent 1" << endl << collisions.b << endl;
 }
 
 MatrixXd SoftDMPC::get_lambda_mat(int h, int K)
@@ -181,7 +185,7 @@ void SoftDMPC::set_final_pts(MatrixXd pf)
 bool SoftDMPC::check_collisions(Vector3d prev_p, std::vector<MatrixXd> obs, int n, int k)
 {
     bool violation = false;
-    MatrixXd pj;
+    Vector3d pj;
     Vector3d diff;
     double dist;
     for (int i = 0; i < obs.size(); ++i)
@@ -198,4 +202,43 @@ bool SoftDMPC::check_collisions(Vector3d prev_p, std::vector<MatrixXd> obs, int 
         }
     }
     return violation;
+}
+
+Constraint SoftDMPC::build_collconstraint(Vector3d prev_p, Vector3d po, Vector3d vo, std::vector<MatrixXd> obs, int n, int k)
+{
+    int N_obs = obs.size();
+    Vector3d pj;
+    MatrixXd Ain_total = MatrixXd::Zero(N_obs-1,3*_k_hor);
+    VectorXd bin_total = MatrixXd::Zero(N_obs-1,1);
+    Vector3d diff;
+    double dist;
+    double r;
+    int idx = 0;
+    Matrix <double, 6,1> initial_states;
+    MatrixXd diff_row = MatrixXd::Zero(1,3*_k_hor);
+    initial_states << po,vo;
+    cout << "initial states = " << initial_states << endl;
+    Constraint collision;
+
+    for (int i=0; i < N_obs; ++i)
+    {
+        if(i!=n)
+        {
+            pj = obs[i].col(k);
+            diff = _E1*(prev_p - pj);
+            dist = pow(((diff.array().pow(_order)).sum()),1.0/_order);
+            diff = (_E2*(prev_p - pj)).array().pow(_order - 1);
+
+            r = pow(dist,_order-1)*(_rmin - dist) + diff.transpose()*prev_p
+                - diff.transpose()*_A0.middleRows(3*k,3)*initial_states;
+
+            diff_row << MatrixXd::Zero(1,3*k), diff.transpose(), MatrixXd::Zero(1,3*(_k_hor-k-1));
+            Ain_total.row(idx) = -diff_row*_Lambda;
+            bin_total[idx] = -r;
+            idx++;
+        }
+    }
+    collision.A = Ain_total;
+    collision.b = bin_total;
+    return collision;
 }

@@ -84,10 +84,10 @@ private:
     MatrixXd get_delta_mat (int K);
     MatrixXd get_A0_mat (int K);
     Trajectory init_dmpc (Vector3d po, Vector3d pf);
-    Constraint build_constraint (MatrixXd prev_p,
-                                 MatrixXd po,
-                                 MatrixXd vo,
-                                 std::vector<MatrixXd> obs);
+    Constraint build_collconstraint (Vector3d prev_p,
+                                 Vector3d po,
+                                 Vector3d vo,
+                                 std::vector<MatrixXd> obs, int n, int k);
 };
 
 #endif //DMPC_CPP_DMPC_H
