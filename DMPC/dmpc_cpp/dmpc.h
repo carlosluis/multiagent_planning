@@ -35,12 +35,12 @@ struct Params {
 static const Params default_params = {0.2,10,15,2,1.5,0.5,0.5};
 
 // Class definition
-class SoftDMPC {
+class DMPC {
 public:
     // Constructor
-    SoftDMPC(Params params = default_params);
+    DMPC(Params params = default_params);
     // Destructor
-    ~SoftDMPC(){};
+    ~DMPC(){};
 
     // Public variables
 
@@ -88,7 +88,9 @@ private:
                                  Vector3d po,
                                  Vector3d vo,
                                  std::vector<MatrixXd> obs, int n, int k);
-    std::vector<Trajectory> solve
+    std::vector<Trajectory> solveDMPC(Vector3d po,Vector3d pf,
+                                      Vector3d vo,Vector3d ao,
+                                      int n, std::vector<MatrixXd> obs);
 };
 
 #endif //DMPC_CPP_DMPC_H

@@ -8,7 +8,7 @@
 using namespace Eigen;
 using namespace std;
 
-SoftDMPC::SoftDMPC(Params params)
+DMPC::DMPC(Params params)
 {
     // Load parameters into private variables
     _h = params.h;
@@ -72,7 +72,7 @@ SoftDMPC::SoftDMPC(Params params)
     cout << "Collision matrix b for agent 1" << endl << collisions.b << endl;
 }
 
-MatrixXd SoftDMPC::get_lambda_mat(int h, int K)
+MatrixXd DMPC::get_lambda_mat(int h, int K)
 {
     MatrixXd Apos = MatrixXd::Zero(3*K,3*K);
     MatrixXd prev_row =  MatrixXd::Zero(6,3*K);
@@ -91,7 +91,7 @@ MatrixXd SoftDMPC::get_lambda_mat(int h, int K)
     return Apos;
 }
 
-MatrixXd SoftDMPC::get_delta_mat(int K)
+MatrixXd DMPC::get_delta_mat(int K)
 {
     MatrixXd Delta = MatrixXd::Zero(3*K,3*K);
     MatrixXd new_row = MatrixXd::Zero(3,3*K);
@@ -109,7 +109,7 @@ MatrixXd SoftDMPC::get_delta_mat(int K)
     return Delta;
 }
 
-MatrixXd SoftDMPC::get_A0_mat(int K)
+MatrixXd DMPC::get_A0_mat(int K)
 {
     MatrixXd A0 = MatrixXd::Zero(3*K,6);
     MatrixXd new_row = MatrixXd::Zero(6,6);
@@ -125,7 +125,7 @@ MatrixXd SoftDMPC::get_A0_mat(int K)
     return A0;
 }
 
-Trajectory SoftDMPC::init_dmpc(Vector3d po, Vector3d pf)
+Trajectory DMPC::init_dmpc(Vector3d po, Vector3d pf)
 {
     Trajectory init;
     Vector3d diff = pf - po;
@@ -141,7 +141,7 @@ Trajectory SoftDMPC::init_dmpc(Vector3d po, Vector3d pf)
     return init;
 }
 
-MatrixXd SoftDMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
+MatrixXd DMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
 {
     MatrixXd pts = MatrixXd::Zero(3,N);
     Vector3d candidate = MatrixXd::Zero(3,1);
@@ -149,14 +149,17 @@ MatrixXd SoftDMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
 
     // Generate first point
     std::srand((unsigned int) time(0));
-    pts.col(0) = pmin.array() + (pmax-pmin).array()*((MatrixXd::Random(3,1).array() + 1)/2);
+    pts.col(0) = pmin.array()
+                 + (pmax-pmin).array()*((MatrixXd::Random(3,1).array() + 1)/2);
     bool pass = false;
     for (int n=1; n < N; ++n)
     {
         while(!pass)
         {
-            candidate = pmin.array() + (pmax-pmin).array()*((MatrixXd::Random(3,1).array() + 1)/2);
-            dist = ((((pts.leftCols(n)).colwise() - candidate).array().square()).colwise().sum()).array().sqrt();
+            candidate = pmin.array()
+                        + (pmax-pmin).array()*((MatrixXd::Random(3,1).array() + 1)/2);
+            dist = ((((pts.leftCols(n)).colwise()
+                   - candidate).array().square()).colwise().sum()).array().sqrt();
 
             for (int k=0; k < n; ++k){
                 pass = dist[k] > rmin;
@@ -172,17 +175,18 @@ MatrixXd SoftDMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
     return pts;
 }
 
-void SoftDMPC::set_initial_pts(MatrixXd po)
+void DMPC::set_initial_pts(MatrixXd po)
 {
     _po = po;
 }
 
-void SoftDMPC::set_final_pts(MatrixXd pf)
+void DMPC::set_final_pts(MatrixXd pf)
 {
     _pf = pf;
 }
 
-bool SoftDMPC::check_collisions(Vector3d prev_p, std::vector<MatrixXd> obs, int n, int k)
+bool DMPC::check_collisions(Vector3d prev_p, std::vector<MatrixXd> obs,
+                            int n, int k)
 {
     bool violation = false;
     Vector3d pj;
@@ -204,7 +208,9 @@ bool SoftDMPC::check_collisions(Vector3d prev_p, std::vector<MatrixXd> obs, int 
     return violation;
 }
 
-Constraint SoftDMPC::build_collconstraint(Vector3d prev_p, Vector3d po, Vector3d vo, std::vector<MatrixXd> obs, int n, int k)
+Constraint DMPC::build_collconstraint(Vector3d prev_p, Vector3d po,
+                                      Vector3d vo, std::vector<MatrixXd> obs,
+                                      int n, int k)
 {
     int N_obs = obs.size();
     Vector3d pj;
@@ -232,7 +238,9 @@ Constraint SoftDMPC::build_collconstraint(Vector3d prev_p, Vector3d po, Vector3d
             r = pow(dist,_order-1)*(_rmin - dist) + diff.transpose()*prev_p
                 - diff.transpose()*_A0.middleRows(3*k,3)*initial_states;
 
-            diff_row << MatrixXd::Zero(1,3*k), diff.transpose(), MatrixXd::Zero(1,3*(_k_hor-k-1));
+            diff_row << MatrixXd::Zero(1,3*k),
+                        diff.transpose(),
+                        MatrixXd::Zero(1,3*(_k_hor-k-1));
             Ain_total.row(idx) = -diff_row*_Lambda;
             bin_total[idx] = -r;
             idx++;
@@ -241,4 +249,11 @@ Constraint SoftDMPC::build_collconstraint(Vector3d prev_p, Vector3d po, Vector3d
     collision.A = Ain_total;
     collision.b = bin_total;
     return collision;
+}
+
+std::vector<Trajectory> DMPC::solveDMPC(Vector3d po,Vector3d pf,
+                                  Vector3d vo,Vector3d ao,
+                                  int n, std::vector<MatrixXd> obs)
+{
+
 }

@@ -23,14 +23,14 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.57236844">
+    <splitter split-orientation="horizontal" split-proportion="0.48410088">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="450">
           <file leaf-file-name="main.cpp" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/main.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="411">
-                  <caret line="27" column="42" lean-forward="false" selection-start-line="27" selection-start-column="42" selection-end-line="27" selection-end-column="42" />
+                <state relative-caret-position="360">
+                  <caret line="24" column="4" lean-forward="false" selection-start-line="24" selection-start-column="4" selection-end-line="24" selection-end-column="4" />
                   <folding>
                     <element signature="e#0#19#0" expanded="true" />
                   </folding>
@@ -41,19 +41,20 @@
           <file leaf-file-name="dmpc.cpp" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/dmpc.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="445">
-                  <caret line="243" column="1" lean-forward="true" selection-start-line="243" selection-start-column="1" selection-end-line="243" selection-end-column="1" />
+                <state relative-caret-position="105">
+                  <caret line="144" column="0" lean-forward="false" selection-start-line="144" selection-start-column="0" selection-end-line="144" selection-end-column="0" />
                   <folding>
                     <element signature="e#41#60#0" expanded="true" />
-                    <element signature="e#2035#2610#0" expanded="false" />
-                    <element signature="e#2612#3156#0" expanded="false" />
-                    <element signature="e#3158#3536#0" expanded="false" />
-                    <element signature="e#3538#4006#0" expanded="false" />
-                    <element signature="e#4008#4991#0" expanded="false" />
-                    <element signature="e#4993#5054#0" expanded="false" />
-                    <element signature="e#5056#5115#0" expanded="false" />
-                    <element signature="e#5117#5712#0" expanded="false" />
-                    <element signature="e#5714#6996#0" expanded="false" />
+                    <element signature="e#2027#2598#0" expanded="false" />
+                    <element signature="e#2600#3140#0" expanded="false" />
+                    <element signature="e#3142#3516#0" expanded="false" />
+                    <element signature="e#3518#3982#0" expanded="false" />
+                    <element signature="e#3984#5023#0" expanded="false" />
+                    <element signature="e#5025#5082#0" expanded="false" />
+                    <element signature="e#5084#5139#0" expanded="false" />
+                    <element signature="e#5141#5760#0" expanded="false" />
+                    <element signature="e#5762#7164#0" expanded="false" />
+                    <element signature="e#7166#7362#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -67,7 +68,7 @@
             <entry file="file://$PROJECT_DIR$/dmpc.h">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="354">
-                  <caret line="90" column="33" lean-forward="false" selection-start-line="90" selection-start-column="33" selection-end-line="90" selection-end-column="33" />
+                  <caret line="93" column="1" lean-forward="false" selection-start-line="93" selection-start-column="1" selection-end-line="93" selection-end-column="1" />
                   <folding>
                     <element signature="e#89#111#0" expanded="true" />
                   </folding>
@@ -90,9 +91,9 @@
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/dec_iscp.cpp" />
         <option value="$PROJECT_DIR$/dec_iscp.h" />
+        <option value="$PROJECT_DIR$/dmpc.h" />
         <option value="$PROJECT_DIR$/main.cpp" />
         <option value="$PROJECT_DIR$/dmpc.cpp" />
-        <option value="$PROJECT_DIR$/dmpc.h" />
       </list>
     </option>
   </component>
@@ -186,12 +187,12 @@
       <workItem from="1521226466908" duration="264000" />
       <workItem from="1521226997691" duration="7759000" />
       <workItem from="1525114387839" duration="180000" />
-      <workItem from="1525114819464" duration="53272000" />
+      <workItem from="1525114819464" duration="55052000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="61475000" />
+    <option name="totallyTimeSpent" value="63255000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -234,7 +235,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="17" />
+      <option name="time" value="18" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -314,8 +315,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/main.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="411">
-          <caret line="27" column="42" lean-forward="false" selection-start-line="27" selection-start-column="42" selection-end-line="27" selection-end-column="42" />
+        <state relative-caret-position="360">
+          <caret line="24" column="4" lean-forward="false" selection-start-line="24" selection-start-column="4" selection-end-line="24" selection-end-column="4" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
           </folding>
@@ -324,19 +325,20 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/dmpc.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="445">
-          <caret line="243" column="1" lean-forward="true" selection-start-line="243" selection-start-column="1" selection-end-line="243" selection-end-column="1" />
+        <state relative-caret-position="105">
+          <caret line="144" column="0" lean-forward="false" selection-start-line="144" selection-start-column="0" selection-end-line="144" selection-end-column="0" />
           <folding>
             <element signature="e#41#60#0" expanded="true" />
-            <element signature="e#2035#2610#0" expanded="false" />
-            <element signature="e#2612#3156#0" expanded="false" />
-            <element signature="e#3158#3536#0" expanded="false" />
-            <element signature="e#3538#4006#0" expanded="false" />
-            <element signature="e#4008#4991#0" expanded="false" />
-            <element signature="e#4993#5054#0" expanded="false" />
-            <element signature="e#5056#5115#0" expanded="false" />
-            <element signature="e#5117#5712#0" expanded="false" />
-            <element signature="e#5714#6996#0" expanded="false" />
+            <element signature="e#2027#2598#0" expanded="false" />
+            <element signature="e#2600#3140#0" expanded="false" />
+            <element signature="e#3142#3516#0" expanded="false" />
+            <element signature="e#3518#3982#0" expanded="false" />
+            <element signature="e#3984#5023#0" expanded="false" />
+            <element signature="e#5025#5082#0" expanded="false" />
+            <element signature="e#5084#5139#0" expanded="false" />
+            <element signature="e#5141#5760#0" expanded="false" />
+            <element signature="e#5762#7164#0" expanded="false" />
+            <element signature="e#7166#7362#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -344,7 +346,7 @@
     <entry file="file://$PROJECT_DIR$/dmpc.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="354">
-          <caret line="90" column="33" lean-forward="false" selection-start-line="90" selection-start-column="33" selection-end-line="90" selection-end-column="33" />
+          <caret line="93" column="1" lean-forward="false" selection-start-line="93" selection-start-column="1" selection-end-line="93" selection-end-column="1" />
           <folding>
             <element signature="e#89#111#0" expanded="true" />
           </folding>

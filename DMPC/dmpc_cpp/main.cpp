@@ -22,7 +22,7 @@ int main()
     Vector3d pmax;
     pmax << 2.5, 2.5, 2.2;
 //    Params p = {0.4,20,15,2,1.5,0.5,0.5};
-    SoftDMPC test;
+    DMPC test;
 //    int N = 4;
 //    float rmin = 0.91;
 //    test.gen_rand_pts(N,pmin,pmax,rmin);
