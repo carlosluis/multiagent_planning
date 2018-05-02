@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include "dmpc.h"
-#include <random>
 
 using namespace Eigen;
 using namespace std;
@@ -47,8 +46,26 @@ SoftDMPC::SoftDMPC(Params params)
     _Lambda = this->get_lambda_mat(_h,_k_hor);
     _Delta = this->get_delta_mat(_k_hor);
     _A0 = this->get_A0_mat(_k_hor);
-    MatrixXd po = MatrixXd::Zero(3,1);
-    MatrixXd pf = MatrixXd::Ones(3,1);
+
+
+    // Just testing some functions
+    Vector3d pmin(-2.5, -2.5, 0.2);
+    Vector3d pmax(2.5, 2.5, 2.2);
+    Vector3d po1(0,0,1.5);
+    Vector3d po2(0,1,1.5);
+    Vector3d pf1(0,1,1.5);
+    Vector3d pf2(0,0,1.5);
+    Trajectory agent1 = this->init_dmpc(po1,pf1);
+    Trajectory agent2 = this->init_dmpc(po2,pf2);
+    cout << "Init Trajectory agent 1:" << endl << agent1.pos << endl;
+    cout << "Init Trajectory agent 2:" << endl << agent2.pos << endl;
+
+    // build obstacle list to test different functions
+    std::vector<MatrixXd> obs;
+    obs.push_back(agent1.pos);
+    obs.push_back(agent2.pos);
+    bool violation = check_collisions(agent1.pos.col(13),obs,0,13);
+    cout << "violation = " << violation << endl;
 }
 
 MatrixXd SoftDMPC::get_lambda_mat(int h, int K)
@@ -104,10 +121,10 @@ MatrixXd SoftDMPC::get_A0_mat(int K)
     return A0;
 }
 
-Trajectory SoftDMPC::init_dmpc(MatrixXd po, MatrixXd pf)
+Trajectory SoftDMPC::init_dmpc(Vector3d po, Vector3d pf)
 {
     Trajectory init;
-    MatrixXd diff = pf - po;
+    Vector3d diff = pf - po;
     VectorXd t = VectorXd::LinSpaced(_K,0,(_K-1)*_h);
     VectorXd t_hor = t.head(_k_hor);
     init.pos = MatrixXd::Zero(3,t_hor.size());
@@ -122,8 +139,6 @@ Trajectory SoftDMPC::init_dmpc(MatrixXd po, MatrixXd pf)
 
 MatrixXd SoftDMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
 {
-    std::default_random_engine generator;
-    std::uniform_real_distribution<double> distribution(0.0,1.0);
     MatrixXd pts = MatrixXd::Zero(3,N);
     Vector3d candidate = MatrixXd::Zero(3,1);
     VectorXd dist;
@@ -153,4 +168,34 @@ MatrixXd SoftDMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
     return pts;
 }
 
+void SoftDMPC::set_initial_pts(MatrixXd po)
+{
+    _po = po;
+}
 
+void SoftDMPC::set_final_pts(MatrixXd pf)
+{
+    _pf = pf;
+}
+
+bool SoftDMPC::check_collisions(Vector3d prev_p, std::vector<MatrixXd> obs, int n, int k)
+{
+    bool violation = false;
+    MatrixXd pj;
+    Vector3d diff;
+    double dist;
+    for (int i = 0; i < obs.size(); ++i)
+    {
+        if (i != n)
+        {
+            pj = obs[i].col(k);
+            diff = _E1*(prev_p - pj);
+            cout << "diff = " << diff << endl;
+            dist = pow(((diff.array().pow(_order)).sum()),1.0/_order);
+            cout << "dist = " << dist << endl;
+            if (dist < _rmin)
+                return violation = true;
+        }
+    }
+    return violation;
+}
