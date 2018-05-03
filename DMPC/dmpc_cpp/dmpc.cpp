@@ -292,7 +292,7 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
 
     // Auxiliary variables
     VectorXd init_propagation = _A0*initial_states;
-    VectorXd init_propagation_aug = A0_aug*initial_states;
+    VectorXd init_propagation_aug;
     VectorXd pf_rep(3*_k_hor + N -1);
     pf_rep << pf.replicate(_k_hor,1),MatrixXd::Zero(N-1,1);
     VectorXd alim_rep = _alim*MatrixXd::Ones(3*_k_hor,1);
@@ -317,7 +317,7 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
     // Choose appropriate Q,S,R matrices depending on the scenario
 
     // Case of no collisions and farther than 1m from goal
-    if (total_collconstr.A.size()==0 && (po-pf).norm() >= 1)
+    if (!violation && (po-pf).norm() >= 1)
     {
         Q.block(3*(_k_hor-1),3*(_k_hor-1),3,3) = 1000*MatrixXd::Identity(3,3);
         R = 1*MatrixXd::Identity(3*_k_hor,3*_k_hor);
@@ -325,7 +325,7 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
     }
 
     // Case of no collisions and close to goal
-    else if (total_collconstr.A.size()==0 && (po-pf).norm() < 1)
+    else if (!violation && (po-pf).norm() < 1)
     {
         Q.block(3*(_k_hor-1),3*(_k_hor-1),3,3) = 10000*MatrixXd::Identity(3,3);
         R = 1*MatrixXd::Identity(3*_k_hor,3*_k_hor);
@@ -353,6 +353,8 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
         Delta_aug.block(0,0,3*_k_hor,3*_k_hor) = _Delta;
         A0_aug.block(0,0,3*_k_hor,6) = _A0;
 
+        init_propagation_aug = A0_aug*initial_states;
+
         bin = MatrixXd::Zero(4*(N-1)+2*(3*_k_hor) + 2*(3*_k_hor),1);
         bin << collconstrb_aug,
                _pmax.replicate(_k_hor,1) - init_propagation,
@@ -364,7 +366,7 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
         f_w << MatrixXd::Zero(3*_k_hor,1),
                -pow(10,5)*MatrixXd::Ones(N-1,1);
 
-        W.block(3*_k_hor,3*_k_hor,N-1,N-1) = MatrixXd::Identity(N-1,N-1);
+        W.block(3*_k_hor,3*_k_hor,N-1,N-1) = pow(10,-9)*(MatrixXd::Identity(N-1,N-1));
 
         a0_1 = MatrixXd::Zero(3*_k_hor + N - 1,1);
         a0_1 << ao, MatrixXd::Zero(3*(_k_hor-1) + N - 1,1);
@@ -392,6 +394,8 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
     {
 
     }
+
+//    cout << H << endl;
 
     _qp = new QuadProgDense(3*_k_hor+N-1,0,4*(N-1)+2*(3*_k_hor)+2*(3*_k_hor));
     _qp->solve(H,f,MatrixXd::Zero(0, 3*_k_hor+N-1),VectorXd::Zero(0),Ain,bin);
