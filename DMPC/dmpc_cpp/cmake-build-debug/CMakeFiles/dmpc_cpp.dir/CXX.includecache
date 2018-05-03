@@ -9,7 +9,7 @@
 /home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/dmpc.h
 Eigen/Dense
 -
-eigen-quadprog/QuadProg.h
+eigen-quadprog/src/QuadProg.h
 -
 
 /home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/main.cpp
@@ -17,7 +17,7 @@ iostream
 -
 Eigen/Dense
 -
-eigen-quadprog/QuadProg.h
+eigen-quadprog/src/QuadProg.h
 -
 dmpc.h
 /home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/dmpc.h

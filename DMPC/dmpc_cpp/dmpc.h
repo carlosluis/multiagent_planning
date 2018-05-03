@@ -5,7 +5,7 @@
 #define DMPC_CPP_DMPC_H
 
 #include <Eigen/Dense>
-#include <eigen-quadprog/QuadProg.h>
+#include <eigen-quadprog/src/QuadProg.h>
 
 using namespace Eigen;
 using namespace std;
@@ -65,6 +65,9 @@ private:
     // Workspace boundaries
     Vector3d _pmin;
     Vector3d _pmax;
+
+    // QP solver
+    QuadProgDense *_qp;
 
     // Goals
     MatrixXd _po; // set of initial positions

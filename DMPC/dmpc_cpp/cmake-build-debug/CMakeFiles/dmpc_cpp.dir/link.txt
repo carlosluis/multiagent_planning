@@ -1,1 +1,1 @@
-/usr/bin/c++  -g   CMakeFiles/dmpc_cpp.dir/main.cpp.o  -o dmpc_cpp libdmpc.a 
+/usr/bin/c++  -g   CMakeFiles/dmpc_cpp.dir/main.cpp.o  -o dmpc_cpp libdmpc.a -leigen-quadprog 

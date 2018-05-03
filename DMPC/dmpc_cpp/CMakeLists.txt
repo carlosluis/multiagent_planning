@@ -13,4 +13,6 @@ add_library(dmpc
 
 target_link_libraries(dmpc_cpp
         dmpc
+        eigen-quadprog
         )
+

@@ -1,6 +1,6 @@
 #include <iostream>
 #include <Eigen/Dense>
-#include <eigen-quadprog/QuadProg.h>
+#include <eigen-quadprog/src/QuadProg.h>
 #include "dmpc.h"
 
 

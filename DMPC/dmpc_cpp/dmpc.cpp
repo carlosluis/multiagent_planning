@@ -393,6 +393,10 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
 
     }
 
+    _qp = new QuadProgDense(3*_k_hor+N-1,0,4*(N-1)+2*(3*_k_hor)+2*(3*_k_hor));
+    _qp->solve(H,f,MatrixXd::Zero(0, 3*_k_hor+N-1),VectorXd::Zero(0),Ain,bin);
+    cout << "Exit flag = " << _qp->fail() << endl;
+    cout << "Result is = " << _qp->result() << endl;
 
     return solution;
 }
