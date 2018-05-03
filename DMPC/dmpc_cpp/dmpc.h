@@ -62,6 +62,10 @@ private:
     float _rmin;
     float _alim;
 
+    // Workspace boundaries
+    Vector3d _pmin;
+    Vector3d _pmax;
+
     // Goals
     MatrixXd _po; // set of initial positions
     MatrixXd _pf; // set of final positions
@@ -88,7 +92,7 @@ private:
                                  Vector3d po,
                                  Vector3d vo,
                                  std::vector<MatrixXd> obs, int n, int k);
-    std::vector<Trajectory> solveDMPC(Vector3d po,Vector3d pf,
+    Trajectory solveDMPC(Vector3d po,Vector3d pf,
                                       Vector3d vo,Vector3d ao,
                                       int n, std::vector<MatrixXd> obs);
 };

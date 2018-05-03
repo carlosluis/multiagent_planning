@@ -23,13 +23,13 @@
   </component>
   <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.48410088">
+    <splitter split-orientation="horizontal" split-proportion="0.86049104">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="450">
           <file leaf-file-name="main.cpp" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/main.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="360">
+                <state relative-caret-position="396">
                   <caret line="24" column="4" lean-forward="false" selection-start-line="24" selection-start-column="4" selection-end-line="24" selection-end-column="4" />
                   <folding>
                     <element signature="e#0#19#0" expanded="true" />
@@ -41,20 +41,20 @@
           <file leaf-file-name="dmpc.cpp" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/dmpc.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="129">
-                  <caret line="144" column="0" lean-forward="false" selection-start-line="144" selection-start-column="0" selection-end-line="144" selection-end-column="0" />
+                <state relative-caret-position="330">
+                  <caret line="345" column="18" lean-forward="true" selection-start-line="345" selection-start-column="18" selection-end-line="345" selection-end-column="18" />
                   <folding>
                     <element signature="e#41#60#0" expanded="true" />
-                    <element signature="e#2027#2598#0" expanded="false" />
-                    <element signature="e#2600#3140#0" expanded="false" />
-                    <element signature="e#3142#3516#0" expanded="false" />
-                    <element signature="e#3518#3982#0" expanded="false" />
-                    <element signature="e#3984#5023#0" expanded="false" />
-                    <element signature="e#5025#5082#0" expanded="false" />
-                    <element signature="e#5084#5139#0" expanded="false" />
-                    <element signature="e#5141#5760#0" expanded="false" />
-                    <element signature="e#5762#7164#0" expanded="false" />
-                    <element signature="e#7166#7362#0" expanded="false" />
+                    <element signature="e#125#2098#0" expanded="false" />
+                    <element signature="e#2100#2671#0" expanded="false" />
+                    <element signature="e#2673#3213#0" expanded="false" />
+                    <element signature="e#3215#3589#0" expanded="false" />
+                    <element signature="e#3591#4055#0" expanded="false" />
+                    <element signature="e#4057#5096#0" expanded="false" />
+                    <element signature="e#5098#5155#0" expanded="false" />
+                    <element signature="e#5157#5212#0" expanded="false" />
+                    <element signature="e#5214#5739#0" expanded="false" />
+                    <element signature="e#5741#7084#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -67,8 +67,8 @@
           <file leaf-file-name="dmpc.h" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/dmpc.h">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="378">
-                  <caret line="93" column="1" lean-forward="false" selection-start-line="93" selection-start-column="1" selection-end-line="93" selection-end-column="1" />
+                <state relative-caret-position="646">
+                  <caret line="34" column="43" lean-forward="false" selection-start-line="34" selection-start-column="43" selection-end-line="34" selection-end-column="43" />
                   <folding>
                     <element signature="e#89#111#0" expanded="true" />
                   </folding>
@@ -91,8 +91,8 @@
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
         <option value="$PROJECT_DIR$/dec_iscp.cpp" />
         <option value="$PROJECT_DIR$/dec_iscp.h" />
-        <option value="$PROJECT_DIR$/dmpc.h" />
         <option value="$PROJECT_DIR$/main.cpp" />
+        <option value="$PROJECT_DIR$/dmpc.h" />
         <option value="$PROJECT_DIR$/dmpc.cpp" />
       </list>
     </option>
@@ -104,10 +104,10 @@
     <sorting>DEFINITION_ORDER</sorting>
   </component>
   <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
-  <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1985" />
-    <option name="y" value="38" />
-    <option name="width" value="1855" />
+  <component name="ProjectFrameBounds" extendedState="4">
+    <option name="x" value="2912" />
+    <option name="y" value="24" />
+    <option name="width" value="928" />
     <option name="height" value="1056" />
   </component>
   <component name="ProjectView">
@@ -187,12 +187,12 @@
       <workItem from="1521226466908" duration="264000" />
       <workItem from="1521226997691" duration="7759000" />
       <workItem from="1525114387839" duration="180000" />
-      <workItem from="1525114819464" duration="55643000" />
+      <workItem from="1525114819464" duration="75529000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="63846000" />
+    <option name="totallyTimeSpent" value="83732000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -204,20 +204,20 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="1985" y="-4" width="1855" height="1084" extended-state="6" />
+    <frame x="2912" y="24" width="928" height="1056" extended-state="4" />
     <editor active="true" />
     <layout>
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.0" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32932165" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.47155362" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4683973" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32932165" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.36980307" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.20090294" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32932165" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.39934355" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.38487583" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -235,7 +235,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="18" />
+      <option name="time" value="44" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -313,9 +313,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file:///usr/include/c++/5/bits/stl_vector.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="168">
+          <caret line="802" column="0" lean-forward="false" selection-start-line="802" selection-start-column="0" selection-end-line="802" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/main.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="360">
+        <state relative-caret-position="396">
           <caret line="24" column="4" lean-forward="false" selection-start-line="24" selection-start-column="4" selection-end-line="24" selection-end-column="4" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
@@ -323,32 +331,40 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dmpc.cpp">
+    <entry file="file://$PROJECT_DIR$/dmpc.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="129">
-          <caret line="144" column="0" lean-forward="false" selection-start-line="144" selection-start-column="0" selection-end-line="144" selection-end-column="0" />
+        <state relative-caret-position="646">
+          <caret line="34" column="43" lean-forward="false" selection-start-line="34" selection-start-column="43" selection-end-line="34" selection-end-column="43" />
           <folding>
-            <element signature="e#41#60#0" expanded="true" />
-            <element signature="e#2027#2598#0" expanded="false" />
-            <element signature="e#2600#3140#0" expanded="false" />
-            <element signature="e#3142#3516#0" expanded="false" />
-            <element signature="e#3518#3982#0" expanded="false" />
-            <element signature="e#3984#5023#0" expanded="false" />
-            <element signature="e#5025#5082#0" expanded="false" />
-            <element signature="e#5084#5139#0" expanded="false" />
-            <element signature="e#5141#5760#0" expanded="false" />
-            <element signature="e#5762#7164#0" expanded="false" />
-            <element signature="e#7166#7362#0" expanded="false" />
+            <element signature="e#89#111#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dmpc.h">
+    <entry file="file:///usr/include/eigen3/Eigen/src/Core/CwiseBinaryOp.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="378">
-          <caret line="93" column="1" lean-forward="false" selection-start-line="93" selection-start-column="1" selection-end-line="93" selection-end-column="1" />
+        <state relative-caret-position="172">
+          <caret line="109" column="0" lean-forward="false" selection-start-line="109" selection-start-column="0" selection-end-line="109" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dmpc.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="345" column="18" lean-forward="true" selection-start-line="345" selection-start-column="18" selection-end-line="345" selection-end-column="18" />
           <folding>
-            <element signature="e#89#111#0" expanded="true" />
+            <element signature="e#41#60#0" expanded="true" />
+            <element signature="e#125#2098#0" expanded="false" />
+            <element signature="e#2100#2671#0" expanded="false" />
+            <element signature="e#2673#3213#0" expanded="false" />
+            <element signature="e#3215#3589#0" expanded="false" />
+            <element signature="e#3591#4055#0" expanded="false" />
+            <element signature="e#4057#5096#0" expanded="false" />
+            <element signature="e#5098#5155#0" expanded="false" />
+            <element signature="e#5157#5212#0" expanded="false" />
+            <element signature="e#5214#5739#0" expanded="false" />
+            <element signature="e#5741#7084#0" expanded="false" />
           </folding>
         </state>
       </provider>
