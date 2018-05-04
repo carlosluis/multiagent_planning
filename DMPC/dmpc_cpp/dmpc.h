@@ -82,14 +82,15 @@ private:
     Matrix<double, 6, 6> _A;
     Matrix<double, 6, 3> _b;
     MatrixXd _Lambda; // Matrix to recover position from acceleration
+    MatrixXd _A_v; // Matrix to recover velocity from acceleration
     MatrixXd _Delta; // Used for input variation computation
     MatrixXd _A0; // Propagation of initial states in position
 
     // Private Methods
     bool check_collisions(Vector3d prev_p, std::vector<MatrixXd> obs, int n, int k);
-    MatrixXd get_lambda_mat(int h, int K);
-    MatrixXd get_delta_mat (int K);
-    MatrixXd get_A0_mat (int K);
+    void get_lambda_A_v_mat(int K);
+    void get_delta_mat (int K);
+    void get_A0_mat (int K);
     Trajectory init_dmpc (Vector3d po, Vector3d pf);
     Constraint build_collconstraint (Vector3d prev_p,
                                  Vector3d po,

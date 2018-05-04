@@ -43,10 +43,9 @@ DMPC::DMPC(Params params)
           0,0,_h;
 
     // Get matrices for MPC computation
-    _Lambda = this->get_lambda_mat(_h,_k_hor);
-    _Delta = this->get_delta_mat(_k_hor);
-    _A0 = this->get_A0_mat(_k_hor);
-
+    get_lambda_A_v_mat(_k_hor);
+    get_delta_mat(_k_hor);
+    get_A0_mat(_k_hor);
 
     // Just testing some functions
     _pmin << -2.5, -2.5, 0.2;
@@ -75,9 +74,10 @@ DMPC::DMPC(Params params)
 
 }
 
-MatrixXd DMPC::get_lambda_mat(int h, int K)
+void DMPC::get_lambda_A_v_mat(int K)
 {
     MatrixXd Apos = MatrixXd::Zero(3*K,3*K);
+    MatrixXd Avel = MatrixXd::Zero(3*K,3*K);
     MatrixXd prev_row =  MatrixXd::Zero(6,3*K);
     MatrixXd new_row =  MatrixXd::Zero(6,3*K);
     MatrixXd add_b = MatrixXd::Zero(6,3*K);
@@ -88,13 +88,15 @@ MatrixXd DMPC::get_lambda_mat(int h, int K)
                 MatrixXd::Zero(_b.rows(),_b.cols()*(K-k-1));
         new_row = _A*prev_row + add_b;
         Apos.middleRows(idx,3) = new_row.middleRows(0,3);
+        Avel.middleRows(idx,3) = new_row.middleRows(3,3);
         prev_row = new_row;
         idx += 3;
     }
-    return Apos;
+    _Lambda = Apos;
+    _A_v = Avel;
 }
 
-MatrixXd DMPC::get_delta_mat(int K)
+void DMPC::get_delta_mat(int K)
 {
     MatrixXd Delta = MatrixXd::Zero(3*K,3*K);
     MatrixXd new_row = MatrixXd::Zero(3,3*K);
@@ -109,10 +111,11 @@ MatrixXd DMPC::get_delta_mat(int K)
        Delta.middleRows(idx,3) = new_row;
        idx += 3;
     }
-    return Delta;
+
+    _Delta = Delta;
 }
 
-MatrixXd DMPC::get_A0_mat(int K)
+void DMPC::get_A0_mat(int K)
 {
     MatrixXd A0 = MatrixXd::Zero(3*K,6);
     MatrixXd new_row = MatrixXd::Zero(6,6);
@@ -125,7 +128,7 @@ MatrixXd DMPC::get_A0_mat(int K)
         prev_row = new_row;
         idx += 3;
     }
-    return A0;
+    _A0 = A0;
 }
 
 Trajectory DMPC::init_dmpc(Vector3d po, Vector3d pf)
@@ -317,6 +320,13 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
     MatrixXd Ain;
     VectorXd bin;
 
+    // QP results
+    VectorXd x; // complete result
+    VectorXd p; // position vector solution
+    VectorXd v; // velocity vector solution
+    VectorXd a; // acceleration vector solution
+    int  opt_fail; // 0 -> successfull, !0 failed
+
     for (int k=0; k < _k_hor; ++k)
     {
         violation = check_collisions(prev_p.col(k),obs,n,k);
@@ -455,8 +465,33 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
     cout << "Violation = " << violation << endl << endl;
     QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
     _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
-    cout << "Exit flag = " << _qp.fail() << endl;
-    cout << "Result is = " << _qp.result() << endl;
+    x = _qp.result();
+    opt_fail = _qp.fail();
+
+    // Extract acceleration from the result
+    a = x.head(n_var);
+
+    // propagate states
+    p = _Lambda*a + init_propagation;
+    v = _A_v*a + vo.replicate(_k_hor,1);
+
+    // Convert a 3*K vector into a 2D matrix of size (3,K)
+    MatrixXd pos_aux(3,_k_hor);
+    MatrixXd vel_aux(3,_k_hor);
+    MatrixXd acc_aux(3,_k_hor);
+    int idx = 0;
+    for (int i = 0; i < _k_hor; ++i)
+    {
+        pos_aux.col(i) = p.segment(idx,3);
+        vel_aux.col(i) = v.segment(idx,3);
+        acc_aux.col(i) = a.segment(idx,3);
+        idx += 3;
+    }
+
+    // Assign values to the trajectory solution
+    solution.pos = pos_aux;
+    solution.vel = vel_aux;
+    solution.acc = acc_aux;
 
     return solution;
 }
