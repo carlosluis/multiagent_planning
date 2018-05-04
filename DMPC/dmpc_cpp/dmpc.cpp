@@ -57,20 +57,20 @@ DMPC::DMPC(Params params)
     Vector3d pf2(0,0,1.5);
     Trajectory agent1 = this->init_dmpc(po1,pf1);
     Trajectory agent2 = this->init_dmpc(po2,pf2);
-    cout << "Init Trajectory agent 1:" << endl << agent1.pos << endl;
-    cout << "Init Trajectory agent 2:" << endl << agent2.pos << endl;
+//    cout << "Init Trajectory agent 1:" << endl << agent1.pos << endl;
+//    cout << "Init Trajectory agent 2:" << endl << agent2.pos << endl;
 
     // build obstacle list to test different functions
     std::vector<MatrixXd> obs;
     obs.push_back(agent1.pos);
     obs.push_back(agent2.pos);
     bool violation = check_collisions(agent1.pos.col(13),obs,0,13);
-    cout << "violation = " << violation << endl;
+//    cout << "violation = " << violation << endl;
     Vector3d vo(0,0,0);
     Vector3d ao(0,0,0);
     Constraint collisions = build_collconstraint(agent1.pos.col(13),po1,vo,obs,0,13);
-    cout << "Collision matrix A for agent 1" << endl << collisions.A << endl;
-    cout << "Collision matrix b for agent 1" << endl << collisions.b << endl;
+//    cout << "Collision matrix A for agent 1" << endl << collisions.A << endl;
+//    cout << "Collision matrix b for agent 1" << endl << collisions.b << endl;
     Trajectory sol_agent1 = solveDMPC(po1,pf1,vo,ao,0,obs);
 
 }
@@ -256,13 +256,10 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
                                   int n, std::vector<MatrixXd> obs)
 {
     int N = obs.size(); // number of vehicles for transition
-    bool violation;
+    bool violation; // check if collision constraint is violated in horizon
     Trajectory solution;
     Constraint coll_constraint;
-    Constraint total_collconstr;
     MatrixXd prev_p = obs.at(n); // previous solution of n-th vehicle
-    MatrixXd collconstrA_aug(2*(N-1), 3*_k_hor + N -1);
-    VectorXd collconstrb_aug(2*(N-1));
     VectorXd a0_1;
 
     // Initial state joint vector
@@ -283,6 +280,10 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
     int qp_nvar;
     int qp_nineq;
     const int qp_neq = 0; // No equality constraints in this problem
+
+    // Collision constraints augmented with relaxation variable
+    MatrixXd collconstrA_aug(2*(N-1), n_var_aug);
+    VectorXd collconstrb_aug(2*(N-1));
 
     // Penalty matrices for DMPC calculation
     MatrixXd Q(n_var,n_var);
@@ -309,13 +310,12 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
     // Auxiliary variables
     VectorXd init_propagation = _A0*initial_states;
     VectorXd init_propagation_aug;
-    VectorXd pf_rep(n_var_aug);
-    pf_rep << pf.replicate(_k_hor,1),MatrixXd::Zero(N-1,1);
+    VectorXd pf_rep;
     VectorXd alim_rep = _alim*MatrixXd::Ones(3*_k_hor,1);
 
     // Constraint matrices and vectors to pass to the QP solver
     MatrixXd Ain;
-    MatrixXd bin;
+    VectorXd bin;
 
     for (int k=0; k < _k_hor; ++k)
     {
@@ -375,20 +375,38 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
 
         init_propagation_aug = A0_aug*initial_states;
 
-        bin = MatrixXd::Zero(n_ineq_aug,1);
+        // Build complete inequality constraints:
+        // 1) collision + relaxation variable
+        // 2) workspace boundaries
+        // 3) acceleration limits
+        bin = VectorXd::Zero(n_ineq_aug);
         bin << collconstrb_aug,
                _pmax.replicate(_k_hor,1) - init_propagation,
                -_pmin.replicate(_k_hor,1) + init_propagation,
-               alim_rep, alim_rep; // input limit constraint
+               alim_rep, alim_rep;
 
-        f_w << MatrixXd::Zero(n_var,1),
-               -pow(10,5)*MatrixXd::Ones(N-1,1);
+        Ain = MatrixXd::Zero(n_ineq_aug,n_var_aug);
 
-        W.block(n_var,n_var,N-1,N-1) = pow(10,-9)*(MatrixXd::Identity(N-1,N-1));
+        Ain << collconstrA_aug,
+                Lambda_aug_in, -Lambda_aug_in,
+                MatrixXd::Identity(n_var,n_var_aug),
+                -MatrixXd::Identity(n_var,n_var_aug);
 
-        a0_1 = MatrixXd::Zero(n_var_aug,1);
-        a0_1 << ao, MatrixXd::Zero(3*(_k_hor-1) + N - 1,1);
-        f = MatrixXd::Zero(n_var_aug,1);
+        // Build linear and quadratic cost matrices
+
+        f_w << VectorXd::Zero(n_var),
+               -pow(10,5)*VectorXd::Ones(N-1);
+
+        //TODO: investigate why if this matrix is zero, the optimization fails
+        W.block(n_var,n_var,N-1,N-1) = pow(10,-5)*(MatrixXd::Identity(N-1,N-1));
+
+        a0_1 = VectorXd::Zero(n_var_aug);
+        a0_1 << ao, VectorXd::Zero(3*(_k_hor-1) + N - 1);
+
+        pf_rep = VectorXd::Zero(n_var_aug);
+        pf_rep << pf.replicate(_k_hor,1),MatrixXd::Zero(N-1,1);
+
+        f = VectorXd::Zero(n_var_aug);
 
         f = -2*(pf_rep.transpose()*Q_aug*Lambda_aug -
                 init_propagation_aug.transpose()*Q_aug*Lambda_aug +
@@ -399,26 +417,46 @@ Trajectory DMPC::solveDMPC(Vector3d po,Vector3d pf,
         H = 2*(Lambda_aug.transpose()*Q_aug*Lambda_aug
                + Delta_aug.transpose()*S_aug*Delta_aug
                + R_aug + W);
-
-        Ain = MatrixXd::Zero(n_ineq_aug,n_var_aug);
-
-        Ain << collconstrA_aug,
-               Lambda_aug_in, -Lambda_aug_in,
-               MatrixXd::Identity(n_var,n_var_aug),
-               -MatrixXd::Identity(n_var,n_var_aug);
     }
 
     else // matrices when there're no collisions
     {
+        qp_nvar = n_var;
+        qp_nineq = n_ineq;
 
+        bin = VectorXd::Zero(n_ineq);
+        bin <<  _pmax.replicate(_k_hor,1) - init_propagation,
+                -_pmin.replicate(_k_hor,1) + init_propagation,
+                alim_rep, alim_rep;
+
+        Ain = MatrixXd::Zero(n_ineq,n_var);
+
+        Ain <<  _Lambda, -_Lambda,
+                MatrixXd::Identity(n_var,n_var),
+                -MatrixXd::Identity(n_var,n_var);
+
+        a0_1 = VectorXd::Zero(n_var);
+        a0_1 << ao, VectorXd::Zero(3*(_k_hor-1));
+        pf_rep = VectorXd::Zero(n_var);
+        pf_rep << pf.replicate(_k_hor,1);
+
+        f = VectorXd::Zero(n_var);
+
+        f = -2*(pf_rep.transpose()*Q*_Lambda -
+                init_propagation.transpose()*Q*_Lambda +
+                a0_1.transpose()*S*_Delta);
+
+        H = 2*(_Lambda.transpose()*Q*_Lambda
+               + _Delta.transpose()*S*_Delta
+               + R);
     }
 
-//    cout << H << endl;
-
-    _qp = new QuadProgDense(qp_nvar,qp_neq,qp_nineq);
-    _qp->solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
-    cout << "Exit flag = " << _qp->fail() << endl;
-    cout << "Result is = " << _qp->result() << endl;
+    // Declare quadprog object and solve the QP
+    cout << "Violation = " << violation << endl << endl;
+    QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
+    _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
+    cout << "Exit flag = " << _qp.fail() << endl;
+    cout << "Result is = " << _qp.result() << endl;
 
     return solution;
 }

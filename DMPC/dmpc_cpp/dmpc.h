@@ -32,7 +32,7 @@ struct Params {
     float alim;
 };
 
-static const Params default_params = {0.2,10,15,2,1.5,0.5,0.5};
+static const Params default_params = {0.2,20,15,2,1.5,0.5,0.5};
 
 // Class definition
 class DMPC {
@@ -67,7 +67,7 @@ private:
     Vector3d _pmax;
 
     // QP solver
-    QuadProgDense *_qp;
+    QuadProgDense _qp;
 
     // Goals
     MatrixXd _po; // set of initial positions

@@ -12,11 +12,11 @@ int main()
     std::vector<MatrixXd> hola;
     MatrixXd m = MatrixXd::Random(3,3);
     m = (m + MatrixXd::Constant(3,3,1.2)) * 100;
-    cout << "m =" << endl << m << endl;
+//    cout << "m =" << endl << m << endl;
     hola.push_back(m);
 //    hola.push_back(MatrixXd::Constant(3,3,1.2));
-    cout << "hola[1] = " << hola.at(0) << endl;
-    cout << "Size of hola = " << hola.size() << endl;
+//    cout << "hola[1] = " << hola.at(0) << endl;
+//    cout << "Size of hola = " << hola.size() << endl;
     Vector3d pmin;
     pmin << -2.5, -2.5, 0.2;
     Vector3d pmax;
