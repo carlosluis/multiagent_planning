@@ -47,7 +47,9 @@ public:
     // Public methods
     MatrixXd gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin);
     void set_initial_pts(MatrixXd po);
-    void set_final_pts(MatrixXd pf);\
+    void set_final_pts(MatrixXd pf);
+    std::vector<Trajectory> solveDMPC(MatrixXd po,
+                                      MatrixXd pf);
 
 private:
     // Private Variables
@@ -86,6 +88,8 @@ private:
     MatrixXd _Delta; // Used for input variation computation
     MatrixXd _A0; // Propagation of initial states in position
 
+    int _fail; //keeps track if QP failed or not
+
     // Private Methods
     bool check_collisions(Vector3d prev_p, std::vector<MatrixXd> obs, int n, int k);
     void get_lambda_A_v_mat(int K);
@@ -96,9 +100,11 @@ private:
                                  Vector3d po,
                                  Vector3d vo,
                                  std::vector<MatrixXd> obs, int n, int k);
-    Trajectory solveDMPC(Vector3d po,Vector3d pf,
+    Trajectory solveQP(Vector3d po,Vector3d pf,
                                       Vector3d vo,Vector3d ao,
                                       int n, std::vector<MatrixXd> obs);
+
+
 };
 
 #endif //DMPC_CPP_DMPC_H
