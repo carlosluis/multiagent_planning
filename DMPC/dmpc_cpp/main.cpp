@@ -2,6 +2,7 @@
 #include <Eigen/Dense>
 #include <eigen-quadprog/src/QuadProg.h>
 #include "dmpc.h"
+#include <iomanip>
 
 
 using namespace Eigen;
@@ -27,15 +28,17 @@ int main()
 //    float rmin = 0.91;
 //    test.gen_rand_pts(N,pmin,pmax,rmin);
 
-//    Vector3d po1(0,0,1.5);
-//    Vector3d po2(0,2,1.5);
-//    Vector3d pf1(0,2,1.5);
-//    Vector3d pf2(0,0,1.5);
-//    MatrixXd po(3,2);
-//    po << po1,po2;
-//    MatrixXd pf(3,2);
-//    pf << pf1,pf2;
+    Vector3d po1(0.01,0,1.5);
+    Vector3d po2(0,2,1.5);
+    Vector3d pf1(0.01,2,1.5);
+    Vector3d pf2(0,0,1.5);
+    MatrixXd po(3,2);
+    po << po1,po2;
+    MatrixXd pf(3,2);
+    pf << pf1,pf2;
 
-//    std::vector<Trajectory> solution = test.solveDMPC(po,pf);
-
+    std::vector<Trajectory> solution = test.solveDMPC(po,pf);
+    cout << std::setprecision(3)<< solution.at(1).pos.row(1) << endl << endl;
+//    cout << std::setprecision(3)<< solution.at(0).pos.row(1) << endl << endl;
+//    cout << solution.at(1).pos << endl << endl;
 }

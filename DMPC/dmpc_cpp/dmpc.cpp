@@ -70,10 +70,10 @@ DMPC::DMPC(Params params)
     Constraint collisions = build_collconstraint(agent1.pos.col(13),po1,vo,obs,0,13);
 //    cout << "Collision matrix A for agent 1" << endl << collisions.A << endl;
 //    cout << "Collision matrix b for agent 1" << endl << collisions.b << endl;
-    Trajectory sol_agent1 = solveQP(po1,pf1,vo,ao,0,obs);
-    cout << sol_agent1.pos << endl;
-    sol_agent1 = solveQP(po2,pf2,vo,ao,1,obs);
-    cout << sol_agent1.pos << endl;
+//    Trajectory sol_agent1 = solveQP(po1,pf1,vo,ao,0,obs);
+//    cout << sol_agent1.pos << endl;
+//    sol_agent1 = solveQP(po2,pf2,vo,ao,1,obs);
+//    cout << sol_agent1.pos << endl;
 
 //    MatrixXd po(3,2);
 //    po << po1,po2;
@@ -273,14 +273,6 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
     Constraint coll_constraint;
     MatrixXd prev_p = obs.at(n); // previous solution of n-th vehicle
     VectorXd a0_1;
-    cout << endl << "Inside SolveQP " << endl;
-    cout << "po = " << endl << po << endl;
-    cout << "pf = " << endl << pf << endl;
-    cout << "vo = " << endl << vo << endl;
-    cout << "ao = " << endl << ao << endl;
-    cout << "n = " << endl << n << endl;
-    cout << "obs[0] = " << endl << obs.at(0) << endl;
-    cout << "obs[1] = " << endl << obs.at(1) << endl;
 
     // Initial state joint vector
     Matrix <double, 6,1> initial_states;
@@ -302,30 +294,30 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
     int qp_neq = 0; // No equality constraints in this problem
 
     // Collision constraints augmented with relaxation variable
-    MatrixXd collconstrA_aug(2*(N-1), n_var_aug);
-    VectorXd collconstrb_aug(2*(N-1));
+    MatrixXd collconstrA_aug = MatrixXd::Zero(2*(N-1), n_var_aug);
+    VectorXd collconstrb_aug = VectorXd::Zero(2*(N-1));
 
     // Penalty matrices for DMPC calculation
-    MatrixXd Q(n_var,n_var);
-    MatrixXd Q_aug(n_var_aug,n_var_aug);
-    MatrixXd R(n_var,n_var);
-    MatrixXd R_aug(n_var_aug,n_var_aug);
-    MatrixXd S(n_var,n_var);
-    MatrixXd S_aug(n_var_aug,n_var_aug);
+    MatrixXd Q = MatrixXd::Zero(n_var,n_var);
+    MatrixXd Q_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
+    MatrixXd R = MatrixXd::Zero(n_var,n_var);
+    MatrixXd R_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
+    MatrixXd S = MatrixXd::Zero(n_var,n_var);
+    MatrixXd S_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
 
     // Penalty matrices added in case of collision violation
-    VectorXd f_w(n_var_aug);
-    MatrixXd W(n_var_aug,n_var_aug);
+    VectorXd f_w = VectorXd::Zero(n_var_aug);
+    MatrixXd W = MatrixXd::Zero(n_var_aug,n_var_aug);
 
     // Final Quadratic and linear matrices for QP solver
     MatrixXd H;
     VectorXd f;
 
     // Augmented model matrices in case of collisions
-    MatrixXd Lambda_aug(n_var_aug,n_var_aug);
-    MatrixXd Lambda_aug_in(n_var,n_var_aug);
-    MatrixXd Delta_aug(n_var_aug,n_var_aug);
-    MatrixXd A0_aug(n_var_aug,6);
+    MatrixXd Lambda_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
+    MatrixXd Lambda_aug_in = MatrixXd::Zero(n_var,n_var_aug);
+    MatrixXd Delta_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
+    MatrixXd A0_aug = MatrixXd::Zero(n_var_aug,6);
 
     // Auxiliary variables
     VectorXd init_propagation = _A0*initial_states;
@@ -424,7 +416,7 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
                -pow(10,5)*VectorXd::Ones(N-1);
 
         //TODO: investigate why if this matrix is zero, the optimization fails
-        W.block(n_var,n_var,N-1,N-1) = 0*(MatrixXd::Identity(N-1,N-1));
+        W.block(n_var,n_var,N-1,N-1) = pow(10,-9)*(MatrixXd::Identity(N-1,N-1));
 
         a0_1 = VectorXd::Zero(n_var_aug);
         a0_1 << ao, VectorXd::Zero(3*(_k_hor-1) + N - 1);
@@ -478,12 +470,11 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
     }
 
     // Declare quadprog object and solve the QP
-//    cout << "Lambda term of H =" << endl << _Delta.transpose()*S*_Delta << endl << endl;
+//    cout << "Lambda term of H =" << endl << Q << endl << endl;
     QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
     _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
     x = _qp.result();
     _fail = _qp.fail();
-    cout << "Fail = " << _fail << endl;
 
     // Extract acceleration from the result
     a = x.head(n_var);
@@ -515,104 +506,72 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
 
 std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
 {
-//    int N = po.cols(); // Number of agents = number of rows of either po or pf
-//
-//    // Variables
-//    std::vector<Trajectory> all_trajectories(N);
-//    Vector3d poi;
-//    Vector3d pfi;
-//    Trajectory trajectory_i;
-//    Vector3d pok;
-//    Vector3d vok;
-//    Vector3d aok;
-//    int failed_i;
-//
-//    std::vector<MatrixXd> prev_obs;
-//    std::vector<MatrixXd> obs;
-//
-//    // Generate trajectory for each time step of trajectory, for each agent
-//    for (int k=0; k < _K; ++k)
-//    {   obs.clear();
-//        for (int i=0; i < N; ++i)
-//        {
-//            if (k == 0)
-//            {   // Initialize
-//                all_trajectories.at(i).pos = MatrixXd::Zero(3,_K);
-//                all_trajectories.at(i).vel = MatrixXd::Zero(3,_K);
-//                all_trajectories.at(i).acc = MatrixXd::Zero(3,_K);
-//                trajectory_i.pos = MatrixXd::Zero(3,_k_hor);
-//                trajectory_i.vel = MatrixXd::Zero(3,_k_hor);
-//                trajectory_i.acc = MatrixXd::Zero(3,_k_hor);
-//                poi = po.col(i);
-//                pfi = pf.col(i);
-//                trajectory_i = init_dmpc(poi,pfi);
-////                prev_obs.push_back(trajectory_i.pos);
-//                _fail = 0;
-//            }
-//            else
-//            {   // Update previous solution, solve current QP
-//                pok = all_trajectories.at(i).pos.col(k-1);
-//                vok = all_trajectories.at(i).vel.col(k-1);
-//                aok = all_trajectories.at(i).acc.col(k-1);
-//                cout << "pok = " << endl << pok << endl;
-//                cout << "vok = " << endl << vok << endl;
-//                cout << "aok = " << endl << aok << endl;
-//                cout << "pfk = " << endl << pf.col(i) << endl;
-//                cout << "prev_obs[0] = " << endl << prev_obs.at(0) << endl;
-//                cout << "prev_obs[1] = " << endl << prev_obs.at(1) << endl;
-//                trajectory_i = solveQP(pok,pf.col(i),vok,aok,i,prev_obs);
-//                cout << "New trajectory = " << endl << trajectory_i.pos << endl;
-//            }
-//
-//            if (_fail)
-//            {
-//                failed_i = i;
-//                break;
-//            }
-//
-//            // If QP didn't fail, then update the solution vector and obstacle list
-//            obs.push_back(trajectory_i.pos);
-//            all_trajectories.at(i).pos.col(k) = trajectory_i.pos.col(0);
-//            all_trajectories.at(i).vel.col(k) = trajectory_i.vel.col(0);
-//            all_trajectories.at(i).acc.col(k) = trajectory_i.acc.col(0);
-//        }
-//
-//        if (_fail)
-//        {
-//            cout << "Failed - problem unfeasible @ k_T = " << k << ", vehicle #" << failed_i << endl;
-//            break;
-//        }
-//        cout << "obs[0] = " << endl << obs.at(0) << endl;
-//        cout << "obs[1] = " << endl << obs.at(1) << endl;
-//        prev_obs = obs;
-//    }
-//
-//    if(!_fail)
-//        cout << "Successfull!!" << endl;
+    int N = po.cols(); // Number of agents = number of rows of either po or pf
 
-    Vector3d po1(0,0,1.5);
-    Vector3d po2(0,2,1.5);
-    Vector3d pf1(0,2,1.5);
-    Vector3d pf2(0,0,1.5);
+    // Variables
+    std::vector<Trajectory> all_trajectories(N);
+    Vector3d poi;
+    Vector3d pfi;
+    Trajectory trajectory_i;
+    Vector3d pok;
+    Vector3d vok;
+    Vector3d aok;
+    int failed_i;
 
-    Trajectory agent1 = this->init_dmpc(po1,pf1);
-    Trajectory agent2 = this->init_dmpc(po2,pf2);
-//    cout << "Init Trajectory agent 1:" << endl << agent1.pos << endl;
-//    cout << "Init Trajectory agent 2:" << endl << agent2.pos << endl;
-
-    // build obstacle list to test different functions
+    std::vector<MatrixXd> prev_obs;
     std::vector<MatrixXd> obs;
-    obs.push_back(agent1.pos);
-    obs.push_back(agent2.pos);
-    bool violation = check_collisions(agent1.pos.col(13),obs,0,13);
-//    cout << "violation = " << violation << endl;
-    Vector3d vo(0,0,0);
-    Vector3d ao(0,0,0);
 
-    Trajectory sol_agent1 = solveQP(po1,pf1,vo,ao,0,obs);
-    cout << sol_agent1.pos << endl;
-    sol_agent1 = solveQP(po2,pf2,vo,ao,1,obs);
-    cout << sol_agent1.pos << endl;
+    // Generate trajectory for each time step of trajectory, for each agent
+    for (int k=0; k < _K; ++k)
+    {   obs.clear();
+        for (int i=0; i < N; ++i)
+        {
+            if (k == 0)
+            {   // Initialize
+                all_trajectories.at(i).pos = MatrixXd::Zero(3,_K);
+                all_trajectories.at(i).vel = MatrixXd::Zero(3,_K);
+                all_trajectories.at(i).acc = MatrixXd::Zero(3,_K);
+                trajectory_i.pos = MatrixXd::Zero(3,_k_hor);
+                trajectory_i.vel = MatrixXd::Zero(3,_k_hor);
+                trajectory_i.acc = MatrixXd::Zero(3,_k_hor);
+                poi = po.col(i);
+                pfi = pf.col(i);
+                trajectory_i = init_dmpc(poi,pfi);
+//                prev_obs.push_back(trajectory_i.pos);
+                _fail = 0;
+            }
+            else
+            {   // Update previous solution, solve current QP
+                pok = all_trajectories.at(i).pos.col(k-1);
+                vok = all_trajectories.at(i).vel.col(k-1);
+                aok = all_trajectories.at(i).acc.col(k-1);
+                trajectory_i = solveQP(pok,pf.col(i),vok,aok,i,prev_obs);
+//                cout << "New trajectory = " << endl << trajectory_i.pos << endl;
+            }
 
+            if (_fail)
+            {
+                failed_i = i;
+                break;
+            }
 
+            // If QP didn't fail, then update the solution vector and obstacle list
+            obs.push_back(trajectory_i.pos);
+            all_trajectories.at(i).pos.col(k) = trajectory_i.pos.col(0);
+            all_trajectories.at(i).vel.col(k) = trajectory_i.vel.col(0);
+            all_trajectories.at(i).acc.col(k) = trajectory_i.acc.col(0);
+        }
+
+        if (_fail)
+        {
+            cout << "Failed - problem unfeasible @ k_T = " << k << ", vehicle #" << failed_i << endl;
+            break;
+        }
+        prev_obs = obs;
+    }
+
+    if(!_fail)
+        cout << "Successfull!!" << endl;
+
+    return all_trajectories;
 }
