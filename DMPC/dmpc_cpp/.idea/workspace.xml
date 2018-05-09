@@ -8,12 +8,13 @@
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Release" CONFIG_NAME="Release" />
     </configurations>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="7c069a95-5612-4740-a8cb-e73561831c4f" name="Default" comment="" />
     <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
+    <ignored path="$PROJECT_DIR$/cmake-build-release/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -21,16 +22,16 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
   <component name="FileEditorManager">
-    <splitter split-orientation="horizontal" split-proportion="0.5575658">
+    <splitter split-orientation="horizontal" split-proportion="0.52395767">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="450">
-          <file leaf-file-name="main.cpp" pinned="false" current-in-tab="true">
+          <file leaf-file-name="main.cpp" pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/main.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="409">
-                  <caret line="42" column="49" lean-forward="true" selection-start-line="42" selection-start-column="49" selection-end-line="42" selection-end-column="49" />
+                <state relative-caret-position="221">
+                  <caret line="25" column="54" lean-forward="false" selection-start-line="25" selection-start-column="54" selection-end-line="25" selection-end-column="54" />
                   <folding>
                     <element signature="e#0#19#0" expanded="true" />
                   </folding>
@@ -38,22 +39,26 @@
               </provider>
             </entry>
           </file>
-          <file leaf-file-name="dmpc.cpp" pinned="false" current-in-tab="false">
+          <file leaf-file-name="dmpc.cpp" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/dmpc.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="548">
-                  <caret line="574" column="0" lean-forward="false" selection-start-line="574" selection-start-column="0" selection-end-line="574" selection-end-column="0" />
+                <state relative-caret-position="467">
+                  <caret line="159" column="27" lean-forward="true" selection-start-line="159" selection-start-column="27" selection-end-line="159" selection-end-column="27" />
                   <folding>
                     <element signature="e#41#60#0" expanded="true" />
-                    <element signature="e#2344#3031#0" expanded="false" />
-                    <element signature="e#3033#3572#0" expanded="false" />
-                    <element signature="e#3574#3943#0" expanded="false" />
-                    <element signature="e#3945#4409#0" expanded="false" />
-                    <element signature="e#4411#5450#0" expanded="false" />
-                    <element signature="e#5452#5509#0" expanded="false" />
-                    <element signature="e#5511#5566#0" expanded="false" />
-                    <element signature="e#5568#6093#0" expanded="false" />
-                    <element signature="e#6095#7438#0" expanded="false" />
+                    <element signature="e#190#2052#0" expanded="false" />
+                    <element signature="e#2054#2741#0" expanded="false" />
+                    <element signature="e#2743#3282#0" expanded="false" />
+                    <element signature="e#3284#3653#0" expanded="false" />
+                    <element signature="e#3655#4119#0" expanded="false" />
+                    <element signature="e#5159#5216#0" expanded="false" />
+                    <element signature="e#5218#5273#0" expanded="false" />
+                    <element signature="e#5275#5800#0" expanded="false" />
+                    <element signature="e#5802#7145#0" expanded="false" />
+                    <element signature="e#7147#15350#0" expanded="false" />
+                    <element signature="e#15352#18406#0" expanded="false" />
+                    <element signature="e#18408#18809#0" expanded="false" />
+                    <element signature="e#18811#23079#0" expanded="false" />
                   </folding>
                 </state>
               </provider>
@@ -66,8 +71,8 @@
           <file leaf-file-name="dmpc.h" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/dmpc.h">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="119">
-                  <caret line="34" column="44" lean-forward="false" selection-start-line="34" selection-start-column="44" selection-end-line="34" selection-end-column="44" />
+                <state relative-caret-position="290">
+                  <caret line="49" column="0" lean-forward="false" selection-start-line="49" selection-start-column="0" selection-end-line="49" selection-end-column="0" />
                   <folding>
                     <element signature="e#89#111#0" expanded="true" />
                   </folding>
@@ -93,9 +98,10 @@
         <option value="$PROJECT_DIR$/dec_iscp.cpp" />
         <option value="$PROJECT_DIR$/dec_iscp.h" />
         <option value="$PROJECT_DIR$/CMakeLists.txt" />
-        <option value="$PROJECT_DIR$/dmpc.cpp" />
-        <option value="$PROJECT_DIR$/dmpc.h" />
+        <option value="$PROJECT_DIR$/spline.h" />
         <option value="$PROJECT_DIR$/main.cpp" />
+        <option value="$PROJECT_DIR$/dmpc.h" />
+        <option value="$PROJECT_DIR$/dmpc.cpp" />
       </list>
     </option>
   </component>
@@ -138,6 +144,11 @@
               <item name="dmpc_cpp" type="dad4c3:CidrFilesViewHelper$MyProjectTreeStructure$1" />
               <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
             </path>
+            <path>
+              <item name="dmpc_cpp" type="dad4c3:CidrFilesViewHelper$MyProjectTreeStructure$1" />
+              <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+              <item name="Header Search Paths" type="70bed36:NamedLibraryElementNode" />
+            </path>
           </expand>
           <select />
         </subPane>
@@ -148,6 +159,7 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="CMakeSettings" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -162,13 +174,13 @@
     </option>
   </component>
   <component name="RunManager" selected="Application.dmpc_cpp">
-    <configuration name="Build All" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="dmpc_cpp" RUN_TARGET_NAME="dmpc_cpp" EXPLICIT_BUILD_TARGET_NAME="all">
+    <configuration name="Build All" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="dmpc_cpp" RUN_TARGET_NAME="dmpc_cpp" EXPLICIT_BUILD_TARGET_NAME="all">
       <envs />
     </configuration>
-    <configuration name="dmpc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="dmpc_cpp" TARGET_NAME="dmpc" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="dmpc_cpp" RUN_TARGET_NAME="dmpc_cpp">
+    <configuration name="dmpc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="dmpc_cpp" TARGET_NAME="dmpc" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="dmpc_cpp" RUN_TARGET_NAME="dmpc_cpp">
       <envs />
     </configuration>
-    <configuration name="dmpc_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="dmpc_cpp" TARGET_NAME="dmpc_cpp" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="dmpc_cpp" RUN_TARGET_NAME="dmpc_cpp">
+    <configuration name="dmpc_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="dmpc_cpp" TARGET_NAME="dmpc_cpp" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="dmpc_cpp" RUN_TARGET_NAME="dmpc_cpp">
       <envs />
     </configuration>
     <list size="3">
@@ -193,12 +205,12 @@
       <workItem from="1521226466908" duration="264000" />
       <workItem from="1521226997691" duration="7759000" />
       <workItem from="1525114387839" duration="180000" />
-      <workItem from="1525114819464" duration="121037000" />
+      <workItem from="1525114819464" duration="143399000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="129240000" />
+    <option name="totallyTimeSpent" value="151602000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -213,17 +225,17 @@
     <frame x="1985" y="-4" width="1855" height="1084" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3294956" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15076755" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32932165" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.5229759" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.52407" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32932165" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.39059082" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.4573304" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32932165" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.65754926" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33369803" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
       <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
@@ -241,7 +253,7 @@
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
-      <option name="time" value="96" />
+      <option name="time" value="114" />
     </breakpoint-manager>
     <watches-manager />
   </component>
@@ -343,14 +355,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="15" column="4" lean-forward="false" selection-start-line="15" selection-start-column="4" selection-end-line="15" selection-end-column="22" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file:///usr/include/eigen3/Eigen/src/Core/Block.h">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="17">
@@ -375,41 +379,73 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dmpc.cpp">
+    <entry file="file://$PROJECT_DIR$/spline.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="548">
-          <caret line="574" column="0" lean-forward="false" selection-start-line="574" selection-start-column="0" selection-end-line="574" selection-end-column="0" />
+        <state relative-caret-position="677">
+          <caret line="455" column="0" lean-forward="false" selection-start-line="455" selection-start-column="0" selection-end-line="455" selection-end-column="0" />
           <folding>
-            <element signature="e#41#60#0" expanded="true" />
-            <element signature="e#2344#3031#0" expanded="false" />
-            <element signature="e#3033#3572#0" expanded="false" />
-            <element signature="e#3574#3943#0" expanded="false" />
-            <element signature="e#3945#4409#0" expanded="false" />
-            <element signature="e#4411#5450#0" expanded="false" />
-            <element signature="e#5452#5509#0" expanded="false" />
-            <element signature="e#5511#5566#0" expanded="false" />
-            <element signature="e#5568#6093#0" expanded="false" />
-            <element signature="e#6095#7438#0" expanded="false" />
+            <element signature="e#1015#1032#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/dmpc.h">
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="119">
-          <caret line="34" column="44" lean-forward="false" selection-start-line="34" selection-start-column="44" selection-end-line="34" selection-end-column="44" />
+        <state relative-caret-position="272">
+          <caret line="16" column="9" lean-forward="false" selection-start-line="16" selection-start-column="9" selection-end-line="16" selection-end-column="9" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/eigen3/Eigen/src/Core/util/Memory.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-317">
+          <caret line="246" column="0" lean-forward="false" selection-start-line="246" selection-start-column="0" selection-end-line="246" selection-end-column="0" />
           <folding>
-            <element signature="e#89#111#0" expanded="true" />
+            <element signature="e#9058#9265#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/main.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="409">
-          <caret line="42" column="49" lean-forward="true" selection-start-line="42" selection-start-column="49" selection-end-line="42" selection-end-column="49" />
+        <state relative-caret-position="221">
+          <caret line="25" column="54" lean-forward="false" selection-start-line="25" selection-start-column="54" selection-end-line="25" selection-end-column="54" />
           <folding>
             <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dmpc.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="290">
+          <caret line="49" column="0" lean-forward="false" selection-start-line="49" selection-start-column="0" selection-end-line="49" selection-end-column="0" />
+          <folding>
+            <element signature="e#89#111#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dmpc.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="467">
+          <caret line="159" column="27" lean-forward="true" selection-start-line="159" selection-start-column="27" selection-end-line="159" selection-end-column="27" />
+          <folding>
+            <element signature="e#41#60#0" expanded="true" />
+            <element signature="e#190#2052#0" expanded="false" />
+            <element signature="e#2054#2741#0" expanded="false" />
+            <element signature="e#2743#3282#0" expanded="false" />
+            <element signature="e#3284#3653#0" expanded="false" />
+            <element signature="e#3655#4119#0" expanded="false" />
+            <element signature="e#5159#5216#0" expanded="false" />
+            <element signature="e#5218#5273#0" expanded="false" />
+            <element signature="e#5275#5800#0" expanded="false" />
+            <element signature="e#5802#7145#0" expanded="false" />
+            <element signature="e#7147#15350#0" expanded="false" />
+            <element signature="e#15352#18406#0" expanded="false" />
+            <element signature="e#18408#18809#0" expanded="false" />
+            <element signature="e#18811#23079#0" expanded="false" />
           </folding>
         </state>
       </provider>

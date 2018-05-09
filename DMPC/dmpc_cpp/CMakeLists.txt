@@ -9,7 +9,7 @@ add_executable(dmpc_cpp
 # Declare a C++ library
 add_library(dmpc
         dmpc.cpp
-        )
+        spline.h)
 
 target_link_libraries(dmpc_cpp
         dmpc

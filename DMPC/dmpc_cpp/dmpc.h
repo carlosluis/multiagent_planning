@@ -6,6 +6,7 @@
 
 #include <Eigen/Dense>
 #include <eigen-quadprog/src/QuadProg.h>
+#include <boost/math/interpolators/cubic_b_spline.hpp>
 
 using namespace Eigen;
 using namespace std;
@@ -103,6 +104,12 @@ private:
     Trajectory solveQP(Vector3d po,Vector3d pf,
                                       Vector3d vo,Vector3d ao,
                                       int n, std::vector<MatrixXd> obs);
+
+    bool reached_goal(std::vector<Trajectory> all_trajectories,
+                      MatrixXd pf, float error_tol, int N);
+
+    std::vector<Trajectory> interp_trajectory(std::vector<Trajectory> sol,
+                                              double step_size);
 
 
 };

@@ -1,0 +1,1 @@
+/usr/bin/c++  -O3 -DNDEBUG   CMakeFiles/dmpc_cpp.dir/main.cpp.o  -o dmpc_cpp libdmpc.a -leigen-quadprog 

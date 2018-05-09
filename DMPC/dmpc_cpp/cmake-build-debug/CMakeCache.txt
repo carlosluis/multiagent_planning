@@ -233,6 +233,9 @@ dmpc_cpp_SOURCE_DIR:STATIC=/home/carlos/Documents/UTIAS/First Year/Winter 2018/E
 //Dependencies for target
 quadprog_LIB_DEPENDS:STATIC=
 
+//Dependencies for target
+spline_LIB_DEPENDS:STATIC=
+
 
 ########################
 # INTERNAL cache entries

@@ -4,9 +4,12 @@
 
 #include <iostream>
 #include "dmpc.h"
+#include <chrono>
+#include <random>
 
 using namespace Eigen;
 using namespace std;
+using namespace std::chrono;
 
 DMPC::DMPC(Params params)
 {
@@ -54,6 +57,12 @@ DMPC::DMPC(Params params)
     Vector3d po2(0,2,1.5);
     Vector3d pf1(0,2,1.5);
     Vector3d pf2(0,0,1.5);
+
+    MatrixXd po = gen_rand_pts(4,_pmin,_pmax,_rmin);
+    MatrixXd pf = gen_rand_pts(4,_pmin,_pmax,_rmin);
+    cout << "po = " << endl << po << endl;
+    cout << "pf = " << endl << pf << endl;
+
     Trajectory agent1 = this->init_dmpc(po1,pf1);
     Trajectory agent2 = this->init_dmpc(po2,pf2);
 //    cout << "Init Trajectory agent 1:" << endl << agent1.pos << endl;
@@ -64,23 +73,9 @@ DMPC::DMPC(Params params)
     obs.push_back(agent1.pos);
     obs.push_back(agent2.pos);
     bool violation = check_collisions(agent1.pos.col(13),obs,0,13);
-//    cout << "violation = " << violation << endl;
     Vector3d vo(0,0,0);
     Vector3d ao(0,0,0);
     Constraint collisions = build_collconstraint(agent1.pos.col(13),po1,vo,obs,0,13);
-//    cout << "Collision matrix A for agent 1" << endl << collisions.A << endl;
-//    cout << "Collision matrix b for agent 1" << endl << collisions.b << endl;
-//    Trajectory sol_agent1 = solveQP(po1,pf1,vo,ao,0,obs);
-//    cout << sol_agent1.pos << endl;
-//    sol_agent1 = solveQP(po2,pf2,vo,ao,1,obs);
-//    cout << sol_agent1.pos << endl;
-
-//    MatrixXd po(3,2);
-//    po << po1,po2;
-//    MatrixXd pf(3,2);
-//    pf << pf1,pf2;
-//
-//    std::vector<Trajectory> solution = solveDMPC(po,pf);
 }
 
 void DMPC::get_lambda_A_v_mat(int K)
@@ -163,7 +158,7 @@ MatrixXd DMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
     VectorXd dist;
 
     // Generate first point
-    std::srand((unsigned int) time(0));
+    srand((unsigned int) time(0));
     pts.col(0) = pmin.array()
                  + (pmax-pmin).array()*((MatrixXd::Random(3,1).array() + 1)/2);
     bool pass = false;
@@ -186,7 +181,7 @@ MatrixXd DMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
         }
         pass = false;
     }
-    cout << "Random Points are:" << endl << pts << endl;
+//    cout << "Random Points are:" << endl << pts << endl;
     return pts;
 }
 
@@ -510,6 +505,7 @@ std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
 
     // Variables
     std::vector<Trajectory> all_trajectories(N);
+    std::vector<Trajectory> solution(N);
     Vector3d poi;
     Vector3d pfi;
     Trajectory trajectory_i;
@@ -571,7 +567,147 @@ std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
     }
 
     if(!_fail)
-        cout << "Successfull!!" << endl;
+        cout << "Optimization problem feasible: solution found" << endl;
+
+    // Check if every agent reached its goal
+    bool arrived = reached_goal(all_trajectories,pf,0.05,N);
+
+    if (arrived && !_fail)
+    {
+        // Interpolate for better resolution (e.g. 100 Hz)
+        high_resolution_clock::time_point t1 = high_resolution_clock::now();
+        solution = interp_trajectory(all_trajectories,0.01);
+        high_resolution_clock::time_point t2 = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>( t2 - t1 ).count();
+
+        cout << "Execution time interp = " << duration/1000000.0 << "s" << endl;
+    }
+
+    return solution;
+}
+
+bool DMPC::reached_goal(std::vector<Trajectory> all_trajectories,
+                        MatrixXd pf, float error_tol, int N)
+{   Vector3d diff;
+    double dist;
+    for (int i=0; i < N; ++i)
+    {
+        diff = all_trajectories.at(i).pos.col(_K-1) - pf.col(i);
+        dist = pow(((diff.array().pow(2)).sum()),1.0/2);
+        if (dist > error_tol)
+            return false;
+    }
+    return true;
+}
+
+std::vector<Trajectory> DMPC::interp_trajectory(std::vector<Trajectory> sol,
+                                                double step_size)
+{
+    int K = _T/step_size + 1;
+    int N = sol.size();
+    double t0 = 0;
+    std::vector<Trajectory> all_trajectories(N);
+    VectorXd t = VectorXd::LinSpaced(K,0,(K-1)*step_size);
+    std::vector<double> px;
+    std::vector<double> py;
+    std::vector<double> pz;
+    std::vector<double> vx;
+    std::vector<double> vy;
+    std::vector<double> vz;
+    std::vector<double> ax;
+    std::vector<double> ay;
+    std::vector<double> az;
+
+    std::vector<double> px_inter;
+    std::vector<double> py_inter;
+    std::vector<double> pz_inter;
+    std::vector<double> vx_inter;
+    std::vector<double> vy_inter;
+    std::vector<double> vz_inter;
+    std::vector<double> ax_inter;
+    std::vector<double> ay_inter;
+    std::vector<double> az_inter;
+
+    for (int n=0; n<N; ++n)
+    {
+        all_trajectories.at(n).pos = MatrixXd::Zero(3,K);
+        all_trajectories.at(n).vel = MatrixXd::Zero(3,K);
+        all_trajectories.at(n).acc = MatrixXd::Zero(3,K);
+        px.clear();
+        py.clear();
+        pz.clear();
+        vx.clear();
+        vy.clear();
+        vz.clear();
+        ax.clear();
+        ay.clear();
+        az.clear();
+
+        px_inter.clear();
+        py_inter.clear();
+        pz_inter.clear();
+        vx_inter.clear();
+        vy_inter.clear();
+        vz_inter.clear();
+        ax_inter.clear();
+        ay_inter.clear();
+        az_inter.clear();
+
+        for(int i=0; i<sol.at(0).pos.row(0).cols(); ++i)
+        {
+            px.push_back(sol.at(n).pos.row(0).col(i).sum());
+            py.push_back(sol.at(n).pos.row(1).col(i).sum());
+            pz.push_back(sol.at(n).pos.row(2).col(i).sum());
+
+            vx.push_back(sol.at(n).vel.row(0).col(i).sum());
+            vy.push_back(sol.at(n).vel.row(1).col(i).sum());
+            vz.push_back(sol.at(n).vel.row(2).col(i).sum());
+
+            ax.push_back(sol.at(n).acc.row(0).col(i).sum());
+            ay.push_back(sol.at(n).acc.row(1).col(i).sum());
+            az.push_back(sol.at(n).acc.row(2).col(i).sum());
+        }
+
+
+        boost::math::cubic_b_spline<double> spline_px(px.begin(), px.end(),t0, _h);
+        boost::math::cubic_b_spline<double> spline_py(py.begin(), py.end(),t0, _h);
+        boost::math::cubic_b_spline<double> spline_pz(pz.begin(), pz.end(),t0, _h);
+
+        boost::math::cubic_b_spline<double> spline_vx(vx.begin(), vx.end(),t0, _h);
+        boost::math::cubic_b_spline<double> spline_vy(vy.begin(), vy.end(),t0, _h);
+        boost::math::cubic_b_spline<double> spline_vz(vz.begin(), vz.end(),t0, _h);
+
+        boost::math::cubic_b_spline<double> spline_ax(ax.begin(), ax.end(),t0, _h);
+        boost::math::cubic_b_spline<double> spline_ay(ay.begin(), ay.end(),t0, _h);
+        boost::math::cubic_b_spline<double> spline_az(az.begin(), az.end(),t0, _h);
+
+        for(int i=0; i<t.size(); ++i)
+        {
+            px_inter.push_back(spline_px(t[i]));
+            py_inter.push_back(spline_py(t[i]));
+            pz_inter.push_back(spline_pz(t[i]));
+
+            vx_inter.push_back(spline_vx(t[i]));
+            vy_inter.push_back(spline_vy(t[i]));
+            vz_inter.push_back(spline_vz(t[i]));
+
+            ax_inter.push_back(spline_ax(t[i]));
+            ay_inter.push_back(spline_ay(t[i]));
+            az_inter.push_back(spline_az(t[i]));
+        }
+
+        all_trajectories.at(n).pos.row(0) = Map<VectorXd>(px_inter.data(),px_inter.size());
+        all_trajectories.at(n).pos.row(1) = Map<VectorXd>(py_inter.data(),py_inter.size());
+        all_trajectories.at(n).pos.row(2) = Map<VectorXd>(pz_inter.data(),pz_inter.size());
+
+        all_trajectories.at(n).vel.row(0) = Map<VectorXd>(vx_inter.data(),vx_inter.size());
+        all_trajectories.at(n).vel.row(1) = Map<VectorXd>(vy_inter.data(),vy_inter.size());
+        all_trajectories.at(n).vel.row(2) = Map<VectorXd>(vz_inter.data(),vz_inter.size());
+
+        all_trajectories.at(n).acc.row(0) = Map<VectorXd>(ax_inter.data(),ax_inter.size());
+        all_trajectories.at(n).acc.row(1) = Map<VectorXd>(ay_inter.data(),ay_inter.size());
+        all_trajectories.at(n).acc.row(2) = Map<VectorXd>(az_inter.data(),az_inter.size());
+    }
 
     return all_trajectories;
 }

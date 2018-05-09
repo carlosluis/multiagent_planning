@@ -11,6 +11,8 @@ Eigen/Dense
 -
 eigen-quadprog/src/QuadProg.h
 -
+boost/math/interpolators/cubic_b_spline.hpp
+-
 
 /home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/main.cpp
 iostream
@@ -22,5 +24,21 @@ eigen-quadprog/src/QuadProg.h
 dmpc.h
 /home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/dmpc.h
 iomanip
+-
+chrono
+-
+boost/math/interpolators/cubic_b_spline.hpp
+-
+spline.h
+/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/spline.h
+
+/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/spline.h
+cstdio
+-
+cassert
+-
+vector
+-
+algorithm
 -
 
