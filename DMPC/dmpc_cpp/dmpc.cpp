@@ -22,6 +22,7 @@ DMPC::DMPC(Params params)
     _rmin = params.rmin;
     _alim = params.alim;
     _K =  _T/_h + 1; // number of time steps
+    srand((unsigned int) time(0)); // initialize srand DO THIS ONLY ONCE
 
     // Ellipsoid definitions
     Vector3d v(3);
@@ -57,11 +58,6 @@ DMPC::DMPC(Params params)
     Vector3d po2(0,2,1.5);
     Vector3d pf1(0,2,1.5);
     Vector3d pf2(0,0,1.5);
-
-    MatrixXd po = gen_rand_pts(4,_pmin,_pmax,_rmin);
-    MatrixXd pf = gen_rand_pts(4,_pmin,_pmax,_rmin);
-    cout << "po = " << endl << po << endl;
-    cout << "pf = " << endl << pf << endl;
 
     Trajectory agent1 = this->init_dmpc(po1,pf1);
     Trajectory agent2 = this->init_dmpc(po2,pf2);
@@ -158,7 +154,6 @@ MatrixXd DMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
     VectorXd dist;
 
     // Generate first point
-    srand((unsigned int) time(0));
     pts.col(0) = pmin.array()
                  + (pmax-pmin).array()*((MatrixXd::Random(3,1).array() + 1)/2);
     bool pass = false;

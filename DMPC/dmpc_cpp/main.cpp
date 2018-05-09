@@ -4,8 +4,6 @@
 #include "dmpc.h"
 #include <iomanip>
 #include <chrono>
-#include <boost/math/interpolators/cubic_b_spline.hpp>
-#include "spline.h"
 
 using namespace Eigen;
 using namespace std;
@@ -21,9 +19,10 @@ int main()
     pmax << 2.5, 2.5, 2.2;
 //    Params p = {0.4,20,15,2,1.5,0.5,0.5};
     DMPC test;
-    int N = 2;
+    int N = 50;
     float rmin = 0.91;
     MatrixXd po = test.gen_rand_pts(N,pmin,pmax,rmin);
+    MatrixXd pf = test.gen_rand_pts(N,pmin,pmax,rmin);
     cout << "po = " << endl << po << endl;
     cout << "pf = " << endl << pf << endl;
 

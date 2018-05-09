@@ -3,5 +3,4 @@
 
 CMakeFiles/dmpc_cpp.dir/main.cpp.o: ../dmpc.h
 CMakeFiles/dmpc_cpp.dir/main.cpp.o: ../main.cpp
-CMakeFiles/dmpc_cpp.dir/main.cpp.o: ../spline.h
 
