@@ -5,7 +5,6 @@
 #include <iostream>
 #include "dmpc.h"
 #include <chrono>
-#include <random>
 
 using namespace Eigen;
 using namespace std;
@@ -51,7 +50,7 @@ DMPC::DMPC(Params params)
     get_delta_mat(_k_hor);
     get_A0_mat(_k_hor);
 
-    // Just testing some functions
+    // Vicon Room boundaries
     _pmin << -2.5, -2.5, 0.2;
     _pmax << 2.5, 2.5, 2.2;
 }
@@ -239,6 +238,7 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
                                   Vector3d vo,Vector3d ao,
                                   int n, std::vector<MatrixXd> obs)
 {
+//    high_resolution_clock::time_point t1 = high_resolution_clock::now();
     int N = obs.size(); // number of vehicles for transition
     bool violation; // check if collision constraint is violated in horizon
     Trajectory solution;
@@ -306,6 +306,12 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
     VectorXd p; // position vector solution
     VectorXd v; // velocity vector solution
     VectorXd a; // acceleration vector solution
+
+//    high_resolution_clock::time_point t2 = high_resolution_clock::now();
+//    auto duration = duration_cast<microseconds>( t2 - t1 ).count();
+//    cout << "Declaring all matrices = " << duration/1000000.0 << "s" << endl;
+//
+//    t1 = high_resolution_clock::now();
 
     for (int k=0; k < _k_hor; ++k)
     {
@@ -441,10 +447,23 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
                + R);
     }
 
+//    t2 = high_resolution_clock::now();
+//    duration = duration_cast<microseconds>( t2 - t1 ).count();
+//    cout << "Building the QP computation time = "
+//         << duration/1000000.0 << "s" << endl;
+
+//    t1 = high_resolution_clock::now();
     // Declare quadprog object and solve the QP
-//    cout << "Lambda term of H =" << endl << Q << endl << endl;
     QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
+
     _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
+
+//    t2 = high_resolution_clock::now();
+//    duration = duration_cast<microseconds>( t2 - t1 ).count();
+//    cout << "Solving the optimization computation time = "
+//         << duration/1000000.0 << "s" << endl;
+
+//    t1 = high_resolution_clock::now();
     x = _qp.result();
     _fail = _qp.fail();
 
@@ -473,6 +492,12 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
     solution.vel = vel_aux;
     solution.acc = acc_aux;
 
+//    t2 = high_resolution_clock::now();
+//    duration = duration_cast<microseconds>( t2 - t1 ).count();
+//    cout << "Formatting the solution computation time = "
+//         << duration/1000000.0 << "s" << endl
+//         << "-----------------------------" << endl;
+
     return solution;
 }
 
@@ -490,6 +515,10 @@ std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
     Vector3d vok;
     Vector3d aok;
     int failed_i;
+    bool arrived = false;
+
+    high_resolution_clock::time_point t1;
+    high_resolution_clock::time_point t2;
 
     std::vector<MatrixXd> prev_obs;
     std::vector<MatrixXd> obs;
@@ -514,10 +543,15 @@ std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
             }
             else
             {   // Update previous solution, solve current QP
+                t1 = high_resolution_clock::now();
                 pok = all_trajectories.at(i).pos.col(k-1);
                 vok = all_trajectories.at(i).vel.col(k-1);
                 aok = all_trajectories.at(i).acc.col(k-1);
                 trajectory_i = solveQP(pok,pf.col(i),vok,aok,i,prev_obs);
+                t2 = high_resolution_clock::now();
+                auto duration = duration_cast<microseconds>( t2 - t1 ).count();
+                cout << "Computation time of solveQP = "
+                     << duration/1000000.0 << "s" << endl;
             }
 
             if (_fail)
@@ -542,27 +576,35 @@ std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
         prev_obs = obs;
     }
 
-    if(!_fail)
-        cout << "Optimization problem feasible: solution found" << endl;
+    t2 = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>( t2 - t1 ).count();
+    cout << "Solve al QPs computation time = " << duration/1000000.0 << "s" << endl;
 
-    // Check if every agent reached its goal
-    bool arrived = reached_goal(all_trajectories,pf,0.05,N);
+    if(!_fail)
+    {
+        cout << "Optimization problem feasible: solution found" << endl;
+        // Check if every agent reached its goal
+        arrived = reached_goal(all_trajectories,pf,0.05,N);
+    }
+
+    t1 = high_resolution_clock::now();
 
     if (arrived && !_fail)
     {
+        cout << "All vehicles reached their goals" << endl;
         // Interpolate for better resolution (e.g. 100 Hz)
-        high_resolution_clock::time_point t1 = high_resolution_clock::now();
         solution = interp_trajectory(all_trajectories,0.01);
-        high_resolution_clock::time_point t2 = high_resolution_clock::now();
-        auto duration = duration_cast<microseconds>( t2 - t1 ).count();
 
         // Check if collision constraints were not violated
         bool violation = collision_violation(solution);
 
         // Calculate minimum time to complete trajectory, within 5cm of goals
         double time = get_trajectory_time(solution);
-
     }
+
+    t2 = high_resolution_clock::now();
+    duration = duration_cast<microseconds>( t2 - t1 ).count();
+    cout << "Post-checks computation time = " << duration/1000000.0 << "s" << endl;
     return solution;
 }
 
@@ -746,9 +788,9 @@ bool DMPC::collision_violation(std::vector<Trajectory> solution)
                 {
                     violation = true;
                     cout << "Collision constraint violation: ";
-                    cout << "Vehicles " << i << "and" << j;
-                    cout << "will be " << min_dist << "m";
-                    cout << "apart @ t = " << pos/100.0 << endl;
+                    cout << "Vehicles " << i << " and " << j;
+                    cout << " will be " << min_dist << "m";
+                    cout << " apart @ t = " << pos/100.0 << endl;
                 }
             }
         }

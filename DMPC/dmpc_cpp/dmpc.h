@@ -114,8 +114,6 @@ private:
                                               double step_size);
 
     double get_trajectory_time(std::vector<Trajectory> solution);
-
-
 };
 
 #endif //DMPC_CPP_DMPC_H
