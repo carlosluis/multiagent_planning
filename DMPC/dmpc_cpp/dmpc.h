@@ -47,6 +47,7 @@ public:
 
     // Public methods
     MatrixXd gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin);
+    MatrixXd gen_rand_perm (MatrixXd po);
     void set_initial_pts(MatrixXd po);
     void set_final_pts(MatrixXd pf);
     std::vector<Trajectory> solveDMPC(MatrixXd po,

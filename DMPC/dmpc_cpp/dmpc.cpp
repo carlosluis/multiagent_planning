@@ -161,6 +161,26 @@ MatrixXd DMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
     return pts;
 }
 
+MatrixXd DMPC::gen_rand_perm(MatrixXd po)
+{
+    int N = po.cols();
+    int perm[N];
+    MatrixXd pf = MatrixXd::Zero(3,N);
+    for (int i = 0; i < N; i++) perm[i] = i;
+
+    // Random permutation the order
+    for (int i = 0; i < N; i++) {
+        int j, t;
+        j = rand() % (N-i) + i;
+        t = perm[j]; perm[j] = perm[i]; perm[i] = t; // Swap i and j
+    }
+
+    for (int i = 0; i < N; i++) {
+        pf.col(i) = po.col(perm[i]);
+    }
+    return pf;
+}
+
 void DMPC::set_initial_pts(MatrixXd po)
 {
     _po = po;
@@ -238,7 +258,6 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
                                   Vector3d vo,Vector3d ao,
                                   int n, std::vector<MatrixXd> obs)
 {
-//    high_resolution_clock::time_point t1 = high_resolution_clock::now();
     int N = obs.size(); // number of vehicles for transition
     bool violation; // check if collision constraint is violated in horizon
     Trajectory solution;
@@ -246,7 +265,7 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
     MatrixXd prev_p = obs.at(n); // previous solution of n-th vehicle
     VectorXd a0_1;
 
-    // Initial state joint vector
+    // Initial state joint vector (pos + vel)
     Matrix <double, 6,1> initial_states;
     initial_states << po,vo;
 
@@ -295,7 +314,7 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
     VectorXd init_propagation = _A0*initial_states;
     VectorXd init_propagation_aug;
     VectorXd pf_rep;
-    VectorXd alim_rep = _alim*MatrixXd::Ones(3*_k_hor,1);
+    VectorXd alim_rep = _alim*VectorXd::Ones(3*_k_hor);
 
     // Constraint matrices and vectors to pass to the QP solver
     MatrixXd Ain;
@@ -306,12 +325,6 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
     VectorXd p; // position vector solution
     VectorXd v; // velocity vector solution
     VectorXd a; // acceleration vector solution
-
-//    high_resolution_clock::time_point t2 = high_resolution_clock::now();
-//    auto duration = duration_cast<microseconds>( t2 - t1 ).count();
-//    cout << "Declaring all matrices = " << duration/1000000.0 << "s" << endl;
-//
-//    t1 = high_resolution_clock::now();
 
     for (int k=0; k < _k_hor; ++k)
     {
@@ -523,6 +536,7 @@ std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
     std::vector<MatrixXd> prev_obs;
     std::vector<MatrixXd> obs;
 
+    t1 = high_resolution_clock::now();
     // Generate trajectory for each time step of trajectory, for each agent
     for (int k=0; k < _K; ++k)
     {   obs.clear();
@@ -543,15 +557,15 @@ std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
             }
             else
             {   // Update previous solution, solve current QP
-                t1 = high_resolution_clock::now();
+//                t1 = high_resolution_clock::now();
                 pok = all_trajectories.at(i).pos.col(k-1);
                 vok = all_trajectories.at(i).vel.col(k-1);
                 aok = all_trajectories.at(i).acc.col(k-1);
                 trajectory_i = solveQP(pok,pf.col(i),vok,aok,i,prev_obs);
-                t2 = high_resolution_clock::now();
-                auto duration = duration_cast<microseconds>( t2 - t1 ).count();
-                cout << "Computation time of solveQP = "
-                     << duration/1000000.0 << "s" << endl;
+//                t2 = high_resolution_clock::now();
+//                auto duration = duration_cast<microseconds>( t2 - t1 ).count();
+//                cout << "Computation time of solveQP = "
+//                     << duration/1000000.0 << "s" << endl;
             }
 
             if (_fail)
