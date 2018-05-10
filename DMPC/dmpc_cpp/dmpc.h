@@ -33,7 +33,7 @@ struct Params {
     float alim;
 };
 
-static const Params default_params = {0.2,12,15,2,1.5,0.5,0.5};
+static const Params default_params = {0.2,20,15,2,1.5,0.5,0.5};
 
 // Class definition
 class DMPC {
@@ -107,6 +107,8 @@ private:
 
     bool reached_goal(std::vector<Trajectory> all_trajectories,
                       MatrixXd pf, float error_tol, int N);
+
+    bool collision_violation(std::vector<Trajectory> solution);
 
     std::vector<Trajectory> interp_trajectory(std::vector<Trajectory> sol,
                                               double step_size);

@@ -576,6 +576,10 @@ std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
         auto duration = duration_cast<microseconds>( t2 - t1 ).count();
 
         cout << "Execution time interp = " << duration/1000000.0 << "s" << endl;
+
+        // Check if collision constraints were not violated
+        bool violation = collision_violation(solution);
+
     }
 
     return solution;
@@ -585,14 +589,17 @@ bool DMPC::reached_goal(std::vector<Trajectory> all_trajectories,
                         MatrixXd pf, float error_tol, int N)
 {   Vector3d diff;
     double dist;
+    bool reached = true;
     for (int i=0; i < N; ++i)
     {
         diff = all_trajectories.at(i).pos.col(_K-1) - pf.col(i);
         dist = pow(((diff.array().pow(2)).sum()),1.0/2);
-        if (dist > error_tol)
-            return false;
+        if (dist > error_tol){
+            cout << "Vehicle " << i+1 << " did not reach its goal by " << dist << "m" << endl;
+            reached = false;
+        }
     }
-    return true;
+    return reached;
 }
 
 std::vector<Trajectory> DMPC::interp_trajectory(std::vector<Trajectory> sol,
@@ -706,3 +713,36 @@ std::vector<Trajectory> DMPC::interp_trajectory(std::vector<Trajectory> sol,
 
     return all_trajectories;
 }
+
+bool DMPC::collision_violation(std::vector<Trajectory> solution)
+{
+    int N = solution.size();
+    MatrixXd differ;
+    VectorXd dist;
+    bool violation = false;
+    double min_dist;
+    int pos;
+
+    for (int i=0; i<N; ++i)
+    {
+        for(int j=i+1; j<N; ++j)
+        {
+            if (i!=j)
+            {
+                differ = _E1*(solution.at(i).pos-solution.at(j).pos);
+                dist = pow(((differ.array().pow(_order)).colwise().sum()),1.0/_order);
+                min_dist = dist.minCoeff(&pos);
+
+                if (min_dist < _rmin-0.05) // we add 5cm tolerance factor to it
+                {
+                    violation = true;
+                    cout << "Collision constraint violation: ";
+                    cout << "Vehicles " << i << "and" << j;
+                    cout << "will be " << min_dist << "m";
+                    cout << "apart @ t = " << pos/100.0 << endl;
+                }
+            }
+        }
+    }
+}
+
