@@ -113,6 +113,8 @@ private:
     std::vector<Trajectory> interp_trajectory(std::vector<Trajectory> sol,
                                               double step_size);
 
+    double get_trajectory_time(std::vector<Trajectory> solution);
+
 
 };
 

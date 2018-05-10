@@ -54,24 +54,6 @@ DMPC::DMPC(Params params)
     // Just testing some functions
     _pmin << -2.5, -2.5, 0.2;
     _pmax << 2.5, 2.5, 2.2;
-    Vector3d po1(0,0,1.5);
-    Vector3d po2(0,2,1.5);
-    Vector3d pf1(0,2,1.5);
-    Vector3d pf2(0,0,1.5);
-
-    Trajectory agent1 = this->init_dmpc(po1,pf1);
-    Trajectory agent2 = this->init_dmpc(po2,pf2);
-//    cout << "Init Trajectory agent 1:" << endl << agent1.pos << endl;
-//    cout << "Init Trajectory agent 2:" << endl << agent2.pos << endl;
-
-    // build obstacle list to test different functions
-    std::vector<MatrixXd> obs;
-    obs.push_back(agent1.pos);
-    obs.push_back(agent2.pos);
-    bool violation = check_collisions(agent1.pos.col(13),obs,0,13);
-    Vector3d vo(0,0,0);
-    Vector3d ao(0,0,0);
-    Constraint collisions = build_collconstraint(agent1.pos.col(13),po1,vo,obs,0,13);
 }
 
 void DMPC::get_lambda_A_v_mat(int K)
@@ -528,7 +510,6 @@ std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
                 poi = po.col(i);
                 pfi = pf.col(i);
                 trajectory_i = init_dmpc(poi,pfi);
-//                prev_obs.push_back(trajectory_i.pos);
                 _fail = 0;
             }
             else
@@ -537,7 +518,6 @@ std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
                 vok = all_trajectories.at(i).vel.col(k-1);
                 aok = all_trajectories.at(i).acc.col(k-1);
                 trajectory_i = solveQP(pok,pf.col(i),vok,aok,i,prev_obs);
-//                cout << "New trajectory = " << endl << trajectory_i.pos << endl;
             }
 
             if (_fail)
@@ -555,7 +535,8 @@ std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
 
         if (_fail)
         {
-            cout << "Failed - problem unfeasible @ k_T = " << k << ", vehicle #" << failed_i << endl;
+            cout << "Failed - problem unfeasible @ k_T = " << k
+                 << ", vehicle #" << failed_i << endl;
             break;
         }
         prev_obs = obs;
@@ -575,13 +556,13 @@ std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
         high_resolution_clock::time_point t2 = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>( t2 - t1 ).count();
 
-        cout << "Execution time interp = " << duration/1000000.0 << "s" << endl;
-
         // Check if collision constraints were not violated
         bool violation = collision_violation(solution);
 
-    }
+        // Calculate minimum time to complete trajectory, within 5cm of goals
+        double time = get_trajectory_time(solution);
 
+    }
     return solution;
 }
 
@@ -595,11 +576,39 @@ bool DMPC::reached_goal(std::vector<Trajectory> all_trajectories,
         diff = all_trajectories.at(i).pos.col(_K-1) - pf.col(i);
         dist = pow(((diff.array().pow(2)).sum()),1.0/2);
         if (dist > error_tol){
-            cout << "Vehicle " << i+1 << " did not reach its goal by " << dist << "m" << endl;
+            cout << "Vehicle " << i << " did not reach its goal by " << dist << "m" << endl;
             reached = false;
         }
     }
     return reached;
+}
+
+double DMPC::get_trajectory_time(std::vector<Trajectory> solution)
+{
+    MatrixXd diff;
+    int N = solution.size();
+    int length_t = solution.at(0).pos.cols();
+    VectorXd dist;
+    VectorXd time(N);
+    double min_traj_time = 0.0;
+
+    for (int i=0; i < N; ++i)
+    {
+        diff = solution.at(i).pos - (_pf.col(i).replicate(1,length_t));
+        dist = pow(((diff.array().pow(_order)).colwise().sum()),1.0/2);
+        // Go backwards and find the last element greater than 5 cm
+        for (int k = length_t-1; k >= 0 ; --k)
+        {
+            if(dist[k] >= 0.05)
+            {
+                time[i] = k/100.0;
+                break;
+            }
+        }
+    }
+    min_traj_time = time.maxCoeff();
+    cout << "The transition will be completed in " << min_traj_time << "s" << endl;
+    return min_traj_time;
 }
 
 std::vector<Trajectory> DMPC::interp_trajectory(std::vector<Trajectory> sol,
@@ -745,4 +754,3 @@ bool DMPC::collision_violation(std::vector<Trajectory> solution)
         }
     }
 }
-

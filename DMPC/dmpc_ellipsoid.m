@@ -4,7 +4,7 @@ close all
 warning('off','all')
 
 % Time settings and variables
-T = 12; % Trajectory final time
+T = 20; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -20,7 +20,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 10; % number of vehicles
+N = 2; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -34,21 +34,21 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.75;
 
 % Initial positions
-[po,pf] = randomExchange(N,pmin,pmax,rmin_init);
+% [po,pf] = randomExchange(N,pmin,pmax,rmin_init);
 
-% % Initial positions
-% po1 = [0.01,0,1.5];
-% po2 = [0,2,1.5];
-% po3 = [-2,2,1.5];
-% po4 = [2,-2,1.5];
-% po = cat(3,po1,po2);
-% 
-% % Final positions
-% pf1 = [0.01,2,1.5];
-% pf2 = [0,0,1.5];
-% pf3 = [2,-2,1.5];
-% pf4 = [-2,2,1.5];
-% pf  = cat(3, pf1,pf2);
+% Initial positions
+po1 = [0.01,0,1.5];
+po2 = [0,2,1.5];
+po3 = [-2,2,1.5];
+po4 = [2,-2,1.5];
+po = cat(3,po1,po2);
+
+% Final positions
+pf1 = [0.01,2,1.5];
+pf2 = [0,0,1.5];
+pf3 = [2,-2,1.5];
+pf4 = [-2,2,1.5];
+pf  = cat(3, pf1,pf2);
 
 %% Solving the problem
 l = [];
