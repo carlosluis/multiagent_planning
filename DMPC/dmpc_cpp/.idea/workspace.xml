@@ -45,8 +45,8 @@
           <file leaf-file-name="dmpc.cpp" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/dmpc.cpp">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="675">
-                  <caret line="676" column="62" lean-forward="false" selection-start-line="676" selection-start-column="62" selection-end-line="676" selection-end-column="62" />
+                <state relative-caret-position="514">
+                  <caret line="788" column="0" lean-forward="false" selection-start-line="788" selection-start-column="0" selection-end-line="788" selection-end-column="0" />
                   <folding>
                     <element signature="e#41#60#0" expanded="true" />
                     <element signature="e#154#1186#0" expanded="false" />
@@ -78,7 +78,7 @@
           <file leaf-file-name="dmpc.h" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/dmpc.h">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="681">
+                <state relative-caret-position="452">
                   <caret line="137" column="60" lean-forward="false" selection-start-line="137" selection-start-column="60" selection-end-line="137" selection-end-column="60" />
                   <folding>
                     <element signature="e#89#111#0" expanded="true" />
@@ -204,12 +204,12 @@
       <workItem from="1521226466908" duration="264000" />
       <workItem from="1521226997691" duration="7759000" />
       <workItem from="1525114387839" duration="180000" />
-      <workItem from="1525114819464" duration="169862000" />
+      <workItem from="1525114819464" duration="170684000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="178065000" />
+    <option name="totallyTimeSpent" value="178887000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -230,7 +230,7 @@
       <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32932165" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25054705" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.25054705" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32932165" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -418,7 +418,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/dmpc.h">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="681">
+        <state relative-caret-position="452">
           <caret line="137" column="60" lean-forward="false" selection-start-line="137" selection-start-column="60" selection-end-line="137" selection-end-column="60" />
           <folding>
             <element signature="e#89#111#0" expanded="true" />
@@ -428,8 +428,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/dmpc.cpp">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="675">
-          <caret line="676" column="62" lean-forward="false" selection-start-line="676" selection-start-column="62" selection-end-line="676" selection-end-column="62" />
+        <state relative-caret-position="514">
+          <caret line="788" column="0" lean-forward="false" selection-start-line="788" selection-start-column="0" selection-end-line="788" selection-end-column="0" />
           <folding>
             <element signature="e#41#60#0" expanded="true" />
             <element signature="e#154#1186#0" expanded="false" />
