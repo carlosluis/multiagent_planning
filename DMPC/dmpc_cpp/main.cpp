@@ -15,7 +15,7 @@ int main()
     pmax << 2.5, 2.5, 2.2;
 //    Params p = {0.4,20,15,2,1.5,0.5,0.5};
     DMPC test;
-    int N = 25;
+    int N = 10;
     float rmin = 0.91;
     MatrixXd po = test.gen_rand_pts(N,pmin,pmax,rmin);
     MatrixXd pf = test.gen_rand_perm(po);
@@ -41,3 +41,4 @@ int main()
 
     cout << "Total Computation time = " << duration/1000000.0 << "s" << endl;
 }
+

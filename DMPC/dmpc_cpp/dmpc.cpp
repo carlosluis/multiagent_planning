@@ -54,7 +54,7 @@ DMPC::DMPC(Params params)
     _pmax << 2.5, 2.5, 2.2;
 }
 
-void DMPC::get_lambda_A_v_mat(int K)
+void DMPC::get_lambda_A_v_mat(const int &K)
 {
     MatrixXd Apos = MatrixXd::Zero(3*K,3*K);
     MatrixXd Avel = MatrixXd::Zero(3*K,3*K);
@@ -76,7 +76,7 @@ void DMPC::get_lambda_A_v_mat(int K)
     _A_v = Avel;
 }
 
-void DMPC::get_delta_mat(int K)
+void DMPC::get_delta_mat(const int &K)
 {
     MatrixXd Delta = MatrixXd::Zero(3*K,3*K);
     MatrixXd new_row = MatrixXd::Zero(3,3*K);
@@ -95,7 +95,7 @@ void DMPC::get_delta_mat(int K)
     _Delta = Delta;
 }
 
-void DMPC::get_A0_mat(int K)
+void DMPC::get_A0_mat(const int &K)
 {
     MatrixXd A0 = MatrixXd::Zero(3*K,6);
     MatrixXd new_row = MatrixXd::Zero(6,6);
@@ -111,7 +111,7 @@ void DMPC::get_A0_mat(int K)
     _A0 = A0;
 }
 
-Trajectory DMPC::init_dmpc(Vector3d po, Vector3d pf)
+Trajectory DMPC::init_dmpc(const Vector3d &po, const Vector3d &pf)
 {
     Trajectory init;
     Vector3d diff = pf - po;
@@ -127,7 +127,10 @@ Trajectory DMPC::init_dmpc(Vector3d po, Vector3d pf)
     return init;
 }
 
-MatrixXd DMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
+MatrixXd DMPC::gen_rand_pts(const int &N,
+                            const Vector3d &pmin,
+                            const Vector3d &pmax,
+                            const float &rmin)
 {
     MatrixXd pts = MatrixXd::Zero(3,N);
     Vector3d candidate = MatrixXd::Zero(3,1);
@@ -160,7 +163,7 @@ MatrixXd DMPC::gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin)
     return pts;
 }
 
-MatrixXd DMPC::gen_rand_perm(MatrixXd po)
+MatrixXd DMPC::gen_rand_perm(const MatrixXd &po)
 {
     int N = po.cols();
     int perm[N];
@@ -180,18 +183,19 @@ MatrixXd DMPC::gen_rand_perm(MatrixXd po)
     return pf;
 }
 
-void DMPC::set_initial_pts(MatrixXd po)
+void DMPC::set_initial_pts(const MatrixXd &po)
 {
     _po = po;
 }
 
-void DMPC::set_final_pts(MatrixXd pf)
+void DMPC::set_final_pts(const MatrixXd &pf)
 {
     _pf = pf;
 }
 
-bool DMPC::check_collisions(Vector3d prev_p, std::vector<MatrixXd> obs,
-                            int n, int k)
+bool DMPC::check_collisions(const Vector3d &prev_p,
+                            const std::vector<MatrixXd> &obs,
+                            const int &n, const int &k)
 {
     bool violation = false;
     Vector3d pj;
@@ -211,9 +215,11 @@ bool DMPC::check_collisions(Vector3d prev_p, std::vector<MatrixXd> obs,
     return violation;
 }
 
-Constraint DMPC::build_collconstraint(const Vector3d &prev_p, Vector3d po,
-                                      Vector3d vo, std::vector<MatrixXd> obs,
-                                      int n, int k)
+Constraint DMPC::build_collconstraint(const Vector3d &prev_p,
+                                      const Vector3d &po,
+                                      const Vector3d &vo,
+                                      const std::vector<MatrixXd> &obs,
+                                      const int &n, const int &k)
 {
     int N_obs = obs.size();
     Vector3d pj;
@@ -253,9 +259,9 @@ Constraint DMPC::build_collconstraint(const Vector3d &prev_p, Vector3d po,
     return collision;
 }
 
-Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
-                                  Vector3d vo,Vector3d ao,
-                                  int n, std::vector<MatrixXd> obs)
+Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
+                   const Vector3d &vo, const Vector3d &ao,
+                   const int &n, const std::vector<MatrixXd> &obs)
 {
     int N = obs.size(); // number of vehicles for transition
     bool violation; // check if collision constraint is violated in horizon
@@ -513,7 +519,8 @@ Trajectory DMPC::solveQP(Vector3d po,Vector3d pf,
     return solution;
 }
 
-std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
+std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
+                                        const MatrixXd &pf)
 {
     int N = po.cols(); // Number of agents = number of rows of either po or pf
 
@@ -621,8 +628,8 @@ std::vector<Trajectory> DMPC::solveDMPC(MatrixXd po, MatrixXd pf)
     return solution;
 }
 
-bool DMPC::reached_goal(std::vector<Trajectory> all_trajectories,
-                        MatrixXd pf, float error_tol, int N)
+bool DMPC::reached_goal(const std::vector<Trajectory> &all_trajectories,
+                        const MatrixXd &pf, const float &error_tol, const int &N)
 {   Vector3d diff;
     double dist;
     bool reached = true;
@@ -638,7 +645,7 @@ bool DMPC::reached_goal(std::vector<Trajectory> all_trajectories,
     return reached;
 }
 
-double DMPC::get_trajectory_time(std::vector<Trajectory> solution)
+double DMPC::get_trajectory_time(const std::vector<Trajectory> &solution)
 {
     MatrixXd diff;
     int N = solution.size();
@@ -666,8 +673,8 @@ double DMPC::get_trajectory_time(std::vector<Trajectory> solution)
     return min_traj_time;
 }
 
-std::vector<Trajectory> DMPC::interp_trajectory(std::vector<Trajectory> sol,
-                                                double step_size)
+std::vector<Trajectory> DMPC::interp_trajectory(const std::vector<Trajectory> &sol,
+                                                const double &step_size)
 {
     int K = _T/step_size + 1;
     int N = sol.size();
@@ -778,7 +785,7 @@ std::vector<Trajectory> DMPC::interp_trajectory(std::vector<Trajectory> sol,
     return all_trajectories;
 }
 
-bool DMPC::collision_violation(std::vector<Trajectory> solution)
+bool DMPC::collision_violation(const std::vector<Trajectory> &solution)
 {
     int N = solution.size();
     MatrixXd differ;

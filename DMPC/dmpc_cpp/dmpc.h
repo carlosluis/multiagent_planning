@@ -47,12 +47,21 @@ public:
     // Public variables
 
     // Public methods
-    MatrixXd gen_rand_pts(int N, Vector3d pmin, Vector3d pmax, float rmin);
-    MatrixXd gen_rand_perm (MatrixXd po);
-    void set_initial_pts(MatrixXd po);
-    void set_final_pts(MatrixXd pf);
-    std::vector<Trajectory> solveDMPC(MatrixXd po,
-                                      MatrixXd pf);
+
+    // Goal generation
+    MatrixXd gen_rand_pts(const int &N,
+                          const Vector3d &pmin,
+                          const Vector3d &pmax,
+                          const float &rmin);
+    MatrixXd gen_rand_perm (const MatrixXd &po);
+
+    // Setters
+    void set_initial_pts(const MatrixXd &po);
+    void set_final_pts(const MatrixXd &pf);
+
+    // Top level method to be called by program
+    std::vector<Trajectory> solveDMPC(const MatrixXd &po,
+                                      const MatrixXd &pf);
 
 private:
     // Private Variables
@@ -94,28 +103,41 @@ private:
     int _fail; //keeps track if QP failed or not
 
     // Private Methods
-    bool check_collisions(Vector3d prev_p, std::vector<MatrixXd> obs, int n, int k);
-    void get_lambda_A_v_mat(int K);
-    void get_delta_mat (int K);
-    void get_A0_mat (int K);
-    Trajectory init_dmpc (Vector3d po, Vector3d pf);
+
+    // Matrix building methods
+    void get_lambda_A_v_mat(const int &K);
+    void get_delta_mat (const int &K);
+    void get_A0_mat (const int &K);
+
+    // Initialization method of algorithm
+    Trajectory init_dmpc (const Vector3d &po,
+                          const Vector3d &pf);
+
+    // Collision check and constraint construction
+    bool check_collisions(const Vector3d &prev_p,
+                          const std::vector<MatrixXd> &obs,
+                          const int &n, const int &k);
     Constraint build_collconstraint (const Vector3d &prev_p,
-                                 Vector3d po,
-                                 Vector3d vo,
-                                 std::vector<MatrixXd> obs, int n, int k);
-    Trajectory solveQP(Vector3d po,Vector3d pf,
-                                      Vector3d vo,Vector3d ao,
-                                      int n, std::vector<MatrixXd> obs);
+                                     const Vector3d &po,
+                                     const Vector3d &vo,
+                                     const std::vector<MatrixXd> &obs,
+                                     const int &n, const int &k);
 
-    bool reached_goal(std::vector<Trajectory> all_trajectories,
-                      MatrixXd pf, float error_tol, int N);
+    // Optimization problem solving
+    Trajectory solveQP(const Vector3d &po, const Vector3d &pf,
+                       const Vector3d &vo, const Vector3d &ao,
+                       const int &n, const std::vector<MatrixXd> &obs);
 
-    bool collision_violation(std::vector<Trajectory> solution);
+    // Post checks
+    bool reached_goal(const std::vector<Trajectory> &all_trajectories,
+                      const MatrixXd &pf, const float &error_tol, const int &N);
 
-    std::vector<Trajectory> interp_trajectory(std::vector<Trajectory> sol,
-                                              double step_size);
+    bool collision_violation(const std::vector<Trajectory> &solution);
 
-    double get_trajectory_time(std::vector<Trajectory> solution);
+    std::vector<Trajectory> interp_trajectory(const std::vector<Trajectory> &sol,
+                                              const double &step_size);
+
+    double get_trajectory_time(const std::vector<Trajectory> &solution);
 };
 
 #endif //DMPC_CPP_DMPC_H
