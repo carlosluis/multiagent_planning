@@ -7,6 +7,7 @@
 #include <Eigen/Dense>
 #include <eigen-quadprog/src/QuadProg.h>
 #include <boost/math/interpolators/cubic_b_spline.hpp>
+#include <chrono>
 
 using namespace Eigen;
 using namespace std;
@@ -98,7 +99,7 @@ private:
     void get_delta_mat (int K);
     void get_A0_mat (int K);
     Trajectory init_dmpc (Vector3d po, Vector3d pf);
-    Constraint build_collconstraint (Vector3d prev_p,
+    Constraint build_collconstraint (const Vector3d &prev_p,
                                  Vector3d po,
                                  Vector3d vo,
                                  std::vector<MatrixXd> obs, int n, int k);

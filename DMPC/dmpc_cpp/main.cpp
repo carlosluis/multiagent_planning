@@ -1,8 +1,5 @@
 #include <iostream>
-#include <Eigen/Dense>
-#include <eigen-quadprog/src/QuadProg.h>
 #include "dmpc.h"
-#include <chrono>
 
 using namespace Eigen;
 using namespace std;
@@ -18,13 +15,13 @@ int main()
     pmax << 2.5, 2.5, 2.2;
 //    Params p = {0.4,20,15,2,1.5,0.5,0.5};
     DMPC test;
-    int N = 10;
+    int N = 25;
     float rmin = 0.91;
     MatrixXd po = test.gen_rand_pts(N,pmin,pmax,rmin);
     MatrixXd pf = test.gen_rand_perm(po);
 
-    cout << "po = " << endl << po << endl;
-    cout << "pf = " << endl << pf << endl;
+//    cout << "po = " << endl << po << endl;
+//    cout << "pf = " << endl << pf << endl;
 
 //    Vector3d po1(0.01,0,1.5);
 //    Vector3d po2(0,2,1.5);
@@ -43,6 +40,4 @@ int main()
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
 
     cout << "Total Computation time = " << duration/1000000.0 << "s" << endl;
-
-
 }

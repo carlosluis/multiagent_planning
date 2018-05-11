@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include "dmpc.h"
-#include <chrono>
 
 using namespace Eigen;
 using namespace std;
@@ -212,7 +211,7 @@ bool DMPC::check_collisions(Vector3d prev_p, std::vector<MatrixXd> obs,
     return violation;
 }
 
-Constraint DMPC::build_collconstraint(Vector3d prev_p, Vector3d po,
+Constraint DMPC::build_collconstraint(const Vector3d &prev_p, Vector3d po,
                                       Vector3d vo, std::vector<MatrixXd> obs,
                                       int n, int k)
 {
@@ -804,7 +803,7 @@ bool DMPC::collision_violation(std::vector<Trajectory> solution)
                     cout << "Collision constraint violation: ";
                     cout << "Vehicles " << i << " and " << j;
                     cout << " will be " << min_dist << "m";
-                    cout << " apart @ t = " << pos/100.0 << endl;
+                    cout << " apart @ t = " << pos/100.0 << "s" << endl;
                 }
             }
         }
