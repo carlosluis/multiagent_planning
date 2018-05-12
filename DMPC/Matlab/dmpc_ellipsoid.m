@@ -4,7 +4,7 @@ close all
 warning('off','all')
 
 % Time settings and variables
-T = 20; % Trajectory final time
+T = 15; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -20,11 +20,11 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 25; % number of vehicles
+N = 20; % number of vehicles
 
 % Workspace boundaries
-pmin = [-2.5,-2.5,0.2];
-pmax = [2.5,2.5,2.2];
+pmin = [-1.0,-1.0,0.2];
+pmax = [1.0,1.0,2.2];
 
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
@@ -34,7 +34,7 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.75;
 
 % Initial positions
-[po,pf] = randomExchange(N,pmin,pmax,rmin_init);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % % Initial positions
 % po1 = [0.01,0,1.5];

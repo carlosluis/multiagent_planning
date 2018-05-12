@@ -3,7 +3,7 @@ clc
 close all
 
 % Time settings and variables
-T = 10; % Trajectory final time
+T = 12; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -12,8 +12,8 @@ t = 0:Ts:T; % interpolated time vector
 success = 1;
 
 % Workspace boundaries
-pmin = [-2.5,-2.5,0.2];
-pmax = [2.5,2.5,2.2];
+pmin = [-1.0,-1.0,0.2];
+pmax = [1.0,1.0,2.2];
 
 % Minimum distance between vehicles in m
 rmin_init = 0.91;
@@ -29,10 +29,10 @@ E2 = E^(-order);
 % Maximum acceleration in m/s^2
 alim = 0.5;
 
-N = 20; % number of vehicles
+N = 10; % number of vehicles
 
 % Initial positions
-% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % % Initial positions
 % po1 = [2,2,1.5];
@@ -79,7 +79,7 @@ end
 
 tic
 % Solve SCP
-[pk,vk,ak] = solveCupSCP(po,pf,h,K,N,pmin,pmax,rmin,alim,A_p,A_v,E1,E2,order);
+[pk,vk,ak,success] = solveCupSCP(po,pf,h,K,N,pmin,pmax,rmin,alim,A_p,A_v,E1,E2,order);
 toc
 
 % Interpolate solution with a 100Hz sampling
@@ -89,6 +89,7 @@ for i = 1:N
     a(:,:,i) = spline(tk,ak(:,:,i),t); 
 end
 
+success
 totdist_cup = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
 fprintf("The sum of trajectory length is %.2f\n",totdist_cup);
 
@@ -105,9 +106,9 @@ while get(gcf,'currentchar')==' '
                   'LineWidth',2, 'Color',colors(i,:));
             hold on;
             grid on;
-            xlim([-4,4])
-            ylim([-4,4])
-            zlim([0,3.5])
+            xlim([pmin(1),pmax(1)])
+            ylim([pmin(2),pmax(2)])
+            zlim([0,pmax(3)])
             plot3(po(1,1,i), po(1,2,i), po(1,3,i),'^',...
                   'LineWidth',2,'Color',colors(i,:));
             plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'x',...
