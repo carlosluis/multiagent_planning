@@ -4,14 +4,14 @@ close all
 warning('off','all')
 
 % Time settings and variables
-T = 12; % Trajectory final time
+T = 15; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 4:2:12; % number of vehicles
+N_vector = 4:2:16; % number of vehicles
 trials = 50; % number os trails per number of vehicles
 
 % Variables for ellipsoid constraint
@@ -191,7 +191,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_dmpc_cupscp')
+save('comp_dmpc_cupscp2')
 %% Post-Processing
 
 % Probability of success plots
