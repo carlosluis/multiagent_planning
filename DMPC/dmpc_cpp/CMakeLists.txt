@@ -8,11 +8,11 @@ add_executable(dmpc_cpp
 
 # Declare a C++ library
 add_library(dmpc
-        dmpc.cpp
-        spline.h)
+        dmpc.cpp)
 
 target_link_libraries(dmpc_cpp
         dmpc
         eigen-quadprog
+        pthread
         )
 

@@ -1,9 +1,16 @@
 #include <iostream>
 #include "dmpc.h"
+#include <thread>
 
 using namespace Eigen;
 using namespace std;
 using namespace std::chrono;
+
+
+void thread_func(std::vector<int> &indeces, int idx){
+    indeces.at(idx) = idx;
+    cout << "My thread number is " << idx << endl;
+}
 
 int main()
 
@@ -15,7 +22,7 @@ int main()
     pmax << 2.5, 2.5, 2.2;
 //    Params p = {0.4,20,15,2,1.5,0.5,0.5};
     DMPC test;
-    int N = 70;
+    int N = 2;
     float rmin = 0.91;
 //    MatrixXd po = test.gen_rand_pts(N,pmin,pmax,rmin);
 //    MatrixXd pf = test.gen_rand_perm(po);
@@ -35,10 +42,32 @@ int main()
     test.set_final_pts(pf);
     test.set_initial_pts(po);
 
-    std::vector<Trajectory> solution = test.solveDMPC(po,pf);
+//    std::vector<Trajectory> solution = test.solveDMPC(po,pf);
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
 
     cout << "Total Computation time = " << duration/1000000.0 << "s" << endl;
+
+
+    // Multi-thread testing
+    std::vector<int> all_idx(4);
+    std::vector<thread> all_threads(4);
+
+    for(int i=0; i < all_idx.size(); ++i){
+        all_threads.at(i) = std::thread{thread_func, ref(all_idx), i};
+    }
+    sleep(1);
+    for(int i=0; i < all_idx.size(); ++i){
+        all_threads.at(i).join();
+    }
+
+    for(int i=0; i < all_idx.size(); ++i){
+        cout << "all_idx[" << i << "]" << " = " << all_idx.at(i) << endl;
+    }
+
 }
+
+
+
+
 

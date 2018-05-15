@@ -230,8 +230,8 @@ figure(3)
 errorbar(N_vector,100*avg_diff,100*std_diff,'Linewidth',2);
 grid on;
 xlabel('Number of Vehicles');
-ylabel('Average % increase/decrease');
-title('Percentual increase/decrease on total travelled distance of DMPC wrt cup-SCP');
+ylabel('Average % increase');
+title('Percentage increase on travelled distance of DMPC wrt cup-SCP');
 
 
 % Failure analysis

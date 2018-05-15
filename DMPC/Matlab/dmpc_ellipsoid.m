@@ -20,11 +20,11 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 20; % number of vehicles
+N = 4; % number of vehicles
 
 % Workspace boundaries
-pmin = [-1.0,-1.0,0.2];
-pmax = [1.0,1.0,2.2];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
@@ -34,21 +34,21 @@ pmax = [1.0,1.0,2.2];
 rmin_init = 0.75;
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin_init);
+% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
-% % Initial positions
-% po1 = [0.01,0,1.5];
-% po2 = [0,2,1.5];
-% po3 = [-2,2,1.5];
-% po4 = [2,-2,1.5];
-% po = cat(3,po1,po2);
-% 
-% % Final positions
-% pf1 = [0.01,2,1.5];
-% pf2 = [0,0,1.5];
-% pf3 = [2,-2,1.5];
-% pf4 = [-2,2,1.5];
-% pf  = cat(3, pf1,pf2);
+% Initial positions
+po1 = [2,2,1.5];
+po2 = [-2,-2,1.5];
+po3 = [-2,2,1.5];
+po4 = [2,-2,1.5];
+po = cat(3,po1,po2,po3,po4);
+
+% Final positions
+pf1 = [-2,-2,1.5];
+pf2 = [2,2,1.5];
+pf3 = [2,-2,1.5];
+pf4 = [-2,2,1.5];
+pf  = cat(3, pf1,pf2,pf3,pf4);
 
 %% Solving the problem
 l = [];
@@ -187,7 +187,7 @@ end
 figure(1)
 colors = distinguishable_colors(N);
 
-set(gcf, 'Position', get(0, 'Screensize'));
+% set(gcf, 'Position', get(0, 'Screensize'));
 set(gcf,'currentchar',' ')
 while get(gcf,'currentchar')==' '
    
