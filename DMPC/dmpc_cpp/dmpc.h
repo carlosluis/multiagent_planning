@@ -8,9 +8,13 @@
 #include <eigen-quadprog/src/QuadProg.h>
 #include <boost/math/interpolators/cubic_b_spline.hpp>
 #include <chrono>
+#include <thread>
+#include <mutex>
 
 using namespace Eigen;
 using namespace std;
+
+extern mutex fail_lock;
 
 // Structure definitions
 struct Constraint {
@@ -62,6 +66,9 @@ public:
     // Top level method to be called by program
     std::vector<Trajectory> solveDMPC(const MatrixXd &po,
                                       const MatrixXd &pf);
+    std::vector<Trajectory> solveParallelDMPC(const MatrixXd &po,
+                                              const MatrixXd &pf);
+
 
 private:
     // Private Variables
@@ -101,6 +108,8 @@ private:
     MatrixXd _A0; // Propagation of initial states in position
 
     int _fail; //keeps track if QP failed or not
+    bool _execution_ended;
+    int _failed_i;
 
     // Private Methods
 
@@ -138,6 +147,12 @@ private:
                                               const double &step_size);
 
     double get_trajectory_time(const std::vector<Trajectory> &solution);
+
+    void cluster_solve(const int &k,
+                       std::vector<Trajectory> &all_trajectories,
+                       std::vector<MatrixXd> &obs,
+                       const std::vector<int> &agents,
+                       const std::vector<MatrixXd> &prev_obs);
 };
 
 #endif //DMPC_CPP_DMPC_H

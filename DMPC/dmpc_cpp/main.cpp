@@ -1,6 +1,5 @@
 #include <iostream>
 #include "dmpc.h"
-#include <thread>
 
 using namespace Eigen;
 using namespace std;
@@ -15,7 +14,6 @@ void thread_func(std::vector<int> &indeces, int idx){
 int main()
 
 {
-    high_resolution_clock::time_point t1 = high_resolution_clock::now();
     Vector3d pmin;
     pmin << -2.5, -2.5, 0.2;
     Vector3d pmax;
@@ -30,7 +28,7 @@ int main()
 //    cout << "po = " << endl << po << endl;
 //    cout << "pf = " << endl << pf << endl;
 
-    Vector3d po1(0.01,0,1.5);
+    Vector3d po1(0.01,0,3);
     Vector3d po2(0,2,1.5);
     Vector3d pf1(0.01,2,1.5);
     Vector3d pf2(0,0,1.5);
@@ -42,28 +40,25 @@ int main()
     test.set_final_pts(pf);
     test.set_initial_pts(po);
 
-//    std::vector<Trajectory> solution = test.solveDMPC(po,pf);
+    cout << "PARALLEL EXECUTION" << endl;
+    cout << "----------------------" << endl;
+
+    high_resolution_clock::time_point t1 = high_resolution_clock::now();
+    std::vector<Trajectory> solution = test.solveParallelDMPC(po,pf);
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
+    cout << "Total Parallel Execution Computation time = "
+         << duration/1000000.0 << "s" << endl << endl;
 
-    cout << "Total Computation time = " << duration/1000000.0 << "s" << endl;
+    cout << "SEQUENTIAL EXECUTION" << endl;
+    cout << "----------------------" << endl;
 
-
-    // Multi-thread testing
-    std::vector<int> all_idx(4);
-    std::vector<thread> all_threads(4);
-
-    for(int i=0; i < all_idx.size(); ++i){
-        all_threads.at(i) = std::thread{thread_func, ref(all_idx), i};
-    }
-    sleep(1);
-    for(int i=0; i < all_idx.size(); ++i){
-        all_threads.at(i).join();
-    }
-
-    for(int i=0; i < all_idx.size(); ++i){
-        cout << "all_idx[" << i << "]" << " = " << all_idx.at(i) << endl;
-    }
+    t1 = high_resolution_clock::now();
+    solution = test.solveDMPC(po,pf);
+    t2 = high_resolution_clock::now();
+    duration = duration_cast<microseconds>( t2 - t1 ).count();
+    cout << "Total Sequential Execution Computation time = "
+         << duration/1000000.0 << "s" << endl;
 
 }
 
