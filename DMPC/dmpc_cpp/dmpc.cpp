@@ -10,7 +10,6 @@ using namespace Eigen;
 using namespace std;
 using namespace std::chrono;
 
-mutex fail_lock;
 bool execution_ended;
 int failed_i_global;
 
@@ -605,6 +604,8 @@ std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
         prev_obs = obs;
     }
 
+    solution_short = all_trajectories;
+
     t2 = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
     cout << "Solve al QPs computation time = " << duration/1000000.0 << "s" << endl;
@@ -715,6 +716,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPC(const MatrixXd &po,
         prev_obs = obs;
     }
 
+    solution_short = all_trajectories;
     t2 = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
     cout << "Solve al QPs computation time = " << duration/1000000.0 << "s" << endl;
@@ -984,5 +986,34 @@ bool DMPC::collision_violation(const std::vector<Trajectory> &solution)
                 }
             }
         }
+    }
+}
+
+void DMPC::trajectories2file(const std::vector<Trajectory> &solution,
+                       char const* pathAndName)
+{
+    int N = solution.size();
+    ofstream file(pathAndName, ios::out | ios::trunc);
+    if(file)  // succeeded at opening the file
+    {
+        // instructions
+        cout << "Writing solution to text file..." << endl;
+
+        // write a few simulation parameters used in the reading end
+        file << N << " " << _pmin.transpose() << " " << _pmax.transpose() << endl;
+        file << _po << endl;
+        file << _pf << endl;
+
+        for(int i=0; i < N; ++i)
+        {
+            file << solution.at(i).pos << endl;
+        }
+
+        file.close();  // close the file after finished
+    }
+
+    else
+    {
+        cerr << "Error while trying to open file" << endl;
     }
 }

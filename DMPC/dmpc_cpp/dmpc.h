@@ -9,12 +9,10 @@
 #include <boost/math/interpolators/cubic_b_spline.hpp>
 #include <chrono>
 #include <thread>
-#include <mutex>
+#include <fstream>
 
 using namespace Eigen;
 using namespace std;
-
-extern mutex fail_lock;
 
 // Structure definitions
 struct Constraint {
@@ -68,6 +66,13 @@ public:
                                       const MatrixXd &pf);
     std::vector<Trajectory> solveParallelDMPC(const MatrixXd &po,
                                               const MatrixXd &pf);
+
+    void trajectories2file(const std::vector<Trajectory> &src,
+                           char const* pathAndName);
+
+    // public variables
+
+    std::vector<Trajectory> solution_short;
 
 
 private:
