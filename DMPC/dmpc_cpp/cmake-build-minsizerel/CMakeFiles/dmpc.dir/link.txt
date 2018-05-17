@@ -1,0 +1,2 @@
+/usr/bin/ar qc libdmpc.a  CMakeFiles/dmpc.dir/dmpc.cpp.o
+/usr/bin/ranlib libdmpc.a
