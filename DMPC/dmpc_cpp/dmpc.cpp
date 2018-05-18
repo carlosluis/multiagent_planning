@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include "dmpc.h"
-#include <thread>
 
 using namespace Eigen;
 using namespace std;

@@ -1,3 +1,6 @@
+clc
+close all
+clear
 M = dlmread('trajectories.txt','');
 N = M(1,1);
 K = size(M,2);
@@ -5,7 +8,9 @@ pmin = M(1,2:4);
 pmax = M(1,5:7);
 
 po = M(2:4,1:N);
+po = reshape(po,1,3,N);
 pf = M(5:7,1:N);
+pf = reshape(pf,1,3,N);
 
 all_pos = M(8:end,:);
 pk = [];
@@ -30,9 +35,9 @@ while get(gcf,'currentchar')==' '
             zlim([0,pmax(3)])
             plot3(pk(1,k,i),pk(2,k,i),pk(3,k,i),'o',...
                 'LineWidth',2,'Color',colors(i,:));
-            plot3(po(1,i), po(2,i), po(3,i),'^',...
+            plot3(po(1,1,i), po(1,2,i), po(1,3,i),'^',...
                   'LineWidth',2,'Color',colors(i,:));
-            plot3(pf(1,i), pf(2,i), pf(3,i),'x',...
+            plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'x',...
                   'LineWidth',2,'Color',colors(i,:));    
         end
     drawnow

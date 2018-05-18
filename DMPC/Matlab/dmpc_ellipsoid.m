@@ -1,10 +1,10 @@
 clc
-clear all
+% clear all
 close all
 warning('off','all')
 
 % Time settings and variables
-T = 15; % Trajectory final time
+T = 20; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -20,11 +20,11 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 27; % number of vehicles
+% N = 100; % number of vehicles
 
 % Workspace boundaries
-pmin = [-4,-4,0.2];
-pmax = [4,4,3.2];
+% pmin = [-4,-4,0.2];
+% pmax = [4,4,3.2];
 
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
@@ -49,47 +49,6 @@ rmin_init = 0.75;
 % pf3 = [2,-2,1.5];
 % pf4 = [-2,2,1.5];
 % pf  = cat(3, pf1,pf2,pf3,pf4);
-
-% Special case
-
-% Initial positions
-po1 = [-1,1,2.5];
-po2 = [-1,0,2.5];
-po3 = [-1,-1,2.5];
-po4 = [0,1,2.5];
-po5 = [0,0,2.5];
-po6 = [0,-1,2.5];
-po7 = [1,1,2.5];
-po8 = [1,0,2.5];
-po9 = [1,-1,2.5];
-
-po10 = [-1,1,1.5];
-po11 = [-1,0,1.5];
-po12 = [-1,-1,1.5];
-po13 = [0,1,1.5];
-po14 = [3.5,0,1.5]; %% the one that tries to get in
-po15 = [0,-1,1.5];
-po16 = [1,1,1.5];
-po17 = [1,0,1.5];
-po18 = [1,-1,1.5];
-
-po19 = [-1,1,0.5];
-po20 = [-1,0,0.5];
-po21 = [-1,-1,0.5];
-po22 = [0,1,0.5];
-po23 = [0,0,0.5];
-po24 = [0,-1,0.5];
-po25 = [1,1,0.5];
-po26 = [1,0,0.5];
-po27 = [1,-1,0.5];
-
-po = cat(3,po1,po2,po3,po4,po5,po6,po7,po8,po9,...
-    po10,po11,po12,po13,po14,po15,po16,po17,po18,...
-    po19,po20,po21,po22,po23,po24,po25,po26,po27);
-
-% Final positions
-pf = po;
-pf(1,:,14) = [0,0,1.5];
 
 %% Solving the problem
 l = [];
