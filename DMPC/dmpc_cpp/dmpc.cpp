@@ -415,7 +415,7 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
                -pow(10,5)*VectorXd::Ones(N-1);
 
         //TODO: investigate why if this matrix is zero, the optimization fails
-        W.block(n_var,n_var,N-1,N-1) = pow(10,-9)*(MatrixXd::Identity(N-1,N-1));
+        W.block(n_var,n_var,N-1,N-1) = pow(10,-15)*(MatrixXd::Identity(N-1,N-1));
 
         a0_1 = VectorXd::Zero(n_var_aug);
         a0_1 << ao, VectorXd::Zero(3*(_k_hor-1) + N - 1);

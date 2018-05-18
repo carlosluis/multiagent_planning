@@ -16,22 +16,22 @@ int main()
 //    pmax << 4, 4, 3.2;
 //    Params p = {0.4,20,15,2,1.5,0.5,0.5};
     DMPC test;
-    int N = 2;
+    int N = 70;
     float rmin_init = 0.91;
-//    MatrixXd po = test.gen_rand_pts(N,pmin,pmax,rmin_init);
-//    MatrixXd pf = test.gen_rand_perm(po);
+    MatrixXd po = test.gen_rand_pts(N,pmin,pmax,rmin_init);
+    MatrixXd pf = test.gen_rand_perm(po);
 
 //    cout << "po = " << endl << po << endl;
 //    cout << "pf = " << endl << pf << endl;
 
-    Vector3d po1(0.01,0,1.5);
-    Vector3d po2(0,2,1.5);
-    Vector3d pf1(0,0,1.5);
-    Vector3d pf2(0,-0.5,1.5);
-    MatrixXd po(3,2);
-    po << po1,po2;
-    MatrixXd pf(3,2);
-    pf << pf1,pf2;
+//    Vector3d po1(0.01,0,1.5);
+//    Vector3d po2(0,2,1.5);
+//    Vector3d pf1(0,0,1.5);
+//    Vector3d pf2(0,-0.5,1.5);
+//    MatrixXd po(3,2);
+//    po << po1,po2;
+//    MatrixXd pf(3,2);
+//    pf << pf1,pf2;
 
     test.set_final_pts(pf);
     test.set_initial_pts(po);
@@ -63,8 +63,3 @@ int main()
     char const *file = "/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/CPP_results/trajectories.txt";
     test.trajectories2file(sol_para_short,file);
 }
-
-
-
-
-

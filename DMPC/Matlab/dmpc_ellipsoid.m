@@ -1,5 +1,5 @@
 clc
-% clear all
+clear all
 close all
 warning('off','all')
 
@@ -20,11 +20,11 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-% N = 100; % number of vehicles
+N = 70; % number of vehicles
 
 % Workspace boundaries
-% pmin = [-4,-4,0.2];
-% pmax = [4,4,3.2];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
@@ -34,7 +34,7 @@ E2 = E^(-order);
 rmin_init = 0.75;
 
 % Initial positions
-% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % % Initial positions
 % po1 = [2,2,1.5];
@@ -101,7 +101,7 @@ while tries <= 1 && ~at_goal
                 pok = pk(:,k-1,n);
                 vok = vk(:,k-1,n);
                 aok = ak(:,k-1,n);
-                [pi,vi,ai,success] = solveSoftDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
+                [pi,vi,ai,success] = solveSoftDMPC_c(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
             end
             if ~success %problem was infeasible, exit and retry
                 break;
@@ -187,7 +187,7 @@ end
 figure(1)
 colors = distinguishable_colors(N);
 
-% set(gcf, 'Position', get(0, 'Screensize'));
+set(gcf, 'Position', get(0, 'Screensize'));
 set(gcf,'currentchar',' ')
 while get(gcf,'currentchar')==' '
    
