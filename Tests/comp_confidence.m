@@ -246,7 +246,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_confidence_100_5')
+save('comp_confidence_100_6')
 %% Post-Processing
 
 % Probability of success plots
