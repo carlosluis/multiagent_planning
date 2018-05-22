@@ -11,6 +11,8 @@ Eigen/Dense
 -
 eigen-quadprog/src/QuadProg.h
 -
+Eigen/LU
+-
 boost/math/interpolators/cubic_b_spline.hpp
 -
 chrono

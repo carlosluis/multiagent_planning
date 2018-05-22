@@ -252,6 +252,12 @@ save('comp_confidence_100_7')
 % Probability of success plots
 prob_dmpc2 = sum(success_dmpc2,2)/trials;
 prob_dmpc4 = sum(success_dmpc4,2)/trials;
+
+fprintf("Probability of success across all tests (normal) is %.2f%% \n",...
+    sum(prob_dmpc2)/length(prob_dmpc2)*100)
+fprintf("Probability of success across all tests (heuristic) is %.2f%% \n",...
+    sum(prob_dmpc4)/length(prob_dmpc4)*100)
+
 figure(1)
 grid on;
 hold on;

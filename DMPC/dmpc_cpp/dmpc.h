@@ -6,6 +6,7 @@
 
 #include <Eigen/Dense>
 #include <eigen-quadprog/src/QuadProg.h>
+#include <Eigen/LU>
 #include <boost/math/interpolators/cubic_b_spline.hpp>
 #include <chrono>
 #include <thread>

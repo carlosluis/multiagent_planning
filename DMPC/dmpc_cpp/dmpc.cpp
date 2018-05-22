@@ -414,8 +414,9 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
         f_w << VectorXd::Zero(n_var),
                -pow(10,5)*VectorXd::Ones(N-1);
 
-        //TODO: investigate why if this matrix is zero, the optimization fails
-        W.block(n_var,n_var,N-1,N-1) = pow(10,-15)*(MatrixXd::Identity(N-1,N-1));
+        //NOTE: W *NEEDS* to be different than zero, if not H has determinant 0
+
+        W.block(n_var,n_var,1,1) = pow(10,-10)*(MatrixXd::Identity(1,1));
 
         a0_1 = VectorXd::Zero(n_var_aug);
         a0_1 << ao, VectorXd::Zero(3*(_k_hor-1) + N - 1);
@@ -424,6 +425,7 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
         pf_rep << pf.replicate(_k_hor,1),MatrixXd::Zero(N-1,1);
 
         f = VectorXd::Zero(n_var_aug);
+        H = MatrixXd::Zero(n_var_aug,n_var_aug);
 
         f = -2*(pf_rep.transpose()*Q_aug*Lambda_aug -
                 init_propagation_aug.transpose()*Q_aug*Lambda_aug +
@@ -458,6 +460,7 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
         pf_rep << pf.replicate(_k_hor,1);
 
         f = VectorXd::Zero(n_var);
+        H = MatrixXd::Zero(n_var,n_var);
 
         f = -2*(pf_rep.transpose()*Q*_Lambda -
                 init_propagation.transpose()*Q*_Lambda +

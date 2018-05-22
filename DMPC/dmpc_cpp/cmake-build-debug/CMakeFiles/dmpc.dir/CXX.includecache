@@ -11,13 +11,13 @@ iostream
 -
 dmpc.h
 /home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/dmpc.h
-thread
--
 
 /home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/dmpc.h
 Eigen/Dense
 -
 eigen-quadprog/src/QuadProg.h
+-
+Eigen/LU
 -
 boost/math/interpolators/cubic_b_spline.hpp
 -
@@ -25,6 +25,6 @@ chrono
 -
 thread
 -
-mutex
+fstream
 -
 

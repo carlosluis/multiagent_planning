@@ -37,7 +37,7 @@ rmin_init = 0.75;
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % Initial positions
-po1 = [2,2,1.5];
+po1 = [2.01,2,1.5];
 po2 = [-2,-2,1.5];
 po3 = [-2,2,1.5];
 po4 = [2,-2,1.5];
@@ -61,7 +61,7 @@ error_tol = 0.05; % 5cm destination tolerance
 violation = 0; % checks if violations occured at end of algorithm
 
 % Penalty matrices when there're predicted collisions
-Q = 1000;
+Q = 100;
 S = 100;
 
 % Maximum acceleration in m/s^2
@@ -101,7 +101,7 @@ while tries <= 1 && ~at_goal
                 pok = pk(:,k-1,n);
                 vok = vk(:,k-1,n);
                 aok = ak(:,k-1,n);
-                [pi,vi,ai,success] = solveSoftDMPC_c(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
+                [pi,vi,ai,success] = solveSoftDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
             end
             if ~success %problem was infeasible, exit and retry
                 break;
