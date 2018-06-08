@@ -532,11 +532,13 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
 std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
                                         const MatrixXd &pf)
 {
-    int N = po.cols(); // Number of agents = number of rows of either po or pf
+    int N = po.cols(); // Number of agents = number of rows of po
+    int N_cmd = pf.cols(); // Number of agents of transition = number of rows of pf
 
     // Variables
-    std::vector<Trajectory> all_trajectories(N);
-    std::vector<Trajectory> solution(N);
+    std::vector<Trajectory> all_trajectories(N_cmd);
+    std::vector<MatrixXd> aux_trajectories(N-N_cmd);
+    std::vector<Trajectory> solution(N_cmd);
     Vector3d poi;
     Vector3d pfi;
     Trajectory trajectory_i;
@@ -552,49 +554,75 @@ std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
     std::vector<MatrixXd> prev_obs;
     std::vector<MatrixXd> obs;
 
+    if (N_cmd < N)
+    {
+        VectorXd rep = VectorXd::Zero(3*_k_hor);
+        MatrixXd pos_aux(3,_k_hor);
+
+        for (int i=0; i < N-N_cmd; ++i)
+        {
+            rep = (po.col(i+N_cmd)).replicate(_k_hor,1);
+            int idx = 0;
+            for (int l = 0; l < _k_hor; ++l)
+            {
+                pos_aux.col(l) = rep.segment(idx,3);
+                idx += 3;
+            }
+            aux_trajectories.at(i) = pos_aux;
+        }
+    }
+
     t1 = high_resolution_clock::now();
+
     // Generate trajectory for each time step of trajectory, for each agent
     for (int k=0; k < _K; ++k)
-    {   obs.clear();
+    {
+        obs.clear();
         for (int i=0; i < N; ++i)
         {
-            if (k == 0)
-            {   // Initialize
-                all_trajectories.at(i).pos = MatrixXd::Zero(3,_K);
-                all_trajectories.at(i).vel = MatrixXd::Zero(3,_K);
-                all_trajectories.at(i).acc = MatrixXd::Zero(3,_K);
-                trajectory_i.pos = MatrixXd::Zero(3,_k_hor);
-                trajectory_i.vel = MatrixXd::Zero(3,_k_hor);
-                trajectory_i.acc = MatrixXd::Zero(3,_k_hor);
-                poi = po.col(i);
-                pfi = pf.col(i);
-                trajectory_i = init_dmpc(poi,pfi);
-                _fail = 0;
-            }
-            else
-            {   // Update previous solution, solve current QP
+            if (i < N_cmd)
+            {
+                if (k == 0)
+                {   // Initialize
+                    all_trajectories.at(i).pos = MatrixXd::Zero(3,_K);
+                    all_trajectories.at(i).vel = MatrixXd::Zero(3,_K);
+                    all_trajectories.at(i).acc = MatrixXd::Zero(3,_K);
+                    trajectory_i.pos = MatrixXd::Zero(3,_k_hor);
+                    trajectory_i.vel = MatrixXd::Zero(3,_k_hor);
+                    trajectory_i.acc = MatrixXd::Zero(3,_k_hor);
+                    poi = po.col(i);
+                    pfi = pf.col(i);
+                    trajectory_i = init_dmpc(poi,pfi);
+                    _fail = 0;
+                }
+                else
+                {   // Update previous solution, solve current QP
 //                t1 = high_resolution_clock::now();
-                pok = all_trajectories.at(i).pos.col(k-1);
-                vok = all_trajectories.at(i).vel.col(k-1);
-                aok = all_trajectories.at(i).acc.col(k-1);
-                trajectory_i = solveQP(pok,pf.col(i),vok,aok,i,prev_obs);
+                    pok = all_trajectories.at(i).pos.col(k-1);
+                    vok = all_trajectories.at(i).vel.col(k-1);
+                    aok = all_trajectories.at(i).acc.col(k-1);
+                    trajectory_i = solveQP(pok,pf.col(i),vok,aok,i,prev_obs);
 //                t2 = high_resolution_clock::now();
 //                auto duration = duration_cast<microseconds>( t2 - t1 ).count();
 //                cout << "Computation time of solveQP = "
 //                     << duration/1000000.0 << "s" << endl;
+                }
+
+                if (_fail)
+                {
+                    failed_i = i;
+                    break;
+                }
+
+                // If QP didn't fail, then update the solution vector and obstacle list
+                obs.push_back(trajectory_i.pos);
+                all_trajectories.at(i).pos.col(k) = trajectory_i.pos.col(0);
+                all_trajectories.at(i).vel.col(k) = trajectory_i.vel.col(0);
+                all_trajectories.at(i).acc.col(k) = trajectory_i.acc.col(0);
             }
 
-            if (_fail)
-            {
-                failed_i = i;
-                break;
-            }
-
-            // If QP didn't fail, then update the solution vector and obstacle list
-            obs.push_back(trajectory_i.pos);
-            all_trajectories.at(i).pos.col(k) = trajectory_i.pos.col(0);
-            all_trajectories.at(i).vel.col(k) = trajectory_i.vel.col(0);
-            all_trajectories.at(i).acc.col(k) = trajectory_i.acc.col(0);
+            else // uncommanded vehicles act as static obstacles
+                obs.push_back(aux_trajectories.at(i-N_cmd));
         }
 
         if (_fail)
@@ -607,6 +635,7 @@ std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
     }
 
     solution_short = all_trajectories;
+    cout << solution_short.size() << endl;
 
     t2 = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
@@ -616,7 +645,7 @@ std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
     {
         cout << "Optimization problem feasible: solution found" << endl;
         // Check if every agent reached its goal
-        arrived = reached_goal(all_trajectories,pf,0.05,N);
+        arrived = reached_goal(all_trajectories,pf,0.05,N_cmd);
     }
 
     t1 = high_resolution_clock::now();
@@ -643,11 +672,13 @@ std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
 std::vector<Trajectory> DMPC::solveParallelDMPC(const MatrixXd &po,
                                           const MatrixXd &pf)
 {
-    int N = po.cols(); // Number of agents = number of rows of either po or pf
+    int N = po.cols(); // Number of agents = number of rows of po
+    int N_cmd = pf.cols(); // Number of agents of transition = number of rows of pf
 
     // Variables
-    std::vector<Trajectory> all_trajectories(N);
-    std::vector<Trajectory> solution(N);
+    std::vector<Trajectory> all_trajectories(N_cmd);
+    std::vector<MatrixXd> aux_trajectories(N-N_cmd);
+    std::vector<Trajectory> solution(N_cmd);
     Vector3d poi;
     Vector3d pfi;
     Trajectory trajectory_i;
@@ -658,13 +689,13 @@ std::vector<Trajectory> DMPC::solveParallelDMPC(const MatrixXd &po,
 
     // Separate N agents into 4 clusters to be solved in parallel
     int n_cluster = 8;
-    if (n_cluster > N)
-        n_cluster = N;
+    if (n_cluster > N_cmd)
+        n_cluster = N_cmd;
     std::vector<int> all_idx(n_cluster);
     std::vector<thread> all_threads(n_cluster);
     std::vector<std::vector<int>> all_clusters(n_cluster);
 
-    int agentsXcluster = N/n_cluster;
+    int agentsXcluster = N_cmd/n_cluster;
     int residue = N%n_cluster;
     int cluster_capacity;
     int N_index = 0;
@@ -690,6 +721,24 @@ std::vector<Trajectory> DMPC::solveParallelDMPC(const MatrixXd &po,
 
     std::vector<MatrixXd> prev_obs(N);
     std::vector<MatrixXd> obs(N);
+
+    if (N_cmd < N)
+    {
+        VectorXd rep = VectorXd::Zero(3*_k_hor);
+        MatrixXd pos_aux(3,_k_hor);
+
+        for (int i=N_cmd-1; i < N; ++i)
+        {
+            rep = (po.col(i)).replicate(_k_hor,1);
+            int idx = 0;
+            for (int l = 0; l < _k_hor; ++l)
+            {
+                pos_aux.col(l) = rep.segment(idx,3);
+                idx += 3;
+            }
+            obs.at(i) = pos_aux;
+        }
+    }
 
     t1 = high_resolution_clock::now();
     // Generate trajectory for each time step of trajectory, for each agent
@@ -727,7 +776,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPC(const MatrixXd &po,
     {
         cout << "Optimization problem feasible: solution found" << endl;
         // Check if every agent reached its goal
-        arrived = reached_goal(all_trajectories,pf,0.05,N);
+        arrived = reached_goal(all_trajectories,pf,0.05,N_cmd);
     }
 
     t1 = high_resolution_clock::now();
@@ -994,7 +1043,8 @@ bool DMPC::collision_violation(const std::vector<Trajectory> &solution)
 void DMPC::trajectories2file(const std::vector<Trajectory> &solution,
                        char const* pathAndName)
 {
-    int N = solution.size();
+    int N_cmd = solution.size();
+    int N = _po.cols();
     ofstream file(pathAndName, ios::out | ios::trunc);
     if(file)  // succeeded at opening the file
     {
@@ -1002,11 +1052,11 @@ void DMPC::trajectories2file(const std::vector<Trajectory> &solution,
         cout << "Writing solution to text file..." << endl;
 
         // write a few simulation parameters used in the reading end
-        file << N << " " << _pmin.transpose() << " " << _pmax.transpose() << endl;
+        file << N << " " <<  N_cmd << " " << _pmin.transpose() << " " << _pmax.transpose() << endl;
         file << _po << endl;
         file << _pf << endl;
 
-        for(int i=0; i < N; ++i)
+        for(int i=0; i < N_cmd; ++i)
         {
             file << solution.at(i).pos << endl;
         }

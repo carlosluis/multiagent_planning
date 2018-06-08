@@ -48,7 +48,7 @@ pf1 = [-2,-2,1.5];
 pf2 = [2,2,1.5];
 pf3 = [2,-2,1.5];
 pf4 = [-2,2,1.5];
-pf  = cat(3, pf1,pf2,pf3,pf4);
+pf  = cat(3,pf1,pf2,pf3,pf4);
 
 %% Solving the problem
 l = [];

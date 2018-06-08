@@ -26,8 +26,8 @@ int main()
 
     Vector3d po1(2.00001,2,1.5);
     Vector3d po2(-2,-2,1.5);
-    Vector3d po3(-2,2,1.5);
-    Vector3d po4(2,-2,1.5);
+    Vector3d po3(0,0,1.5);
+    Vector3d po4(0.8,0,1.5);
 
     Vector3d pf1(-2,-2,1.5);
     Vector3d pf2(2,2,1.5);
@@ -36,8 +36,8 @@ int main()
 
     MatrixXd po(3,4);
     po << po1,po2,po3,po4;
-    MatrixXd pf(3,4);
-    pf << pf1,pf2,pf3,pf4;
+    MatrixXd pf(3,2);
+    pf << pf1,pf2;
 
     test.set_final_pts(pf);
     test.set_initial_pts(po);
