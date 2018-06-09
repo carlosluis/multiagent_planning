@@ -246,17 +246,14 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_confidence_100_7')
+save('comp_confidence_100_8')
 %% Post-Processing
+clc
+close all
 
 % Probability of success plots
 prob_dmpc2 = sum(success_dmpc2,2)/trials;
 prob_dmpc4 = sum(success_dmpc4,2)/trials;
-
-fprintf("Probability of success across all tests (normal) is %.2f%% \n",...
-    sum(prob_dmpc2)/length(prob_dmpc2)*100)
-fprintf("Probability of success across all tests (heuristic) is %.2f%% \n",...
-    sum(prob_dmpc4)/length(prob_dmpc4)*100)
 
 figure(1)
 grid on;
@@ -300,10 +297,12 @@ legend('Regular','Heuristic')
 violation_num2 = sum(violation2,2);
 goal_num2 = sum(failed_goal2,2);
 infes_num2 = sum(~feasible2,2);
+total_num2 = sum(violation_num2) + sum(goal_num2) + sum(infes_num2);
 
 violation_num4 = sum(violation4,2);
 goal_num4 = sum(failed_goal4,2);
 infes_num4 = sum(~feasible4,2);
+total_num4 = sum(violation_num4) + sum(goal_num4) + sum(infes_num4);
 
 StackData2 = [infes_num2 violation_num2 goal_num2];
 StackData4 = [infes_num4 violation_num4 goal_num4];
@@ -325,3 +324,32 @@ xlabel('Number of Vehicles');
 ylabel(['Number of failed trials (out of ' ,num2str(trials), ')']);
 legend('Infeasibility Reg','Collisions Reg','Incomplete Trajectory Reg',...
        'Infeasibility Heu','Collisions Heu','Incomplete Trajectory Heu')
+   
+% Print various statistics
+fprintf("--------------------------- \nNORMAL TEST STATISTICS \n");
+fprintf("--------------------------- \n")
+fprintf("Probability of success across all tests --> %.2f%% (%d out of %d tests) \n",...
+    sum(prob_dmpc2)/length(prob_dmpc2)*100, sum(sum(success_dmpc2)), length(N_vector)*trials)
+fprintf("Percentage failure due to infeasibility --> %.2f%% (%d out of %d failures) \n",...
+    sum(infes_num2)/total_num2*100, sum(infes_num2), total_num2)
+
+fprintf("Percentage failure due to collisions --> %.2f%% (%d out of %d failures) \n",...
+    sum(violation_num2)/total_num2*100, sum(violation_num2), total_num2)
+
+fprintf("Percentage failure due to not reaching goal --> %.2f%% (%d out of %d failures) \n",...
+    sum(goal_num2)/total_num2*100, sum(goal_num2), total_num2)
+
+fprintf("--------------------------- \nHEURISTIC TEST STATISTICS \n");
+fprintf("--------------------------- \n")
+fprintf("Probability of success across all tests --> %.2f%% (%d out of %d tests) \n",...
+    sum(prob_dmpc4)/length(prob_dmpc4)*100, sum(sum(success_dmpc4)), length(N_vector)*trials)
+fprintf("Percentage failure due to infeasibility --> %.2f%% (%d out of %d failures) \n",...
+    sum(infes_num4)/total_num4*100, sum(infes_num4), total_num4)
+
+fprintf("Percentage failure due to collisions --> %.2f%% (%d out of %d failures) \n",...
+    sum(violation_num4)/total_num4*100, sum(violation_num4), total_num4)
+
+fprintf("Percentage failure due to not reaching goal --> %.2f%% (%d out of %d failures) \n",...
+    sum(goal_num4)/total_num4*100, sum(goal_num4), total_num4)
+
+

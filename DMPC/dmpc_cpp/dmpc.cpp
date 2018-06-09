@@ -635,7 +635,6 @@ std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
     }
 
     solution_short = all_trajectories;
-    cout << solution_short.size() << endl;
 
     t2 = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
