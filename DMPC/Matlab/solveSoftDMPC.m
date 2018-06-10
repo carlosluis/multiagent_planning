@@ -57,10 +57,10 @@ if (violation) % In case of collisions, we relax the constraint with slack varia
     A_initp = [A_initp; zeros(N-1,6)];
     
     % Linear penalty on collision constraint relaxation
-    f_eps = -5*10^4*[zeros(3*K,1); ones(N-1,1)]';
+    f_eps = -1*10^3*[zeros(3*K,1); ones(N-1,1)]';
     
     % Quadratic penalty on collision constraint relaxation
-    EPS = 5*10^4*[zeros(3*K,3*K) zeros(3*K,N-1);
+    EPS = 1*10^5*[zeros(3*K,3*K) zeros(3*K,N-1);
            zeros(N-1,3*K) eye(N-1,N-1)];
        
     f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
