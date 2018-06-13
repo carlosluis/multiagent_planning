@@ -16,7 +16,7 @@ int main()
 //    pmax << 4, 4, 3.2;
 //    Params p = {0.4,20,15,2,1.5,0.5,0.5};
     DMPC test;
-    int N = 2;
+    int N = 9;
     float rmin_init = 0.91;
 //    MatrixXd po = test.gen_rand_pts(N,pmin,pmax,rmin_init);
 //    MatrixXd pf = test.gen_rand_perm(po);
@@ -24,20 +24,30 @@ int main()
 //    cout << "po = " << endl << po << endl;
 //    cout << "pf = " << endl << pf << endl;
 
-    Vector3d po1(2.00001,2,1.5);
-    Vector3d po2(-2,-2,1.5);
-    Vector3d po3(0,0,1.5);
-    Vector3d po4(0.8,0,1.5);
+    Vector3d po1(-1.0, 1.0, 1.5);
+    Vector3d po2( 0.0, 1.0, 1.5);
+    Vector3d po3(1.0, 1.0, 1.5);
+    Vector3d po4( -1.0, 0.0, 1.5);
+    Vector3d po5 (0.0, 0.0 , 1.5);
+    Vector3d po6 (1.0, 0.0 , 1.5);
+    Vector3d po7( -1.0, -1.0 , 1.5);
+    Vector3d po8( 0.0, -1.0 , 1.5);
+    Vector3d po9 (1.0, -1.0 , 1.5);
 
-    Vector3d pf1(-2,-2,1.5);
-    Vector3d pf2(2,2,1.5);
-    Vector3d pf3(2,-2,1.5);
-    Vector3d pf4(-2,2,1.5);
+//    Vector3d po1(2.0001,2.0,1.5);
+//    Vector3d po2(-2.0,-2.0,1.5);
+//    Vector3d po3(-2.0,2.0,1.5);
+//    Vector3d po4(2.0,-2.0,1.5);
+//
+//    Vector3d pf1(-2.0,-2.0,1.5);
+//    Vector3d pf2(2.0,2.0,1.5);
+//    Vector3d pf3(2.0,-2.0,1.5);
+//    Vector3d pf4(-2.0,2.0,1.5);
 
-    MatrixXd po(3,4);
-    po << po1,po2,po3,po4;
-    MatrixXd pf(3,2);
-    pf << pf1,pf2;
+    MatrixXd po(3,8);
+    po << po1,po2,po3,po4,po5,po6,po7,po8;
+    MatrixXd pf(3,8);
+    pf = test.gen_rand_perm(po);
 
     test.set_final_pts(pf);
     test.set_initial_pts(po);

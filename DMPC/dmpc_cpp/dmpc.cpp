@@ -169,15 +169,33 @@ MatrixXd DMPC::gen_rand_pts(const int &N,
 MatrixXd DMPC::gen_rand_perm(const MatrixXd &po)
 {
     int N = po.cols();
+    std::vector<int> array;
+    std::vector<int> array_aux;
     int perm[N];
     MatrixXd pf = MatrixXd::Zero(3,N);
-    for (int i = 0; i < N; i++) perm[i] = i;
+    for (int i = 0; i < N; i++) array.push_back(i);
+    array_aux = array;
+    cout << "perm = " << perm << endl;
 
     // Random permutation the order
     for (int i = 0; i < N; i++) {
-        int j, t;
-        j = rand() % (N-i) + i;
-        t = perm[j]; perm[j] = perm[i]; perm[i] = t; // Swap i and j
+        int j;
+        array_aux.clear();
+        array_aux = array;
+        array_aux.erase(std::remove(array_aux.begin(), array_aux.end(), i), array_aux.end());
+        if (i == N-1){
+            perm[i] = array.at(0);
+        }
+
+        else if (i == N-2 && array_aux.back() == N-1){
+            perm[i] = array_aux.back();
+            array.erase(std::remove(array.begin(), array.end(), perm[i]), array.end());
+        }
+        else{
+            j = rand() % (N-i-1);
+            perm[i] = array_aux.at(j);
+            array.erase(std::remove(array.begin(), array.end(), array_aux.at(j)), array.end());
+        }
     }
 
     for (int i = 0; i < N; i++) {
@@ -1058,6 +1076,7 @@ void DMPC::trajectories2file(const std::vector<Trajectory> &solution,
         for(int i=0; i < N_cmd; ++i)
         {
             file << solution.at(i).pos << endl;
+
         }
 
         file.close();  // close the file after finished

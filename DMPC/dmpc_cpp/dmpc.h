@@ -11,6 +11,7 @@
 #include <chrono>
 #include <thread>
 #include <fstream>
+#include <algorithm>
 
 using namespace Eigen;
 using namespace std;
