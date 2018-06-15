@@ -330,6 +330,9 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
     MatrixXd H;
     VectorXd f;
 
+    // Tuning factor of speed
+    int spd = 4;
+
     // Augmented model matrices in case of collisions
     MatrixXd Lambda_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
     MatrixXd Lambda_aug_in = MatrixXd::Zero(n_var,n_var_aug);
@@ -370,7 +373,7 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
     // Case of no collisions and farther than 1m from goal
     if (!violation && (po-pf).norm() >= 1)
     {
-        Q.block(3*(_k_hor-1),3*(_k_hor-1),3,3) = 1000*MatrixXd::Identity(3,3);
+        Q.block(3*(_k_hor-spd),3*(_k_hor-spd),3*spd,3*spd) = 1000*MatrixXd::Identity(3*spd,3*spd);
         R = 1*MatrixXd::Identity(n_var,n_var);
         S = 10*MatrixXd::Identity(n_var,n_var);
     }
@@ -378,7 +381,7 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
     // Case of no collisions and close to goal
     else if (!violation && (po-pf).norm() < 1)
     {
-        Q.block(3*(_k_hor-1),3*(_k_hor-1),3,3) = 10000*MatrixXd::Identity(3,3);
+        Q.block(3*(_k_hor-spd),3*(_k_hor-spd),3*spd,3*spd) = 10000*MatrixXd::Identity(3*spd,3*spd);
         R = 1*MatrixXd::Identity(n_var,n_var);
         S = 10*MatrixXd::Identity(n_var,n_var);
     }
@@ -386,7 +389,7 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
     // Case of collisions in the horizon
     else
     {
-        Q.block(3*(_k_hor-1),3*(_k_hor-1),3,3) = 1000*MatrixXd::Identity(3,3);
+        Q.block(3*(_k_hor-spd),3*(_k_hor-spd),3*spd,3*spd) = 1000*MatrixXd::Identity(3*spd,3*spd);
         R = 1*MatrixXd::Identity(n_var,n_var);
         S = 100*MatrixXd::Identity(n_var,n_var);
     }
