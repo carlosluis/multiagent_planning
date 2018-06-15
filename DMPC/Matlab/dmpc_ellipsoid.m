@@ -1,10 +1,10 @@
 clc
-% clear all
+clear all
 close all
 warning('off','all')
 
 % Time settings and variables
-T = 20; % Trajectory final time
+T = 10; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -20,7 +20,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 9; % number of vehicles
+N = 4; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -36,19 +36,19 @@ rmin_init = 0.75;
 % Initial positions
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
-% % Initial positions
-% po1 = [2.01,2,1.5];
-% po2 = [-2,-2,1.5];
-% po3 = [-2,2,1.5];
-% po4 = [2,-2,1.5];
-% po = cat(3,po1,po2,po3,po4);
-% 
-% % Final positions
-% pf1 = [-2,-2,1.5];
-% pf2 = [2,2,1.5];
-% pf3 = [2,-2,1.5];
-% pf4 = [-2,2,1.5];
-% pf  = cat(3,pf1,pf2,pf3,pf4);
+% Initial positions
+po1 = [1.51,1.5,1.5];
+po2 = [-1.5,-1.5,1.5];
+po3 = [-1.5,1.5,1.5];
+po4 = [1.5,-1.5,1.5];
+po = cat(3,po1,po2,po3,po4);
+
+% Final positions
+pf1 = [-1.5,-1.5,1.5];
+pf2 = [1.5,1.5,1.5];
+pf3 = [1.5,-1.5,1.5];
+pf4 = [-1.5,1.5,1.5];
+pf  = cat(3,pf1,pf2,pf3,pf4);
 
 %% Solving the problem
 l = [];
@@ -65,7 +65,7 @@ Q = 1000;
 S = 100;
 
 % Maximum acceleration in m/s^2
-alim = 0.5;
+alim = 2;
 
 % Some pre computations
 A = getPosMat(h,k_hor);
@@ -123,7 +123,7 @@ while tries <= 1 && ~at_goal
     if ~success
         continue
     end
-    pass = ReachedGoal(pk,pf,K,error_tol); %check if agents reached goal
+    pass = ReachedGoal(pk,pf,K,error_tol,N); %check if agents reached goal
     if success && pass
         at_goal = 1;
     elseif success && ~pass %if not at goal, retry with more aggressive behaviour
@@ -213,7 +213,7 @@ while get(gcf,'currentchar')==' '
     drawnow
     end
     clf
-    pause(0.1)
+    pause(0.5)
 end
 
 %% Plotting
