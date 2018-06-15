@@ -21,21 +21,33 @@ for k = 1: k_hor
         break;
     end       
 end
+% v = repmat([zeros(1,floor(K/2)) 1:100/(K/2):100],[3 1]) ;
+v = repmat(0:50/K:50,[3 1]) ;
+v = v(:,(2:end));
+
+spd = 7;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp
-    Q = 1000*[zeros(3*(K-1),3*K);
-            zeros(3,3*(K-1)) eye(3)];
+%     Q = diag(v(:));
+    Q = 1000*[zeros(3*(K-spd),3*K);
+            zeros(3*spd,3*(K-spd)) eye(3*spd)];
     R = 1*eye(3*K);
     S = 10*eye(3*K);
 elseif (isempty(Ain_coll) && norm(po-pf) < 1) % no collisions close to sp
-    Q = 10000*[zeros(3*(K-1),3*K);
-            zeros(3,3*(K-1)) eye(3)];
+%     Q = diag(v(:));
+    Q = 1000*[zeros(3*(K-spd),3*K);
+            zeros(3*spd,3*(K-spd)) eye(3*spd)];
+    %     Q = 10000*[zeros(3*(K-1),3*K);
+%             zeros(3,3*(K-1)) eye(3)];
     R = 1*eye(3*K);
     S = 10*eye(3*K); 
 else     % collisions
-    Q = Q1*[zeros(3*(K-1),3*K);
-            zeros(3,3*(K-1)) eye(3)];
+%     Q = diag(v(:));
+    Q = Q1*[zeros(3*(K-spd),3*K);
+            zeros(3*spd,3*(K-spd)) eye(3*spd)];
+%     Q = Q1*[zeros(3*(K-1),3*K);
+%             zeros(3,3*(K-1)) eye(3)];
     R = 1*eye(3*K);
     S = S1*eye(3*K);
 end
@@ -60,7 +72,7 @@ if (violation) % In case of collisions, we relax the constraint with slack varia
     f_eps = -1*10^5*[zeros(3*K,1); ones(N-1,1)]';
     
     % Quadratic penalty on collision constraint relaxation
-    EPS = 1*10^0*[zeros(3*K,3*K) zeros(3*K,N-1);
+    EPS = 1*10^5*[zeros(3*K,3*K) zeros(3*K,N-1);
            zeros(N-1,3*K) eye(N-1,N-1)];
        
     f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
