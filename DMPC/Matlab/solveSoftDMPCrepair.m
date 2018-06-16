@@ -1,4 +1,4 @@
-function [p,v,a,success] = solveSoftDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order)
+function [p,v,a,success] = solveSoftDMPCrepair(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order)
 
 k_hor = size(l,2);
 ub = alim*ones(3*K,1);
@@ -10,6 +10,7 @@ options =  optimset('Display', 'off');
 N = size(l,3);
 Ain_coll = []; 
 bin_coll = []; 
+success = 0;
 
 for k = 1: k_hor
     violation = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
@@ -23,6 +24,7 @@ for k = 1: k_hor
 end
 
 spd = 1;
+term = -1*10^7;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp
@@ -59,7 +61,7 @@ if (violation) % In case of collisions, we relax the constraint with slack varia
     A_initp = [A_initp; zeros(N-1,6)];
     
     % Linear penalty on collision constraint relaxation
-    f_eps = -5*10^4*[zeros(3*K,1); ones(N-1,1)]';
+    f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
     
     % Quadratic penalty on collision constraint relaxation
     EPS = 1*10^-5*[zeros(3*K,3*K) zeros(3*K,N-1);
@@ -76,18 +78,18 @@ end
 
 Ain_total = [Ain_coll; A; -A];
 H = 2*(A'*Q*A+ Delta'*S*Delta + R + EPS);
-
+tries = 0;
 %Solve and propagate states
+while(~success && tries < 10)
 [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
 if (isempty(x) || exitflag == 0)
-    p = [];
-    v = [];
-    a = [];
-    success = 0;
-%     fprintf("Failed @ horizon step k = %i \n",k)
-    return
+    term = term*0.9;
+    f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
+    f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
+    tries = tries + 1;
 end
 success = exitflag;
+end
 a = x(1:3*K);
 if violation % extract the value of the slack variable (not used atm)
     epsilon = x(3*K+1:end);

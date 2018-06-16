@@ -10,7 +10,7 @@ tk = 0:h:T;
 K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
-k_hor = 12; % horizon length
+k_hor = 15; % horizon length
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
@@ -88,50 +88,60 @@ end
 failed_goal = 0; %how many times the algorithm failed to reach goal
 tries = 1; % how many iterations it took the DMPC to find a solution
 tic % measure the time it gets to solve the optimization problem
-while tries <= 1 && ~at_goal
-    pred = [];
-    for k = 1:K
+pred = [];
+moreconstr = [];
+for k = 1:K
         for n = 1:N
-            if k==1
-                poi = po(:,:,n);
-                pfi = pf(:,:,n);
-                [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
-                success = 1;
-            else
-                pok = pk(:,k-1,n);
-                vok = vk(:,k-1,n);
-                aok = ak(:,k-1,n);
-                [pi,vi,ai,success] = solveSoftDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
-            end
-            if ~success %problem was infeasible, exit and retry
-                break;
-            end
-            new_l(:,:,n) = pi;
-            pk(:,k,n) = pi(:,1);
-            vk(:,k,n) = vi(:,1);
-            ak(:,k,n) = ai(:,1);
+        if k==1
+            poi = po(:,:,n);
+            pfi = pf(:,:,n);
+            [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
+            success = 1;
+        else
+            pok = pk(:,k-1,n);
+            vok = vk(:,k-1,n);
+            aok = ak(:,k-1,n);
+            [pi,vi,ai,success] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
         end
-        if ~success %Heuristic: increase Q, make init more slowly, 
-            tries = tries + 1;
-            Q = Q+100;
-            fprintf("Failed - problem unfeasible @ k_T = %i, n = %i: trial #%i\n",k,n,tries-1)
+        if ~success %problem was infeasible, exit and retry
             break;
         end
-        l = new_l;
-        pred(:,:,:,k) = l;
+        new_l(:,:,n) = pi;
+        pk(:,k,n) = pi(:,1);
+        vk(:,k,n) = vi(:,1);
+        ak(:,k,n) = ai(:,1);
     end
-    if ~success
-        continue
+    if ~success %Heuristic: increase Q, make init more slowly, 
+        fprintf("Failed - problem unfeasible @ k_T = %i, n = %i: trial #%i\n",k,n,tries-1)
+        break;
     end
-    pass = ReachedGoal(pk,pf,K,error_tol,N); %check if agents reached goal
-    if success && pass
-        at_goal = 1;
-    elseif success && ~pass %if not at goal, retry with more aggressive behaviour
-        failed_goal = failed_goal + 1;
-        tries = tries + 1;
-        Q = Q+100;
-        fprintf("Failed - Did not reach goal: trial #%i\n",tries-1)
-    end
+    
+%     % check if there were collisions at time step k
+%     for i = 1:N
+%         for j = (i+1):N
+%             if(i~=j)
+%                 differ = E1*(pk(:,k,i) - pk(:,k,j));
+%                 dist = (sum(differ.^order,1)).^(1/order);
+%                 if min(dist) < (rmin - 0.05)
+%                     [value,index] = min(dist);
+%                     violation = 1;
+%                     moreconstr = [moreconstr i j];
+%                     fprintf("Collision constraint violated by %.2fcm: vehicles %i and %i @ k = %i \n", (rmin -value)*100,i,j,index)
+%                 end
+%             end
+%         end
+%     end
+    
+    l = new_l;
+    pred(:,:,:,k) = l;
+end
+
+pass = ReachedGoal(pk,pf,K,error_tol,N); %check if agents reached goal
+if success && pass
+    at_goal = 1;
+elseif success && ~pass %if not at goal, retry with more aggressive behaviour
+    failed_goal = failed_goal + 1;
+    fprintf("Failed - Did not reach goal: trial #%i\n",tries-1)
 end
 passed = success && at_goal %DMPC was successful or not      
 toc

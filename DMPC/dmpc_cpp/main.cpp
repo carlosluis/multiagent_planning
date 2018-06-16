@@ -24,31 +24,31 @@ int main()
 //    cout << "po = " << endl << po << endl;
 //    cout << "pf = " << endl << pf << endl;
 
-    Vector3d po1(-1.0, 1.0, 1.0);
-    Vector3d po2( 0.0, 1.0, 0.8);
-    Vector3d po3(1.0, 1.0, 1.5);
-    Vector3d po4( -1.0, 0.0, 0.4);
-    Vector3d po5 (0.0, 0.0 , 1.3);
-    Vector3d po6 (1.0, 0.0 , 0.7);
-    Vector3d po7( -1.0, -1.0 , 0.9);
-    Vector3d po8( 0.0, -1.0 , 1.4);
-    Vector3d po9 (1.0, -1.0 , 0.6);
+//    Vector3d po1(-1.0, 1.0, 1.0);
+//    Vector3d po2( 0.0, 1.0, 0.8);
+//    Vector3d po3(1.0, 1.0, 1.5);
+//    Vector3d po4( -1.0, 0.0, 0.4);
+//    Vector3d po5 (0.0, 0.0 , 1.3);
+//    Vector3d po6 (1.0, 0.0 , 0.7);
+//    Vector3d po7( -1.0, -1.0 , 0.9);
+//    Vector3d po8( 0.0, -1.0 , 1.4);
+//    Vector3d po9 (1.0, -1.0 , 0.6);
 
-//    Vector3d po1(1.5001,1.5,1.5);
-//    Vector3d po2(-1.5,-1.5,1.5);
-//    Vector3d po3(-1.5,1.5,1.5);
-//    Vector3d po4(1.5,-1.5,1.5);
+    Vector3d po1(1.5001,1.5,1.5);
+    Vector3d po2(-1.5,-1.5,1.5);
+    Vector3d po3(-1.5,1.5,1.5);
+    Vector3d po4(1.5,-1.5,1.5);
 
 //    Vector3d pf1(-2.0,-2.0,1.5);
 //    Vector3d pf2(2.0,2.0,1.5);
 //    Vector3d pf3(2.0,-2.0,1.5);
 //    Vector3d pf4(-2.0,2.0,1.5);
 
-    MatrixXd po(3,9);
-    po << po1,po2,po3,po4,po5,po6,po7,po8,po9;
-    MatrixXd pf(3,9);
-//    pf << po2,po1,po4,po3;
-    pf = test.gen_rand_perm(po);
+    MatrixXd po(3,4);
+    po << po1,po2,po3,po4;
+    MatrixXd pf(3,4);
+    pf << po2,po1,po4,po3;
+//    pf = test.gen_rand_perm(po);
 
     test.set_final_pts(pf);
     test.set_initial_pts(po);
