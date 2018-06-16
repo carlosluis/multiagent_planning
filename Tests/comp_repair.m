@@ -71,6 +71,7 @@ for q = 1:length(N_vector)
         Q = 1000;
         S = 100;
         failed_goal2(q,r) = 0;
+        outbound2(q,r) = 0;
         t_start = tic;
         
         for k = 1:K
@@ -84,7 +85,7 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible2(q,r)] = solveSoftDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
+                    [pi,vi,ai,feasible2(q,r),outbound2(q,r)] = solveSoftDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
                 end
                 if ~feasible2(q,r)
                     break;
@@ -100,7 +101,7 @@ for q = 1:length(N_vector)
             l = new_l;
         end
         if feasible2(q,r)
-            pass = ReachedGoal(pk,pf,K,error_tol);
+            pass = ReachedGoal(pk,pf,K,error_tol,N);
             if  ~pass
                 failed_goal2(q,r) = failed_goal2(q,r) + 1;
             end
@@ -168,6 +169,7 @@ for q = 1:length(N_vector)
         Q = 1000;
         S = 100;
         failed_goal4(q,r) = 0;
+        outbound4(q,r) = 0;
         t_start = tic;
         
         for k = 1:K
@@ -181,7 +183,7 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible4(q,r)] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
+                    [pi,vi,ai,feasible4(q,r),outbound4(q,r)] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
                 end
                 if ~feasible4(q,r)
                     break;
@@ -197,7 +199,7 @@ for q = 1:length(N_vector)
             l = new_l;
         end
         if feasible4(q,r)
-            pass = ReachedGoal(pk,pf,K,error_tol);
+            pass = ReachedGoal(pk,pf,K,error_tol,N);
             if  ~pass
                 failed_goal4(q,r) = failed_goal4(q,r) + 1;
             end

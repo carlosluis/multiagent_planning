@@ -1,4 +1,4 @@
-function [p,v,a,success] = solveSoftDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order)
+function [p,v,a,success,outbound] = solveSoftDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order)
 
 k_hor = size(l,2);
 ub = alim*ones(3*K,1);
@@ -62,7 +62,7 @@ if (violation) % In case of collisions, we relax the constraint with slack varia
     f_eps = -5*10^4*[zeros(3*K,1); ones(N-1,1)]';
     
     % Quadratic penalty on collision constraint relaxation
-    EPS = 1*10^-5*[zeros(3*K,3*K) zeros(3*K,N-1);
+    EPS = 1*10^3*[zeros(3*K,3*K) zeros(3*K,N-1);
            zeros(N-1,3*K) eye(N-1,N-1)];
        
     f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
@@ -76,15 +76,17 @@ end
 
 Ain_total = [Ain_coll; A; -A];
 H = 2*(A'*Q*A+ Delta'*S*Delta + R + EPS);
-
+outbound = 0;
 %Solve and propagate states
 [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
-if (isempty(x) || exitflag == 0)
+if (exitflag == -2 || exitflag == 0 || exitflag == -8) 
     p = [];
     v = [];
     a = [];
     success = 0;
-%     fprintf("Failed @ horizon step k = %i \n",k)
+    if (~violation)
+        outbound = 1;
+    end
     return
 end
 success = exitflag;

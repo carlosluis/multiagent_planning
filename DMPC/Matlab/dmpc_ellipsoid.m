@@ -1,5 +1,5 @@
 clc
-% clear all
+clear all
 close all
 warning('off','all')
 
@@ -34,7 +34,7 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.75;
 
 % Initial positions
-% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % % Initial positions
 % po1 = [1.51,1.5,1.5];
@@ -65,7 +65,7 @@ Q = 1000;
 S = 100;
 
 % Maximum acceleration in m/s^2
-alim = 1.0;
+alim = 0.5;
 
 % Some pre computations
 A = getPosMat(h,k_hor);
@@ -101,7 +101,7 @@ while tries <= 1 && ~at_goal
                 pok = pk(:,k-1,n);
                 vok = vk(:,k-1,n);
                 aok = ak(:,k-1,n);
-                [pi,vi,ai,success] = solveSoftDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
+                [pi,vi,ai,success,outbound] = solveSoftDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
             end
             if ~success %problem was infeasible, exit and retry
                 break;
@@ -114,8 +114,12 @@ while tries <= 1 && ~at_goal
         if ~success %Heuristic: increase Q, make init more slowly, 
             tries = tries + 1;
             Q = Q+100;
+            if outbound
+            fprintf("Failed - problem unfeasible, vehicle couldn't stay in workspace @ k_T = %i, n = %i: trial #%i\n",k,n,tries-1)
+            else
             fprintf("Failed - problem unfeasible @ k_T = %i, n = %i: trial #%i\n",k,n,tries-1)
-            break;
+            end
+        break;
         end
         l = new_l;
         pred(:,:,:,k) = l;

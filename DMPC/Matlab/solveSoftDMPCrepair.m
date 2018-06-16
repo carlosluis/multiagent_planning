@@ -1,4 +1,4 @@
-function [p,v,a,success] = solveSoftDMPCrepair(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order)
+function [p,v,a,success,outbound] = solveSoftDMPCrepair(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order)
 
 k_hor = size(l,2);
 ub = alim*ones(3*K,1);
@@ -24,7 +24,7 @@ for k = 1: k_hor
 end
 
 spd = 1;
-term = -1*10^7;
+term = -5*10^6;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp
@@ -64,7 +64,7 @@ if (violation) % In case of collisions, we relax the constraint with slack varia
     f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
     
     % Quadratic penalty on collision constraint relaxation
-    EPS = 1*10^-5*[zeros(3*K,3*K) zeros(3*K,N-1);
+    EPS = 1*10^3*[zeros(3*K,3*K) zeros(3*K,N-1);
            zeros(N-1,3*K) eye(N-1,N-1)];
        
     f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
@@ -79,16 +79,38 @@ end
 Ain_total = [Ain_coll; A; -A];
 H = 2*(A'*Q*A+ Delta'*S*Delta + R + EPS);
 tries = 0;
+outbound = 0;
 %Solve and propagate states
 while(~success && tries < 10)
 [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
-if (isempty(x) || exitflag == 0)
-    term = term*0.9;
+% if exitflag == -6
+%     hola = 1;
+% end
+if (exitflag == -2 || exitflag == 0 || exitflag == -8)
+    if ~violation
+        % vehicle couldn't stay in the position boundaries
+        p = [];
+        v = [];
+        a = [];
+        outbound = 1;
+        return;   
+    end
+    term = term*0.7;
     f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
     f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
     tries = tries + 1;
+    success = 0;
+    continue;
 end
 success = exitflag;
+end
+
+if (exitflag == -2 || exitflag == 0 || exitflag == -8)
+    p = [];
+    v = [];
+    a = [];
+    success = 0;
+    return
 end
 a = x(1:3*K);
 if violation % extract the value of the slack variable (not used atm)

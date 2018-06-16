@@ -1,5 +1,5 @@
 clc
-% clear all
+clear all
 close all
 warning('off','all')
 
@@ -34,10 +34,10 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.75;
 
 % Initial positions
-% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % % Initial positions
-% po1 = [1.51,1.5,1.5];
+% po1 = [1.501,1.5,1.5];
 % po2 = [-1.5,-1.5,1.5];
 % po3 = [-1.5,1.5,1.5];
 % po4 = [1.5,-1.5,1.5];
@@ -59,13 +59,14 @@ success = 0; %check if QP was feasible
 at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
 error_tol = 0.05; % 5cm destination tolerance
 violation = 0; % checks if violations occured at end of algorithm
+outbound = 0;
 
 % Penalty matrices when there're predicted collisions
 Q = 1000;
 S = 100;
 
 % Maximum acceleration in m/s^2
-alim = 1.0;
+alim = 0.5;
 
 % Some pre computations
 A = getPosMat(h,k_hor);
@@ -101,9 +102,9 @@ for k = 1:K
             pok = pk(:,k-1,n);
             vok = vk(:,k-1,n);
             aok = ak(:,k-1,n);
-            [pi,vi,ai,success] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
+            [pi,vi,ai,success,outbound] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
         end
-        if ~success %problem was infeasible, exit and retry
+        if (~success || outbound) %problem was infeasible, exit and retry
             break;
         end
         new_l(:,:,n) = pi;
@@ -111,8 +112,12 @@ for k = 1:K
         vk(:,k,n) = vi(:,1);
         ak(:,k,n) = ai(:,1);
     end
-    if ~success %Heuristic: increase Q, make init more slowly, 
-        fprintf("Failed - problem unfeasible @ k_T = %i, n = %i: trial #%i\n",k,n,tries-1)
+    if ~success %Heuristic: increase Q, make init more slowly,
+        if outbound
+            fprintf("Failed - problem unfeasible, vehicle couldn't stay in workspace @ k_T = %i, n = %i: trial #%i\n",k,n,tries-1)
+        else
+            fprintf("Failed - problem unfeasible @ k_T = %i, n = %i: trial #%i\n",k,n,tries-1)
+        end
         break;
     end
     
@@ -135,8 +140,10 @@ for k = 1:K
     l = new_l;
     pred(:,:,:,k) = l;
 end
-
+pass = 0;
+if success
 pass = ReachedGoal(pk,pf,K,error_tol,N); %check if agents reached goal
+end
 if success && pass
     at_goal = 1;
 elseif success && ~pass %if not at goal, retry with more aggressive behaviour
