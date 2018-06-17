@@ -1,5 +1,5 @@
-clc
-clear all
+% clc
+% clear all
 close all
 warning('off','all')
 
@@ -20,7 +20,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 30; % number of vehicles
+N = 70; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -34,7 +34,7 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.75;
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin_init);
+% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % % Initial positions
 % po1 = [1.51,1.5,1.5];

@@ -24,7 +24,7 @@ for k = 1: k_hor
 end
 
 spd = 1;
-term = -5*10^7;
+term = -1*10^6;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp
@@ -64,7 +64,7 @@ if (violation) % In case of collisions, we relax the constraint with slack varia
     f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
     
     % Quadratic penalty on collision constraint relaxation
-    EPS = 1*10^3*[zeros(3*K,3*K) zeros(3*K,N-1);
+    EPS = 1*10^0*[zeros(3*K,3*K) zeros(3*K,N-1);
            zeros(N-1,3*K) eye(N-1,N-1)];
        
     f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
@@ -83,57 +83,56 @@ outbound = 0;
 x = [];
 %Solve and propagate states
 while(~success && tries < 10)
-[x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
-if ~isempty(x) 
-    if max(x) > alim + 2
-        if ~violation
-            p = [];
-            v = [];
-            a = [];
+    [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
+    if (~isempty(x) && exitflag < 1)
+        % got a solution from solver and a negative flag was raised
+        % check if this "bad" solution could still be used
+        % for that, check if vehicle remains within boundaries after applying
+        % solution
+        a = x(1:3*K);
+        [p,v] = propStatedmpc(po,vo,a,h);
+        p = vec2mat(p,3)';
+        v = vec2mat(v,3)';
+        a = vec2mat(a,3)'; 
+        if (~is_inbounds(p,pmin,pmax)) % prediction is out of bounds, retry solving
+            if ~violation
+                success = 0;
+                outbound = 1;
+                return
+            end
+            term = term*0.7;
+            f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
+            f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
+            tries = tries + 1;
             success = 0;
-            outbound = 0;
-            return
+            continue;    
+        else % solution is admisible and can be used
+            success = 1;
+            return        
         end
-        term = term*0.5;
+    elseif (~isempty(x) && exitflag >= 1)
+        % everything was good, return the solution
+        a = x(1:3*K);
+        [p,v] = propStatedmpc(po,vo,a,h);
+        p = vec2mat(p,3)';
+        v = vec2mat(v,3)';
+        a = vec2mat(a,3)'; 
+        success = 1;
+        return
+    elseif (isempty(x)) % no solution was returned by optimizer
+        p = [];
+        v = [];
+        a = [];
+        if ~violation
+            success = 0;
+            outbound = 1;
+        end
+        term = term*0.7;
         f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
         f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
         tries = tries + 1;
         success = 0;
         continue;
     end
-else
-    if ~violation
-        p = [];
-        v = [];
-        a = [];
-        success = 0;
-        outbound = 1;
-        return
-    end
-    term = term*0.5;
-    f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
-    f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
-    tries = tries + 1;
-    success = 0;
-    continue;
 end
-success = 1;
-end
-
-if (isempty(x))
-    p = [];
-    v = [];
-    a = [];
-    success = 0;
-    return
-end
-
-a = x(1:3*K);
-if violation % extract the value of the slack variable (not used atm)
-    epsilon = x(3*K+1:end);
-end
-[p,v] = propStatedmpc(po,vo,a,h);
-p = vec2mat(p,3)';
-v = vec2mat(v,3)';
-a = vec2mat(a,3)';     
 end

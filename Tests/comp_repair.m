@@ -11,7 +11,7 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 30:5:70; % number of vehicles
+N_vector = 60:5:70; % number of vehicles
 trials = 50; % number os trails per number of vehicles
 
 % Workspace boundaries
@@ -52,7 +52,7 @@ for q = 1:length(N_vector)
     for r = 1:trials
         fprintf("Doing trial #%i with %i vehicles\n",r,N)
         % Initial positions
-        [po,pf] = randomTest(N,pmin_gen,pmax_gen,rmin_init);
+        [po,pf] = randomTest(N,pmin,pmax,rmin_init);
         
         %SoftDMPC with second-order ellipsoid constraint
         
@@ -250,7 +250,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_repair_1')
+save('comp_repair_2')
 %% Post-Processing
 close all
 
