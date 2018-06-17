@@ -79,17 +79,28 @@ H = 2*(A'*Q*A+ Delta'*S*Delta + R + EPS);
 outbound = 0;
 %Solve and propagate states
 [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
-if (exitflag == -2 || exitflag == 0 || exitflag == -8) 
+
+if ~isempty(x)
+    if max(x) > alim + 2
+         p = [];
+         v = [];
+         a = [];
+         success = 0;
+         outbound = 0;
+         return
+    end
+else
     p = [];
     v = [];
     a = [];
     success = 0;
-    if (~violation)
+    if ~violation
         outbound = 1;
     end
     return
 end
-success = exitflag;
+    
+success = 1;
 a = x(1:3*K);
 if violation % extract the value of the slack variable (not used atm)
     epsilon = x(3*K+1:end);

@@ -16,7 +16,9 @@ trials = 50; % number os trails per number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
+pmin_gen = [-2.4,-2.4,0.3];
 pmax = [2.5,2.5,2.2];
+pmax_gen = [2.4,2.4,2.1];
 
 % Minimum distance between vehicles in m
 rmin_init = 0.75;
@@ -50,7 +52,7 @@ for q = 1:length(N_vector)
     for r = 1:trials
         fprintf("Doing trial #%i with %i vehicles\n",r,N)
         % Initial positions
-        [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+        [po,pf] = randomTest(N,pmin_gen,pmax_gen,rmin_init);
         
         %SoftDMPC with second-order ellipsoid constraint
         
