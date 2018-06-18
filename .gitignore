@@ -2,3 +2,5 @@
 *.m~
 
 *.txt~
+
+DMPC/CPP_results/trajectories\.txt
