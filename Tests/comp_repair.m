@@ -11,8 +11,8 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 60:5:70; % number of vehicles
-trials = 50; % number os trails per number of vehicles
+N_vector = 70:5:70; % number of vehicles
+trials = 25; % number os trails per number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -250,9 +250,12 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_repair_2')
+save('comp_repair_4')
 %% Post-Processing
 close all
+
+% Volumen of arena
+V = (pmax(1)-pmin(1))*(pmax(2)-pmin(2))*(pmax(3)-pmin(3));
 
 % Probability of success plots
 prob_dmpc2 = sum(success_dmpc2,2)/trials;
@@ -262,9 +265,9 @@ figure(1)
 grid on;
 hold on;
 ylim([0,1.05])
-plot(N_vector,prob_dmpc2,'Linewidth',2);
-plot(N_vector,prob_dmpc4,'Linewidth',2);
-xlabel('Number of Vehicles');
+plot(N_vector/V,prob_dmpc2,'Linewidth',2);
+plot(N_vector/V,prob_dmpc4,'Linewidth',2);
+xlabel('Workspace density [agent/m^3]');
 ylabel('Success Probability');
 legend('Regular','Repair')
 
@@ -276,9 +279,9 @@ tstd_dmpc4 = nanstd(t_dmpc4,1,2);
 figure(2)
 grid on;
 hold on;
-errorbar(N_vector,tmean_dmpc2,tstd_dmpc2,'Linewidth',2);
-errorbar(N_vector,tmean_dmpc4,tstd_dmpc4,'Linewidth',2);
-xlabel('Number of Vehicles');
+errorbar(N_vector/V,tmean_dmpc2,tstd_dmpc2,'Linewidth',2);
+errorbar(N_vector/V,tmean_dmpc4,tstd_dmpc4,'Linewidth',2);
+xlabel('Workspace density [agent/m^3]');
 ylabel('Average Computation time [s]');
 legend('Regular','Repair')
 
@@ -290,9 +293,9 @@ tstd_traj4 = nanstd(traj_time4,1,2);
 figure(3)
 grid on;
 hold on;
-errorbar(N_vector,tmean_traj2,tstd_traj2,'Linewidth',2);
-errorbar(N_vector,tmean_traj4,tstd_traj4,'Linewidth',2);
-xlabel('Number of Vehicles');
+errorbar(N_vector/V,tmean_traj2,tstd_traj2,'Linewidth',2);
+errorbar(N_vector/V,tmean_traj4,tstd_traj4,'Linewidth',2);
+xlabel('Workspace density [agent/m^3]');
 ylabel('Average Time for Transition [s]');
 legend('Regular','Repair')
 
@@ -307,24 +310,24 @@ goal_num4 = sum(failed_goal4,2);
 infes_num4 = sum(~feasible4,2);
 total_num4 = sum(violation_num4) + sum(goal_num4) + sum(infes_num4);
 
-StackData2 = [infes_num2 violation_num2 goal_num2];
-StackData4 = [infes_num4 violation_num4 goal_num4];
+StackData2 = [infes_num2/trials*100 violation_num2/trials*100 goal_num2/trials*100];
+StackData4 = [infes_num4/trials*100 violation_num4/trials*100 goal_num4/trials*100];
 
 figure(4)
-h2=bar(N_vector-0.3,StackData2,'stacked','BarWidth',0.3);
+h2=bar(N_vector/V-0.01,StackData2,'stacked','BarWidth',0.3);
 grid on;
 hold on;
-h4 = bar(N_vector+0.3,StackData4,'stacked','BarWidth',0.3);
+h4 = bar(N_vector/V+0.01,StackData4,'stacked','BarWidth',0.3);
 myC2= summer(size(StackData4,2));
 myC4= winter(size(StackData4,2));
 for k = 1:size(StackData4,2)
     set(h2(k),'facecolor',myC2(k,:));
     set(h4(k),'facecolor',myC4(k,:));
 end
-xticks(N_vector);
-xlim([min(N_vector)-1, max(N_vector)+1])
-xlabel('Number of Vehicles');
-ylabel(['Number of failed trials (out of ' ,num2str(trials), ')']);
+xticks(N_vector/V);
+% xlim([min(N_vector/V)-1, max(N_vector/V)+1])
+xlabel('Workspace density [agent/m^3]');
+ylabel(['Failure rate % (out of ' ,num2str(trials), ')']);
 legend('Infeasibility Reg','Collisions Reg','Incomplete Trajectory Reg',...
        'Infeasibility Rep','Collisions Rep','Incomplete Trajectory Rep')
    

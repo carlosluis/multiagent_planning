@@ -4,9 +4,13 @@ k_hor = size(l,2);
 ub = alim*ones(3*K,1);
 lb = -ub; 
 prev_p = l(:,:,n);
+% clip prev_p to within the boundaries
+% prev_p = bsxfun(@min,prev_p,pmax');
+% prev_p = bsxfun(@max,prev_p,pmin');
+
 Aeq = [];
 beq = [];
-options =  optimset('Display', 'off');
+options = optimoptions('quadprog','Display','off','ConstraintTolerance',1e-3);
 N = size(l,3);
 Ain_coll = []; 
 bin_coll = []; 
@@ -82,13 +86,16 @@ tries = 0;
 outbound = 0;
 x = [];
 %Solve and propagate states
-while(~success && tries < 10)
+while(~success && tries < 20)
     [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
     if (~isempty(x) && exitflag < 1)
         % got a solution from solver and a negative flag was raised
         % check if this "bad" solution could still be used
         % for that, check if vehicle remains within boundaries after applying
         % solution
+        if exitflag ==-6
+            fprintf("Exitflag was -6 in Repair \n")
+        end
         a = x(1:3*K);
         [p,v] = propStatedmpc(po,vo,a,h);
         p = vec2mat(p,3)';
@@ -100,7 +107,7 @@ while(~success && tries < 10)
                 outbound = 1;
                 return
             end
-            term = term*0.7;
+            term = term*0.8;
             f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
             f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
             tries = tries + 1;
@@ -116,9 +123,10 @@ while(~success && tries < 10)
         [p,v] = propStatedmpc(po,vo,a,h);
         p = vec2mat(p,3)';
         v = vec2mat(v,3)';
-        a = vec2mat(a,3)'; 
+        a = vec2mat(a,3)';
         success = 1;
         return
+
     elseif (isempty(x)) % no solution was returned by optimizer
         p = [];
         v = [];
@@ -127,12 +135,15 @@ while(~success && tries < 10)
             success = 0;
             outbound = 1;
         end
-        term = term*0.7;
+        term = term*0.8;
         f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
         f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
         tries = tries + 1;
         success = 0;
         continue;
     end
+end
+if ~success
+    hola =1;
 end
 end

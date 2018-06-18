@@ -1,4 +1,4 @@
-clc
+% clc
 close all
 clear
 M = dlmread('trajectories.txt','');
@@ -53,4 +53,4 @@ while get(gcf,'currentchar')==' '
     clf
     pause(0.1)
 end
-%%
+

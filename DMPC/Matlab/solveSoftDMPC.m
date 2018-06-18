@@ -4,9 +4,12 @@ k_hor = size(l,2);
 ub = alim*ones(3*K,1);
 lb = -ub; 
 prev_p = l(:,:,n);
+% clip prev_p to within the boundaries
+% prev_p = bsxfun(@min,prev_p,pmax');
+% prev_p = bsxfun(@max,prev_p,pmin');
 Aeq = [];
 beq = [];
-options =  optimset('Display', 'off');
+options = optimoptions('quadprog','Display','off','ConstraintTolerance',1e-3);
 N = size(l,3);
 Ain_coll = []; 
 bin_coll = []; 
@@ -59,10 +62,10 @@ if (violation) % In case of collisions, we relax the constraint with slack varia
     A_initp = [A_initp; zeros(N-1,6)];
     
     % Linear penalty on collision constraint relaxation
-    f_eps = -1*10^5*[zeros(3*K,1); ones(N-1,1)]';
+    f_eps = -1*10^6*[zeros(3*K,1); ones(N-1,1)]';
     
     % Quadratic penalty on collision constraint relaxation
-    EPS = 1*10^3*[zeros(3*K,3*K) zeros(3*K,N-1);
+    EPS = 1*10^0*[zeros(3*K,3*K) zeros(3*K,N-1);
            zeros(N-1,3*K) eye(N-1,N-1)];
        
     f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
@@ -79,7 +82,9 @@ H = 2*(A'*Q*A+ Delta'*S*Delta + R + EPS);
 outbound = 0;
 %Solve and propagate states
 [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
-
+if exitflag ==-6
+    fprintf("Exitflag was -6 in Normal \n")
+end
 if isempty(x)
     p = [];
     v = [];

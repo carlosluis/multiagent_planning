@@ -38,7 +38,7 @@ struct Params {
     float alim;
 };
 
-static const Params default_params = {0.2,10,12,2,1.5,0.5,2.0};
+static const Params default_params = {0.2,22,15,2,1.5,0.5,0.5};
 
 // Class definition
 class DMPC {
