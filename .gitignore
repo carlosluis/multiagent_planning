@@ -4,3 +4,15 @@
 *.txt~
 
 DMPC/CPP_results/trajectories\.txt
+
+DMPC/dmpc_cpp/cmake-build-release/
+
+DMPC/dmpc_cpp/\.idea/workspace\.xml
+
+DMPC/dmpc_cpp/cmake-build-debug/CMakeFiles/dmpc_cpp\.dir/main\.cpp\.o
+
+DMPC/dmpc_cpp/cmake-build-debug/CMakeFiles/dmpc\.dir/dmpc\.cpp\.o
+
+DMPC/dmpc_cpp/cmake-build-debug/dmpc_cpp
+
+DMPC/dmpc_cpp/cmake-build-debug/libdmpc\.a
