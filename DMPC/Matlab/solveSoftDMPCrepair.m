@@ -7,10 +7,10 @@ prev_p = l(:,:,n);
 % clip prev_p to within the boundaries
 % prev_p = bsxfun(@min,prev_p,pmax');
 % prev_p = bsxfun(@max,prev_p,pmin');
-
+constr_tol = 1e-3;
 Aeq = [];
 beq = [];
-options = optimoptions('quadprog','Display','off','ConstraintTolerance',1e-3);
+options = optimoptions('quadprog','Display','off','ConstraintTolerance',constr_tol);
 N = size(l,3);
 Ain_coll = []; 
 bin_coll = []; 
@@ -28,7 +28,7 @@ for k = 1: k_hor
 end
 
 spd = 1;
-term = -1*10^6;
+term = -1*10^5;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp
@@ -95,6 +95,11 @@ while(~success && tries < 20)
         % solution
         if exitflag ==-6
             fprintf("Exitflag was -6 in Repair \n")
+            constr_tol = 2*constr_tol;
+            options.ConstraintTolerance = constr_tol;
+            success = 0;
+            tries = tries + 1;
+            continue  
         end
         a = x(1:3*K);
         [p,v] = propStatedmpc(po,vo,a,h);
