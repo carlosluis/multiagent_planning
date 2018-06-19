@@ -211,10 +211,11 @@ void DMPC::set_initial_pts(const MatrixXd &po) {
     _po = po;
     for (int i = 0; i < 3; ++i) {
         if (_po.row(i).maxCoeff(&r, &c) > _pmax(i)) {
+            _po(i, c) = _pmax(i);
             cout << "WARNING: initial position of vehicle #" << c << " is out of bounds" << endl;
             cout << "Rewriting initial position to be inside of workspace" << endl;
         }
-        _po(i, c) = _pmax(i);
+
         if (_po.row(i).minCoeff(&r, &c) < _pmin(i)) {
             _po(i, c) = _pmin(i);
             cout << "WARNING: initial position of vehicle #" << c << " is out of bounds" << endl;
@@ -249,10 +250,11 @@ void DMPC::set_final_pts(const MatrixXd &pf) {
     _pf = pf;
     for (int i = 0; i < 3; ++i) {
         if (_pf.row(i).maxCoeff(&r, &c) > _pmax(i)) {
+            _pf(i, c) = _pmax(i);
             cout << "WARNING: final position of vehicle #" << c << " is out of bounds" << endl;
             cout << "Rewriting final position to be inside of workspace" << endl;
         }
-        _pf(i, c) = _pmax(i);
+
         if (_pf.row(i).minCoeff(&r, &c) < _pmin(i)) {
             _pf(i, c) = _pmin(i);
             cout << "WARNING: initial position of vehicle #" << c << " is out of bounds" << endl;
@@ -271,7 +273,8 @@ void DMPC::set_final_pts(const MatrixXd &pf) {
                     cout << "Collision constraint violation: ";
                     cout << "Vehicles " << i << " and " << j;
                     cout << " will be " << dist << "m";
-                    cout << " apart at their starting locations" << endl;
+                    cout << " apart at their final locations" << endl;
+                    cout << "Solver won't be able to draw agents to their final locations!"
                 }
             }
         }
