@@ -202,14 +202,80 @@ MatrixXd DMPC::gen_rand_perm(const MatrixXd &po)
     return pf;
 }
 
-void DMPC::set_initial_pts(const MatrixXd &po)
-{
+void DMPC::set_initial_pts(const MatrixXd &po) {
+    // Verify if points are within workspace
+    int N = po.cols();
+    Vector3d differ;
+    double dist;
+    int r, c;
     _po = po;
+    for (int i = 0; i < 3; ++i) {
+        if (_po.row(i).maxCoeff(&r, &c) > _pmax(i)) {
+            cout << "WARNING: initial position of vehicle #" << c << " is out of bounds" << endl;
+            cout << "Rewriting initial position to be inside of workspace" << endl;
+        }
+        _po(i, c) = _pmax(i);
+        if (_po.row(i).minCoeff(&r, &c) < _pmin(i)) {
+            _po(i, c) = _pmin(i);
+            cout << "WARNING: initial position of vehicle #" << c << " is out of bounds" << endl;
+            cout << "Rewriting initial position to be inside of workspace" << endl;
+        }
+    }
+
+    // After clipping (if any) check if there's no initial collisions
+    for (int i = 0; i < N; ++i) {
+        for (int j = i + 1; j < N; ++j) {
+            if (i != j) {
+                differ = _E1 * (po.col(i) - po.col(j));
+                dist = pow((differ.array().pow(_order)).sum(),1.0/_order);
+                if (dist < _rmin-0.05) // we add 5cm tolerance factor to it
+                {
+                    cout << "Collision constraint violation: ";
+                    cout << "Vehicles " << i << " and " << j;
+                    cout << " will be " << dist << "m";
+                    cout << " apart at their starting locations" << endl;
+                }
+            }
+        }
+    }
 }
 
-void DMPC::set_final_pts(const MatrixXd &pf)
-{
+void DMPC::set_final_pts(const MatrixXd &pf) {
+    // Verify if points are within workspace
+    int N = pf.cols();
+    Vector3d differ;
+    double dist;
+    int r, c;
     _pf = pf;
+    for (int i = 0; i < 3; ++i) {
+        if (_pf.row(i).maxCoeff(&r, &c) > _pmax(i)) {
+            cout << "WARNING: final position of vehicle #" << c << " is out of bounds" << endl;
+            cout << "Rewriting final position to be inside of workspace" << endl;
+        }
+        _pf(i, c) = _pmax(i);
+        if (_pf.row(i).minCoeff(&r, &c) < _pmin(i)) {
+            _pf(i, c) = _pmin(i);
+            cout << "WARNING: initial position of vehicle #" << c << " is out of bounds" << endl;
+            cout << "Rewriting initial position to be inside of workspace" << endl;
+        }
+    }
+
+    // After clipping (if any) check if there's no initial collisions
+    for (int i = 0; i < N; ++i) {
+        for (int j = i + 1; j < N; ++j) {
+            if (i != j) {
+                differ = _E1 * (pf.col(i) - pf.col(j));
+                dist = pow((differ.array().pow(_order)).sum(),1.0/_order);
+                if (dist < _rmin-0.05) // we add 5cm tolerance factor to it
+                {
+                    cout << "Collision constraint violation: ";
+                    cout << "Vehicles " << i << " and " << j;
+                    cout << " will be " << dist << "m";
+                    cout << " apart at their starting locations" << endl;
+                }
+            }
+        }
+    }
 }
 
 bool DMPC::check_collisions(const Vector3d &prev_p,
@@ -431,7 +497,7 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
         // Build linear and quadratic cost matrices
 
         f_w << VectorXd::Zero(n_var),
-               -pow(10,5)*VectorXd::Ones(N-1);
+               -5*pow(10,5)*VectorXd::Ones(N-1);
 
         //NOTE: W *NEEDS* to be different than zero, if not H has determinant 0
 
