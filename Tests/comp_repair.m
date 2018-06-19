@@ -11,8 +11,8 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 70:5:70; % number of vehicles
-trials = 25; % number os trails per number of vehicles
+N_vector = 30:10:100; % number of vehicles
+trials = 30; % number os trails per number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];

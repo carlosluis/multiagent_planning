@@ -1,6 +1,7 @@
-function [p,v,a,success] = solveEllipDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order)
+function [p,v,a,success,outbound] = solveEllipDMPC(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order)
 
 k_hor = size(l,2);
+outbound = 0;
 ub = alim*ones(3*K,1);
 lb = -ub; 
 addConstr = [];
@@ -9,7 +10,7 @@ Aeq = [];
 beq = [];
 Ain_total = [];
 bin_total = [];
-options = optimset('Display', 'off');
+options = optimoptions('quadprog','Display','off','ConstraintTolerance',1e-3);
  
 for k = 1: k_hor
     violation = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
@@ -28,7 +29,7 @@ if(isempty(Ain_total) && norm(po-pf) > 1) % Case of no collisions far from sp
     R = 1*eye(3*K);
     S = 10*eye(3*K);
 elseif (isempty(Ain_total) && norm(po-pf) < 1) % no collisions close to sp
-    Q = 1000*[zeros(3*(K-1),3*K);
+    Q = 10000*[zeros(3*(K-1),3*K);
             zeros(3,3*(K-1)) eye(3)];
     R = 1*eye(3*K);
     S = 10*eye(3*K); 
@@ -47,7 +48,7 @@ f = -2*(repmat((pf)',K,1)'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) ;
 
 %Solve and propagate states
 [a,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
-if (isempty(a) || exitflag == 0)
+if (isempty(a))
     p = [];
     v = [];
     success = 0;
