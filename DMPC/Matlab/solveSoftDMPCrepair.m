@@ -86,42 +86,18 @@ tries = 0;
 outbound = 0;
 x = [];
 %Solve and propagate states
-while(~success && tries < 20)
+while(~success && tries < 10)
     [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
-    if (~isempty(x) && exitflag < 1)
-        % got a solution from solver and a negative flag was raised
-        % check if this "bad" solution could still be used
-        % for that, check if vehicle remains within boundaries after applying
-        % solution
-        if exitflag ==-6
-            fprintf("Exitflag was -6 in Repair \n")
-            constr_tol = 2*constr_tol;
-            options.ConstraintTolerance = constr_tol;
-            success = 0;
-            tries = tries + 1;
-            continue  
-        end
-        a = x(1:3*K);
-        [p,v] = propStatedmpc(po,vo,a,h);
-        p = vec2mat(p,3)';
-        v = vec2mat(v,3)';
-        a = vec2mat(a,3)'; 
-        if (~is_inbounds(p,pmin,pmax)) % prediction is out of bounds, retry solving
-            if ~violation
-                success = 0;
-                outbound = 1;
-                return
-            end
-            term = term*0.8;
-            f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
-            f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
-            tries = tries + 1;
-            success = 0;
-            continue;    
-        else % solution is admisible and can be used
-            success = 1;
-            return        
-        end
+    if (exitflag == -6)
+        % Weird non-convex flag may appear, even though the problem is
+        % very well defined as a convex problem
+        % fix: decrease constraint tolerance and retry solving
+        fprintf("Exitflag was -6 in Repair \n")
+        constr_tol = 2*constr_tol;
+        options.ConstraintTolerance = constr_tol;
+        success = 0;
+        tries = tries + 1;
+        continue  
     elseif (~isempty(x) && exitflag >= 1)
         % everything was good, return the solution
         a = x(1:3*K);
@@ -131,24 +107,6 @@ while(~success && tries < 20)
         a = vec2mat(a,3)';
         success = 1;
         return
-
-    elseif (isempty(x)) % no solution was returned by optimizer
-        p = [];
-        v = [];
-        a = [];
-        if ~violation
-            success = 0;
-            outbound = 1;
-        end
-        term = term*0.8;
-        f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
-        f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
-        tries = tries + 1;
-        success = 0;
-        continue;
     end
-end
-if ~success
-    hola =1;
 end
 end
