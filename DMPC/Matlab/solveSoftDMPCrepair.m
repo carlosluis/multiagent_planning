@@ -85,12 +85,12 @@ tries = 0;
 outbound = 0;
 x = [];
 %Solve and propagate states
-while(~success && tries < 10)
+while(~success && tries < 15)
     [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
     if (exitflag == -6)
         % Weird non-convex flag may appear, even though the problem is
         % very well defined as a convex problem
-        % fix: decrease constraint tolerance and retry solving
+        % fix: increase constraint tolerance and retry solving
         fprintf("Exitflag was -6 in Repair \n")
         constr_tol = 2*constr_tol;
         options.ConstraintTolerance = constr_tol;
@@ -111,8 +111,14 @@ while(~success && tries < 10)
         p = [];
         v = [];
         a = [];
+        constr_tol = 2*constr_tol;
+        options.ConstraintTolerance = constr_tol;
         success = 0;
-        return
+        tries = tries + 1;
+        continue
     end
+end
+if ~success
+    hola = 1;
 end
 end
