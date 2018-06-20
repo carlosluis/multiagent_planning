@@ -1,4 +1,4 @@
-function [p,v,a,success,outbound] = solveSoftDMPCrepair(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order)
+function [p,v,a,success,outbound] = solveSoftDMPCrepair(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order,term)
 
 k_hor = size(l,2);
 ub = alim*ones(3*K,1);
@@ -28,7 +28,6 @@ for k = 1: k_hor
 end
 
 spd = 1;
-term = -1*10^5;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp
@@ -98,7 +97,7 @@ while(~success && tries < 10)
         success = 0;
         tries = tries + 1;
         continue  
-    elseif (~isempty(x) && exitflag >= 1)
+    elseif (~isempty(x))
         % everything was good, return the solution
         a = x(1:3*K);
         [p,v] = propStatedmpc(po,vo,a,h);
@@ -106,6 +105,13 @@ while(~success && tries < 10)
         v = vec2mat(v,3)';
         a = vec2mat(a,3)';
         success = 1;
+        return
+        
+    elseif isempty(x)
+        p = [];
+        v = [];
+        a = [];
+        success = 0;
         return
     end
 end

@@ -11,8 +11,10 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 30:10:100; % number of vehicles
-trials = 30; % number os trails per number of vehicles
+N_vector = 10:10:80; % number of vehicles
+trials = 50; % number os trails per number of vehicles
+fail2 = 0;
+fail4 = 0;
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -63,6 +65,7 @@ for q = 1:length(N_vector)
         E = diag([1,1,c]);
         E1 = E^(-1);
         E2 = E^(-order);
+        term2 = -5*10^4;
         
         l = [];
         feasible2(q,r) = 0; %check if QP was feasible
@@ -87,9 +90,11 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible2(q,r),outbound2(q,r)] = solveSoftDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
+                    [pi,vi,ai,feasible2(q,r),outbound2(q,r)] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term2); 
                 end
                 if ~feasible2(q,r)
+                    save(['Fail2_' num2str(fail2)]);
+                    fail2 = fail2 + 1;
                     break;
                 end
                 new_l(:,:,n) = pi;
@@ -161,6 +166,7 @@ for q = 1:length(N_vector)
         E = diag([1,1,c]);
         E1 = E^(-1);
         E2 = E^(-order);
+        term4 = -1*10^6;
         
         l = [];
         feasible4(q,r) = 0; %check if QP was feasible
@@ -185,7 +191,7 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible4(q,r),outbound4(q,r)] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
+                    [pi,vi,ai,feasible4(q,r),outbound4(q,r)] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term4); 
                 end
                 if ~feasible4(q,r)
                     break;
@@ -196,6 +202,8 @@ for q = 1:length(N_vector)
                 ak(:,k,n) = ai(:,1);
             end
             if ~feasible4(q,r)
+                save(['Fail4_' num2str(fail4)]);
+                fail4 = fail4 + 1;
                 break;
             end
             l = new_l;
@@ -250,7 +258,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_repair_4')
+save('comp_repair_5')
 %% Post-Processing
 close all
 

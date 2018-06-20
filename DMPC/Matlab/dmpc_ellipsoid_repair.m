@@ -20,7 +20,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 4; % number of vehicles
+N = 10; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -34,21 +34,21 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.75;
 
 % Initial positions
-% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
-% Initial positions
-po1 = [1.501,1.5,1.5];
-po2 = [-1.5,-1.5,1.5];
-po3 = [-1.5,1.5,1.5];
-po4 = [1.5,-1.5,1.5];
-po = cat(3,po1,po2,po3,po4);
-
-% Final positions
-pf1 = [-1.5,-1.5,1.5];
-pf2 = [1.5,1.5,1.5];
-pf3 = [1.5,-1.5,1.5];
-pf4 = [-1.5,1.5,1.5];
-pf  = cat(3,pf1,pf2,pf3,pf4);
+% % Initial positions
+% po1 = [1.501,1.5,1.5];
+% po2 = [-1.5,-1.5,1.5];
+% po3 = [-1.5,1.5,1.5];
+% po4 = [1.5,-1.5,1.5];
+% po = cat(3,po1,po2,po3,po4);
+% 
+% % Final positions
+% pf1 = [-1.5,-1.5,1.5];
+% pf2 = [1.5,1.5,1.5];
+% pf3 = [1.5,-1.5,1.5];
+% pf4 = [-1.5,1.5,1.5];
+% pf  = cat(3,pf1,pf2,pf3,pf4);
 
 %% Solving the problem
 l = [];
@@ -63,6 +63,7 @@ at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
 error_tol = 0.05; % 5cm destination tolerance
 violation = 0; % checks if violations occured at end of algorithm
 outbound = 0;
+term = -1*10^5;
 
 % Penalty matrices when there're predicted collisions
 Q = 1000;
@@ -105,7 +106,7 @@ for k = 1:K
             pok = pk(:,k-1,n);
             vok = vk(:,k-1,n);
             aok = ak(:,k-1,n);
-            [pi,vi,ai,success,outbound] = solveSoftDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
+            [pi,vi,ai,success,outbound] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term); 
         end
         if (~success || outbound) %problem was infeasible, exit and retry
             break;
