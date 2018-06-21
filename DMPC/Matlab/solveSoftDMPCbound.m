@@ -1,4 +1,4 @@
-function [p,v,a,success,outbound] = solveSoftDMPCrepair(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order,term)
+function [p,v,a,success,outbound] = solveSoftDMPCbound(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order,term)
 
 k_hor = size(l,2);
 ub = alim*ones(3*K,1);
@@ -15,14 +15,16 @@ N = size(l,3);
 Ain_coll = []; 
 bin_coll = []; 
 success = 0;
+lim_epsilon = 50e-3;
 
 for k = 1: k_hor
     violation = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
     if (violation)
         [Ainr, binr] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order);
         Ain_coll = [Ainr eye(N-1,N-1);
-                     zeros(N-1,3*K) eye(N-1)];
-        bin_coll = [binr; zeros(N-1,1)];
+                     zeros(N-1,3*K) eye(N-1);
+                     zeros(N-1,3*K) -eye(N-1)];
+        bin_coll = [binr; zeros(N-1,1); lim_epsilon*ones(N-1,1)];
         break;
     end       
 end
@@ -85,7 +87,7 @@ tries = 0;
 outbound = 0;
 x = [];
 %Solve and propagate states
-while(~success && tries < 15)
+while(~success && tries < 10)
     [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
     if (exitflag == -6)
         % Weird non-convex flag may appear, even though the problem is
@@ -107,12 +109,10 @@ while(~success && tries < 15)
         success = 1;
         if (~is_inbounds(p(:,1),pmin,pmax))
             outbound = 1;
-        end    
+        end 
 %         if violation % extract the value of the slack variable (not used atm)
-%             epsilon = x(3*K+1:end);
-%             if (-1000*min(epsilon) > 50)
-%                 fprintf("min epsilon = %.4f e-3 \n",1000*min(epsilon))
-%             end
+%          epsilon = x(3*K+1:end);
+% %     fprintf("min epsilon = %.4f e-3 \n",1000*min(epsilon))
 %         end
         return
         
@@ -126,6 +126,10 @@ while(~success && tries < 15)
         tries = tries + 1;
         continue
     end
+end
+
+if ~success
+    hola  = 1;
 end
 
 

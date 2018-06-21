@@ -65,7 +65,7 @@ for q = 1:length(N_vector)
         E = diag([1,1,c]);
         E1 = E^(-1);
         E2 = E^(-order);
-        term2 = -1*10^6;
+        term2 = -1*10^4;
         
         l = [];
         feasible2(q,r) = 0; %check if QP was feasible
@@ -114,12 +114,17 @@ for q = 1:length(N_vector)
             end
         end
 
-        if feasible2(q,r) && ~failed_goal2(q,r)      
+        if feasible2(q,r) && ~failed_goal2(q,r)               
+            for i = 1:N
+                p(:,:,i) = spline(tk,pk(:,:,i),t);
+                v(:,:,i) = spline(tk,vk(:,:,i),t);
+                a(:,:,i) = spline(tk,ak(:,:,i),t); 
+            end
             % Check if collision constraints were not violated
             for i = 1:N
                 for j = 1:N
                     if(i~=j)
-                        differ = E1*(pk(:,:,i) - pk(:,:,j));
+                        differ = E1*(p(:,:,i) - p(:,:,j));
                         dist = (sum(differ.^order,1)).^(1/order);
                         if min(dist) < (rmin - 0.05)
                             [value,index] = min(dist);
@@ -127,12 +132,6 @@ for q = 1:length(N_vector)
                         end
                     end
                 end
-            end
-            
-            for i = 1:N
-                p(:,:,i) = spline(tk,pk(:,:,i),t);
-                v(:,:,i) = spline(tk,vk(:,:,i),t);
-                a(:,:,i) = spline(tk,ak(:,:,i),t); 
             end
             t_dmpc2(q,r) = toc(t_start);
             totdist_dmpc2(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
@@ -157,7 +156,7 @@ for q = 1:length(N_vector)
         
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
         
-        %SoftDMPC with repair on infeasibilities
+        %SoftDMPC with bound on relaxation variable
         
         % Variables for ellipsoid constraint
         order = 2; % choose between 2 or 4 for the order of the super ellipsoid
@@ -166,7 +165,7 @@ for q = 1:length(N_vector)
         E = diag([1,1,c]);
         E1 = E^(-1);
         E2 = E^(-order);
-        term4 = -1*10^7;
+        term4 = -1*10^4;
         
         l = [];
         feasible4(q,r) = 0; %check if QP was feasible
@@ -191,7 +190,7 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible4(q,r),outbound4(q,r)] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term4); 
+                    [pi,vi,ai,feasible4(q,r),outbound4(q,r)] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term4); 
                 end
                 if ~feasible4(q,r)
                     break;
@@ -215,12 +214,17 @@ for q = 1:length(N_vector)
             end
         end
 
-        if feasible4(q,r) && ~failed_goal4(q,r)      
+        if feasible4(q,r) && ~failed_goal4(q,r)       
+            for i = 1:N
+                p(:,:,i) = spline(tk,pk(:,:,i),t);
+                v(:,:,i) = spline(tk,vk(:,:,i),t);
+                a(:,:,i) = spline(tk,ak(:,:,i),t); 
+            end
             % Check if collision constraints were not violated
             for i = 1:N
                 for j = 1:N
                     if(i~=j)
-                        differ = E1*(pk(:,:,i) - pk(:,:,j));
+                        differ = E1*(p(:,:,i) - p(:,:,j));
                         dist = (sum(differ.^order,1)).^(1/order);
                         if min(dist) < (rmin - 0.05)
                             [value,index] = min(dist);
@@ -228,12 +232,6 @@ for q = 1:length(N_vector)
                         end
                     end
                 end
-            end
-            
-            for i = 1:N
-                p(:,:,i) = spline(tk,pk(:,:,i),t);
-                v(:,:,i) = spline(tk,vk(:,:,i),t);
-                a(:,:,i) = spline(tk,ak(:,:,i),t); 
             end
             t_dmpc4(q,r) = toc(t_start);
             totdist_dmpc4(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
@@ -258,7 +256,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_repair_6')
+save('comp_bound_1')
 %% Post-Processing
 close all
 
@@ -277,7 +275,7 @@ plot(N_vector/V,prob_dmpc2,'Linewidth',2);
 plot(N_vector/V,prob_dmpc4,'Linewidth',2);
 xlabel('Workspace density [agent/m^3]');
 ylabel('Success Probability');
-legend('Regular','Repair')
+legend('Repair','Bound')
 
 % Computation time
 tmean_dmpc2 = nanmean(t_dmpc2,2);
@@ -291,7 +289,7 @@ errorbar(N_vector/V,tmean_dmpc2,tstd_dmpc2,'Linewidth',2);
 errorbar(N_vector/V,tmean_dmpc4,tstd_dmpc4,'Linewidth',2);
 xlabel('Workspace density [agent/m^3]');
 ylabel('Average Computation time [s]');
-legend('Regular','Repair')
+legend('Repair','Bound')
 
 % Completion time
 tmean_traj2 = nanmean(traj_time2,2);
@@ -305,7 +303,7 @@ errorbar(N_vector/V,tmean_traj2,tstd_traj2,'Linewidth',2);
 errorbar(N_vector/V,tmean_traj4,tstd_traj4,'Linewidth',2);
 xlabel('Workspace density [agent/m^3]');
 ylabel('Average Time for Transition [s]');
-legend('Regular','Repair')
+legend('Repair','Bound')
 
 % Failure analysis
 violation_num2 = sum(violation2,2);
@@ -336,11 +334,11 @@ xticks(N_vector/V);
 % xlim([min(N_vector/V)-1, max(N_vector/V)+1])
 xlabel('Workspace density [agent/m^3]');
 ylabel(['Failure rate % (out of ' ,num2str(trials), ')']);
-legend('Infeasibility Reg','Collisions Reg','Incomplete Trajectory Reg',...
-       'Infeasibility Rep','Collisions Rep','Incomplete Trajectory Rep')
+legend('Infeasibility Rep','Collisions Rep','Incomplete Trajectory Rep',...
+       'Infeasibility Bnd','Collisions Bnd','Incomplete Trajectory Bnd')
    
 % Print various statistics
-fprintf("--------------------------- \nNORMAL TEST STATISTICS \n");
+fprintf("--------------------------- \nREPAIR TEST STATISTICS \n");
 fprintf("--------------------------- \n")
 fprintf("Probability of success across all tests --> %.2f%% (%d out of %d tests) \n",...
     sum(prob_dmpc2)/length(prob_dmpc2)*100, sum(sum(success_dmpc2)), length(N_vector)*trials)
@@ -353,7 +351,7 @@ fprintf("Percentage failure due to collisions --> %.2f%% (%d out of %d failures)
 fprintf("Percentage failure due to not reaching goal --> %.2f%% (%d out of %d failures) \n",...
     sum(goal_num2)/total_num2*100, sum(goal_num2), total_num2)
 
-fprintf("--------------------------- \nREPAIR TEST STATISTICS \n");
+fprintf("--------------------------- \nBOUND TEST STATISTICS \n");
 fprintf("--------------------------- \n")
 fprintf("Probability of success across all tests --> %.2f%% (%d out of %d tests) \n",...
     sum(prob_dmpc4)/length(prob_dmpc4)*100, sum(sum(success_dmpc4)), length(N_vector)*trials)
