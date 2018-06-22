@@ -127,7 +127,4 @@ while(~success && tries < 15)
         continue
     end
 end
-
-
-
 end

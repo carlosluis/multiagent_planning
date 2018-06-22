@@ -65,7 +65,7 @@ for q = 1:length(N_vector)
         E = diag([1,1,c]);
         E1 = E^(-1);
         E2 = E^(-order);
-        term2 = -1*10^4;
+        term2 = -5*10^4;
         
         l = [];
         feasible2(q,r) = 0; %check if QP was feasible
@@ -93,7 +93,7 @@ for q = 1:length(N_vector)
                     [pi,vi,ai,feasible2(q,r),outbound2(q,r)] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term2); 
                 end
                 if ~feasible2(q,r)
-                    save(['Fail2_' num2str(fail2)]);
+%                     save(['Fail2_' num2str(fail2)]);
                     fail2 = fail2 + 1;
                     break;
                 end
@@ -165,7 +165,7 @@ for q = 1:length(N_vector)
         E = diag([1,1,c]);
         E1 = E^(-1);
         E2 = E^(-order);
-        term4 = -1*10^4;
+        term4 = -5*10^4;
         
         l = [];
         feasible4(q,r) = 0; %check if QP was feasible
@@ -201,7 +201,7 @@ for q = 1:length(N_vector)
                 ak(:,k,n) = ai(:,1);
             end
             if ~feasible4(q,r)
-                save(['Fail4_' num2str(fail4)]);
+%                 save(['Fail4_' num2str(fail4)]);
                 fail4 = fail4 + 1;
                 break;
             end
@@ -256,7 +256,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_bound_1')
+save('comp_bound_3')
 %% Post-Processing
 close all
 
@@ -320,10 +320,10 @@ StackData2 = [infes_num2/trials*100 violation_num2/trials*100 goal_num2/trials*1
 StackData4 = [infes_num4/trials*100 violation_num4/trials*100 goal_num4/trials*100];
 
 figure(4)
-h2=bar(N_vector/V-0.01,StackData2,'stacked','BarWidth',0.3);
+h2=bar(N_vector/V-0.035,StackData2,'stacked','BarWidth',0.3);
 grid on;
 hold on;
-h4 = bar(N_vector/V+0.01,StackData4,'stacked','BarWidth',0.3);
+h4 = bar(N_vector/V+0.035,StackData4,'stacked','BarWidth',0.3);
 myC2= summer(size(StackData4,2));
 myC4= winter(size(StackData4,2));
 for k = 1:size(StackData4,2)

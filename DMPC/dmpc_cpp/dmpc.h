@@ -6,7 +6,7 @@
 
 #include <Eigen/Dense>
 #include <eigen-quadprog/src/QuadProg.h>
-#include <Eigen/LU>
+//#include <Eigen/LU>
 #include <boost/math/interpolators/cubic_b_spline.hpp>
 #include <chrono>
 #include <thread>
@@ -38,7 +38,7 @@ struct Params {
     float alim;
 };
 
-static const Params default_params = {0.2,20,15,2,1.5,0.5,0.5};
+static const Params default_params = {0.2,20,12,2,1.5,0.5,1.0};
 
 // Class definition
 class DMPC {

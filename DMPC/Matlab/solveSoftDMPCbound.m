@@ -87,7 +87,7 @@ tries = 0;
 outbound = 0;
 x = [];
 %Solve and propagate states
-while(~success && tries < 10)
+while(~success && tries < 15)
     [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
     if (exitflag == -6)
         % Weird non-convex flag may appear, even though the problem is
@@ -127,11 +127,4 @@ while(~success && tries < 10)
         continue
     end
 end
-
-if ~success
-    hola  = 1;
-end
-
-
-
 end

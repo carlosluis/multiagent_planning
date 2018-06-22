@@ -63,7 +63,7 @@ at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
 error_tol = 0.05; % 5cm destination tolerance
 violation = 0; % checks if violations occured at end of algorithm
 outbound = 0;
-term = -1*10^4;
+term = -5*10^4;
 
 % Penalty matrices when there're predicted collisions
 Q = 1000;

@@ -274,7 +274,7 @@ void DMPC::set_final_pts(const MatrixXd &pf) {
                     cout << "Vehicles " << i << " and " << j;
                     cout << " will be " << dist << "m";
                     cout << " apart at their final locations" << endl;
-                    cout << "Solver won't be able to draw agents to their final locations!"
+                    cout << "Solver won't be able to draw agents to their final locations!"<<endl;
                 }
             }
         }
@@ -398,7 +398,7 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
     VectorXd f;
 
     // Tuning factor of speed
-    int spd = 1;
+    int spd = 4;
 
     // Augmented model matrices in case of collisions
     MatrixXd Lambda_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
@@ -500,11 +500,11 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
         // Build linear and quadratic cost matrices
 
         f_w << VectorXd::Zero(n_var),
-               -5*pow(10,5)*VectorXd::Ones(N-1);
+               -pow(10,6)*VectorXd::Ones(N-1);
 
         //NOTE: W *NEEDS* to be different than zero, if not H has determinant 0
 
-        W.block(n_var,n_var,N-1,N-1) = pow(10,0)*(MatrixXd::Identity(N-1,N-1));
+        W.block(n_var,n_var,N-1,N-1) = pow(10,6)*(MatrixXd::Identity(N-1,N-1));
 
         a0_1 = VectorXd::Zero(n_var_aug);
         a0_1 << ao, VectorXd::Zero(3*(_k_hor-1) + N - 1);

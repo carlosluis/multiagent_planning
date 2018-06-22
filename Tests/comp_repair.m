@@ -322,10 +322,10 @@ StackData2 = [infes_num2/trials*100 violation_num2/trials*100 goal_num2/trials*1
 StackData4 = [infes_num4/trials*100 violation_num4/trials*100 goal_num4/trials*100];
 
 figure(4)
-h2=bar(N_vector/V-0.01,StackData2,'stacked','BarWidth',0.3);
+h2=bar(N_vector/V-0.035,StackData2,'stacked','BarWidth',0.3);
 grid on;
 hold on;
-h4 = bar(N_vector/V+0.01,StackData4,'stacked','BarWidth',0.3);
+h4 = bar(N_vector/V+0.035,StackData4,'stacked','BarWidth',0.3);
 myC2= summer(size(StackData4,2));
 myC4= winter(size(StackData4,2));
 for k = 1:size(StackData4,2)
