@@ -85,7 +85,7 @@ tries = 0;
 outbound = 0;
 x = [];
 %Solve and propagate states
-while(~success && tries < 15)
+while(~success && tries < 5)
     [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
     if (exitflag == -6)
         % Weird non-convex flag may appear, even though the problem is
@@ -106,14 +106,9 @@ while(~success && tries < 15)
         a = vec2mat(a,3)';
         success = 1;
         if (~is_inbounds(p(:,1),pmin,pmax))
+            success = 0;
             outbound = 1;
         end    
-%         if violation % extract the value of the slack variable (not used atm)
-%             epsilon = x(3*K+1:end);
-%             if (-1000*min(epsilon) > 50)
-%                 fprintf("min epsilon = %.4f e-3 \n",1000*min(epsilon))
-%             end
-%         end
         return
         
     elseif isempty(x)

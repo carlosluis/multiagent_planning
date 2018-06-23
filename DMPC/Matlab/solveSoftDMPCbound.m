@@ -7,7 +7,7 @@ prev_p = l(:,:,n);
 % clip prev_p to within the boundaries
 % prev_p = bsxfun(@min,prev_p,pmax');
 % prev_p = bsxfun(@max,prev_p,pmin');
-constr_tol = 1e-3;
+constr_tol = 1e-2;
 Aeq = [];
 beq = [];
 options = optimoptions('quadprog','Display','off','ConstraintTolerance',constr_tol);
@@ -15,16 +15,15 @@ N = size(l,3);
 Ain_coll = []; 
 bin_coll = []; 
 success = 0;
-lim_epsilon = 50e-3;
 
 for k = 1: k_hor
-    violation = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
+    [violation,lim_epsilon] = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
     if (violation)
         [Ainr, binr] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order);
         Ain_coll = [Ainr eye(N-1,N-1);
                      zeros(N-1,3*K) eye(N-1);
                      zeros(N-1,3*K) -eye(N-1)];
-        bin_coll = [binr; zeros(N-1,1); lim_epsilon*ones(N-1,1)];
+        bin_coll = [binr; zeros(N-1,1); lim_epsilon'];
         break;
     end       
 end
@@ -87,7 +86,7 @@ tries = 0;
 outbound = 0;
 x = [];
 %Solve and propagate states
-while(~success && tries < 15)
+while(~success && tries < 5)
     [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
     if (exitflag == -6)
         % Weird non-convex flag may appear, even though the problem is
@@ -108,6 +107,7 @@ while(~success && tries < 15)
         a = vec2mat(a,3)';
         success = 1;
         if (~is_inbounds(p(:,1),pmin,pmax))
+            success = 0;
             outbound = 1;
         end 
 %         if violation % extract the value of the slack variable (not used atm)
@@ -126,5 +126,8 @@ while(~success && tries < 15)
         tries = tries + 1;
         continue
     end
+end
+if ~success
+    hola = 1;
 end
 end
