@@ -1,4 +1,4 @@
-function [Ain_total, bin_total] = CollConstr(p,po, k, l, Ain,r_min)
+function [Ain_total, bin_total] = CollConstr(p,po, k, l,Ain,rmin,E1,E2,order)
 N_obs = size(l,3);
 Ain_total = zeros(N_obs,size(Ain,1));
 bin_total = zeros(N_obs,1);
@@ -7,11 +7,11 @@ if (~isempty(l))
         pj = l(:,:,i); %position vector of the i-th neighbour over k iterations
         K = size(pj,2);
         
-        dist = norm(p-pj(:,k)); %distance at time step k
-        diff = (p-pj(:,k))'; % Transpose of the difference
+        dist = norm(E1*(p-pj(:,k)),order); %distance at time step k
+        diff = (E2*(p-pj(:,k)).^(order-1))'; % Transpose of the difference
 
         % Right side of inequality constraint (bin)
-        r = dist*(r_min - dist + (p - pj(:,k))'*p/dist) - (p-pj(:,k))'*po';
+        r = dist^(order-1)*(rmin - dist + diff*p/(dist^(order-1))) - (p-pj(:,k))'*po';
 
         % Construct diagonal matrix with vector difference
         diff_mat = [zeros(1,3*(k-1)) diff zeros(1,3*(K-k))];

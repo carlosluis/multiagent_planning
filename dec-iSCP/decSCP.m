@@ -12,15 +12,22 @@ t = 0:Ts:T; % interpolated time vector
 success = 1;
 N = 10; % number of vehicles
 
+% Variables for ellipsoid constraint
+order = 2; % choose between 2 or 4 for the order of the super ellipsoid
+rmin = 0.5; % X-Y protection radius for collisions
+c = 1.5; % make this one for spherical constraint
+E = diag([1,1,c]);
+E1 = E^(-1);
+E2 = E^(-order);
+
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
 pmax = [2.5,2.5,2.2];
 
-% Minimum distance between vehicles in m
-rmin = 0.75;
+rmin_init = 0.75;
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 %% Some Precomputations
 % Kinematic model A,b matrices
@@ -58,7 +65,7 @@ tic %measure the time it gets to solve the optimization problem
 for i = 1:N 
     poi = po(:,:,i);
     pfi = pf(:,:,i);
-    [pi, vi, ai,success] = singleiSCP(poi,pfi,h,K,pmin,pmax,rmin,alim,l,A_p,A_v);
+    [pi, vi, ai,success] = singleiSCP(poi,pfi,h,K,pmin,pmax,rmin,alim,l,A_p,A_v,E1,E2,order);
     if ~success
         break;
     end

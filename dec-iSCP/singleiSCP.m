@@ -1,4 +1,4 @@
-function [p,v,a,success] = singleiSCP(po,pf,h,K,pmin,pmax,rmin,alim,l,A_p,A_v)
+function [p,v,a,success] = singleiSCP(po,pf,h,K,pmin,pmax,rmin,alim,l,A_p,A_v,E1,E2,order)
 
 prev_p = initSolution(po,pf,h,K);
 ub = alim*ones(3*K,1);
@@ -18,14 +18,14 @@ while (i <= K && check)
     Ain_total = [];
     bin_total = [];
     for k = 1:K
-        violation = CheckforColl(prev_p(:,k),l,k,rmin);
+        violation = CheckforColl(prev_p(:,k),l,k,E1,rmin,order);
         if (ismember(k,addConstr))
-            [Ainr, binr] = CollConstr(prev_p(:,k),po,k,l,A,rmin);
+            [Ainr, binr] = CollConstr(prev_p(:,k),po,k,l,A,rmin,E1,E2,order);
             Ain_total = [Ain_total; Ainr];
             bin_total = [bin_total; binr];
         
         elseif (newConstrCount==0 && violation)
-            [Ainr, binr] = CollConstr(prev_p(:,k),po,k,l,A,rmin);
+            [Ainr, binr] = CollConstr(prev_p(:,k),po,k,l,A,rmin,E1,E2,order);
             Ain_total = [Ain_total; Ainr];
             bin_total = [bin_total; binr];  
             addConstr = [addConstr k];
