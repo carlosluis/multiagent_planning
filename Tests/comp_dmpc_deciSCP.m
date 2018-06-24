@@ -245,6 +245,8 @@ figure(2)
 errorbar(N_vector,tmean_dec,tstd_dec,'Linewidth',2);
 grid on;
 hold on;
+xlim([4 30]);
+ylim([0 50]);
 errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Average Computation Time [s]');
