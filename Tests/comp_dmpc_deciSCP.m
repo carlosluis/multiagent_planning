@@ -12,18 +12,26 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 success = 1;
-N_vector = 2:2:30; % number of vehicles
+N_vector = 4:2:30; % number of vehicles
 trials = 50;
-fail = 0;
+
+% Variables for ellipsoid constraint
+order = 2; % choose between 2 or 4 for the order of the super ellipsoid
+rmin = 0.5; % X-Y protection radius for collisions
+c = 1.5; % make this one for spherical constraint
+E = diag([1,1,c]);
+E1 = E^(-1);
+E2 = E^(-order);
+
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
 pmax = [2.5,2.5,2.2];
 
 % Minimum distance between vehicles in m
-rmin = 0.75;
+rmin_init = 0.75;
 
 % Maximum acceleration in m/s^2
-alim = 0.7;
+alim = 0.5;
 
 % Some Precomputations dec-iSCP
 % Kinematic model A,b matrices
@@ -62,7 +70,6 @@ A_initp = [];
 A_init = eye(6);
 tol = 2;
 
-
 Delta = getDeltaMat(k_hor); 
 
 for k = 1:k_hor
@@ -77,7 +84,7 @@ for q = 1:length(N_vector)
     for r = 1:trials
         fprintf("Doing trial #%i with %i vehicles\n",r,N)
         % Initial positions
-        [po,pf] = randomTest(N,pmin,pmax,rmin);
+        [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
         % Empty list of obstacles
         l = [];
@@ -87,7 +94,7 @@ for q = 1:length(N_vector)
         for i = 1:N 
             poi = po(:,:,i);
             pfi = pf(:,:,i);
-            [pi, vi, ai,success] = singleiSCP(poi,pfi,h,K,pmin,pmax,rmin,alim,l,A_p,A_v);
+            [pi, vi, ai,success] = singleiSCP(poi,pfi,h,K,pmin,pmax,rmin,alim,l,A_p,A_v,E1,E2,order);
             if ~success
                 break;
             end
@@ -111,77 +118,109 @@ for q = 1:length(N_vector)
         end
         success_dec(q,r) = success;
         
-        %DMPC All heuristics
-        % Empty list of obstacles
-        tol = 2;
-        success = 0; %check if QP was feasible
-        at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
+        
+        %SoftDMPC with bound on relaxation variable
+        
+        % Variables for ellipsoid constraint
+        order = 2; % choose between 2 or 4 for the order of the super ellipsoid
+        rmin = 0.5; % X-Y protection radius for collisions
+        c = 1.5; % make this one for spherical constraint
+        E = diag([1,1,c]);
+        E1 = E^(-1);
+        E2 = E^(-order);
+        term4 = -5*10^4;
+        
+        l = [];
+        feasible4(q,r) = 0; %check if QP was feasible
         error_tol = 0.05; % 5cm destination tolerance
-        epsilon = 0; % heuristic variable to initialize DMPC more conservative
+        violation4(q,r) = 0; % checks if violations occured at end of algorithm
 
         % Penalty matrices when there're predicted collisions
-        Q = 10;
-        S = 100; 
-        tries(q,r) = 1;
-        failed_goal(q,r) = 0;
+        Q = 1000;
+        S = 100;
+        failed_goal4(q,r) = 0;
+        outbound4(q,r) = 0;
         t_start = tic;
-        while tries(q,r) <= 10 && ~at_goal
-            for k = 1:K
-                for n = 1:N
-                    if k==1
-                        poi = po(:,:,n);
-                        pfi = pf(:,:,n);
-                        [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K,epsilon);
-                        success = 1;
-                    else
-                        pok = pk(:,k-1,n);
-                        vok = vk(:,k-1,n);
-                        aok = ak(:,k-1,n);
-                        [pi,vi,ai,success] = solveDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,tol,Q,S); 
-                    end
-                    if ~success
-                        break;
-                    end
-                    new_l(:,:,n) = pi;
-                    pk(:,k,n) = pi(:,1);
-                    vk(:,k,n) = vi(:,1);
-                    ak(:,k,n) = ai(:,1);
+        
+        for k = 1:K
+            for n = 1:N
+                if k==1
+                    poi = po(:,:,n);
+                    pfi = pf(:,:,n);
+                    [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
+                    feasible4(q,r) = 1;
+                else
+                    pok = pk(:,k-1,n);
+                    vok = vk(:,k-1,n);
+                    aok = ak(:,k-1,n);
+                    [pi,vi,ai,feasible4(q,r),outbound4(q,r)] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term4); 
                 end
-                if ~success
-                    tries(q,r) = tries(q,r) + 1;
-                    Q = Q+50;
+                if ~feasible4(q,r)
                     break;
                 end
-                l = new_l;
-            end   
-            pass = ReachedGoal(pk,pf,K,error_tol);
-            if success && pass
-                at_goal = 1;
-            elseif success && ~pass
-                failed_goal(q,r) = failed_goal(q,r) + 1;
-                tries(q,r) = tries(q,r) + 1;
-                Q = Q+100;
+                new_l(:,:,n) = pi;
+                pk(:,k,n) = pi(:,1);
+                vk(:,k,n) = vi(:,1);
+                ak(:,k,n) = ai(:,1);
+            end
+            if ~feasible4(q,r)
+                save(['Fail4_' num2str(fail4)]);
+                fail4 = fail4 + 1;
+                break;
+            end
+            l = new_l;
+        end
+        if feasible4(q,r)
+            pass = ReachedGoal(pk,pf,K,error_tol,N);
+            if  ~pass
+                failed_goal4(q,r) = failed_goal4(q,r) + 1;
             end
         end
 
-        if success && at_goal
+        if feasible4(q,r) && ~failed_goal4(q,r)       
             for i = 1:N
                 p(:,:,i) = spline(tk,pk(:,:,i),t);
                 v(:,:,i) = spline(tk,vk(:,:,i),t);
                 a(:,:,i) = spline(tk,ak(:,:,i),t); 
             end
+            % Check if collision constraints were not violated
+            for i = 1:N
+                for j = 1:N
+                    if(i~=j)
+                        differ = E1*(p(:,:,i) - p(:,:,j));
+                        dist = (sum(differ.^order,1)).^(1/order);
+                        if min(dist) < (rmin - 0.05)
+                            [value,index] = min(dist);
+                            violation4(q,r) = 1;
+                        end
+                    end
+                end
+            end
             t_dmpc(q,r) = toc(t_start);
             totdist_dmpc(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
+            
+            for i = 1:N
+                diff_goal = p(:,:,i) - repmat(pf(:,:,i),length(t),1)';
+                dist_goal = sqrt(sum(diff_goal.^2,1));
+                hola = find(dist_goal >= 0.05,1,'last');
+                if isempty(hola)
+                    time_index(i) = 0;
+                else
+                    time_index(i) = hola + 1;
+                end
+            end
+            traj_time(q,r) = max(time_index)*Ts;
         else
             t_dmpc(q,r) = nan;
             totdist_dmpc(q,r) = nan;
-            save(['Fail_' num2str(fail)]);
-            fail = fail + 1;
+            traj_time(q,r) = nan;
         end
-        success_dmpc(q,r) = success && at_goal;
+        success_dmpc(q,r) = feasible4(q,r) && ~failed_goal4(q,r) && ~violation4(q,r);
     end
 end
-fprintf("Finished!")
+fprintf("Finished! \n")
+save('comp_deciSCP_vs_DMPC')
 %% Post-Processing
 
 % Probability of success plots
@@ -192,7 +231,6 @@ plot(N_vector,prob_dec','Linewidth',2);
 grid on;
 hold on;
 ylim([0,1.05])
-xlim([0,27])
 plot(N_vector,prob_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Success Probability');
@@ -207,7 +245,6 @@ figure(2)
 errorbar(N_vector,tmean_dec,tstd_dec,'Linewidth',2);
 grid on;
 hold on;
-xlim([0,27])
 errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Average Computation Time [s]');

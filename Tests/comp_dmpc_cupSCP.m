@@ -11,8 +11,8 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 4:2:16; % number of vehicles
-trials = 50; % number os trails per number of vehicles
+N_vector = 2:2:4; % number of vehicles
+trials = 2; % number os trails per number of vehicles
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
@@ -78,10 +78,21 @@ for q = 1:length(N_vector)
         % Initial positions
         [po,pf] = randomTest(N,pmin,pmax,rmin_init);
         
-        %SoftDMPC
+  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
+        
+        %SoftDMPC with bound on relaxation variable
+        
+        % Variables for ellipsoid constraint
+        order = 2; % choose between 2 or 4 for the order of the super ellipsoid
+        rmin = 0.5; % X-Y protection radius for collisions
+        c = 1.5; % make this one for spherical constraint
+        E = diag([1,1,c]);
+        E1 = E^(-1);
+        E2 = E^(-order);
+        term4 = -5*10^4;
+        
         l = [];
         feasible(q,r) = 0; %check if QP was feasible
-        at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
         error_tol = 0.05; % 5cm destination tolerance
         violation(q,r) = 0; % checks if violations occured at end of algorithm
 
@@ -89,6 +100,7 @@ for q = 1:length(N_vector)
         Q = 1000;
         S = 100;
         failed_goal(q,r) = 0;
+        outbound(q,r) = 0;
         t_start = tic;
         
         for k = 1:K
@@ -102,7 +114,7 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible(q,r)] = solveSoftDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order); 
+                    [pi,vi,ai,feasible(q,r),outbound(q,r)] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term4); 
                 end
                 if ~feasible(q,r)
                     break;
@@ -118,18 +130,23 @@ for q = 1:length(N_vector)
             l = new_l;
         end
         if feasible(q,r)
-            pass = ReachedGoal(pk,pf,K,error_tol);
+            pass = ReachedGoal(pk,pf,K,error_tol,N);
             if  ~pass
                 failed_goal(q,r) = failed_goal(q,r) + 1;
             end
         end
 
-        if feasible(q,r) && ~failed_goal(q,r)      
+        if feasible(q,r) && ~failed_goal(q,r)       
+            for i = 1:N
+                p(:,:,i) = spline(tk,pk(:,:,i),t);
+                v(:,:,i) = spline(tk,vk(:,:,i),t);
+                a(:,:,i) = spline(tk,ak(:,:,i),t); 
+            end
             % Check if collision constraints were not violated
             for i = 1:N
                 for j = 1:N
                     if(i~=j)
-                        differ = E1*(pk(:,:,i) - pk(:,:,j));
+                        differ = E1*(p(:,:,i) - p(:,:,j));
                         dist = (sum(differ.^order,1)).^(1/order);
                         if min(dist) < (rmin - 0.05)
                             [value,index] = min(dist);
@@ -137,12 +154,6 @@ for q = 1:length(N_vector)
                         end
                     end
                 end
-            end
-            
-            for i = 1:N
-                p(:,:,i) = spline(tk,pk(:,:,i),t);
-                v(:,:,i) = spline(tk,vk(:,:,i),t);
-                a(:,:,i) = spline(tk,ak(:,:,i),t); 
             end
             t_dmpc(q,r) = toc(t_start);
             totdist_dmpc(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
@@ -161,7 +172,6 @@ for q = 1:length(N_vector)
         else
             t_dmpc(q,r) = nan;
             totdist_dmpc(q,r) = nan;
-            fail = fail + 1;
             traj_time(q,r) = nan;
         end
         success_dmpc(q,r) = feasible(q,r) && ~failed_goal(q,r) && ~violation(q,r);
@@ -191,7 +201,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_dmpc_cupscp2')
+save('comp_dmpc_cupSCP3')
 %% Post-Processing
 
 % Probability of success plots
