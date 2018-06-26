@@ -11,8 +11,8 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 2:2:4; % number of vehicles
-trials = 2; % number os trails per number of vehicles
+N_vector = 2:2:16; % number of vehicles
+trials = 50; % number os trails per number of vehicles
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
@@ -114,7 +114,7 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible(q,r),outbound(q,r)] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term4); 
+                    [pi,vi,ai,feasible(q,r),outbound(q,r)] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term4); 
                 end
                 if ~feasible(q,r)
                     break;
@@ -211,11 +211,11 @@ figure(1)
 grid on;
 hold on;
 ylim([0,1.05])
-plot(N_vector,prob_dmpc,'Linewidth',2);
 plot(N_vector,prob_cup,'Linewidth',2);
+plot(N_vector,prob_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Success Probability');
-legend('DMPC','cup-SCP');
+legend('cup-SCP','DMPC');
 
 % Computation time
 tmean_dmpc = nanmean(t_dmpc,2);
@@ -225,11 +225,13 @@ tstd_cup = nanstd(t_cup,1,2);
 figure(2)
 grid on;
 hold on;
-errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
-errorbar(N_vector,tmean_cup,tstd_cup,'Linewidth',2);
+plot(N_vector, tmean_cup,'LineWidth',2);
+plot(N_vector, tmean_dmpc,'LineWidth',2);
+% errorbar(N_vector,tmean_cup,tstd_cup,'Linewidth',2);
+% errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Average Computation time [s]');
-legend('DMPC','cup-SCP');
+legend('cup-SCP','DMPC');
 
 % Percentage increase/decrease on travelled dist of dmpc wrt dec
 % Positive number means that dmpc path was longer
@@ -237,12 +239,13 @@ diff_dist = (totdist_dmpc-totdist_cup)./totdist_dmpc;
 avg_diff = nanmean(diff_dist,2);
 std_diff = nanstd(diff_dist,1,2);
 figure(3)
-errorbar(N_vector,100*avg_diff,100*std_diff,'Linewidth',2);
+plot(N_vector, 100*avg_diff,'LineWidth', 2);
+% errorbar(N_vector,100*avg_diff,100*std_diff,'Linewidth',2);
 grid on;
 xlabel('Number of Vehicles');
 ylabel('Average % increase');
-title('Percentage increase on travelled distance of DMPC wrt cup-SCP');
-
+% title('Percentage increase on travelled distance of DMPC wrt cup-SCP');
+legend('DMPC w.r.t. cup-SCP')
 
 % Failure analysis
 violation_num = sum(violation,2);

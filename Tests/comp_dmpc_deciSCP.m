@@ -12,8 +12,9 @@ Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15;
 success = 1;
-N_vector = 4:2:30; % number of vehicles
+N_vector = 2:4:30; % number of vehicles
 trials = 50;
+fail4 = 0;
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
@@ -120,7 +121,7 @@ for q = 1:length(N_vector)
         
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
         
-        %SoftDMPC with bound on relaxation variable
+        %SoftDMPC with 
         
         % Variables for ellipsoid constraint
         order = 2; % choose between 2 or 4 for the order of the super ellipsoid
@@ -154,7 +155,7 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible4(q,r),outbound4(q,r)] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term4); 
+                    [pi,vi,ai,feasible4(q,r),outbound4(q,r)] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term4); 
                 end
                 if ~feasible4(q,r)
                     break;
@@ -220,7 +221,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_deciSCP_vs_DMPC')
+save('comp_deciSCP_vs_DMPC2')
 %% Post-Processing
 
 % Probability of success plots
@@ -242,12 +243,13 @@ tstd_dec = nanstd(t_dec,1,2);
 tmean_dmpc = nanmean(t_dmpc,2);
 tstd_dmpc = nanstd(t_dmpc,1,2);
 figure(2)
-errorbar(N_vector,tmean_dec,tstd_dec,'Linewidth',2);
+plot(N_vector, tmean_dec,'LineWidth',2);
+% errorbar(N_vector,tmean_dec,tstd_dec,'Linewidth',2);
 grid on;
 hold on;
 xlim([4 30]);
-ylim([0 50]);
-errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
+plot(N_vector, tmean_dmpc,'LineWidth',2);
+% errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Average Computation Time [s]');
 legend('dec-iSCP','DMPC');
@@ -258,9 +260,10 @@ diff_dist = (totdist_dmpc-totdist_dec)./totdist_dmpc;
 avg_diff = nanmean(diff_dist,2);
 std_diff = nanstd(diff_dist,1,2);
 figure(3)
-errorbar(N_vector,100*avg_diff,100*std_diff,'Linewidth',2);
+plot(N_vector, 100*avg_diff,'LineWidth', 2);
+% errorbar(N_vector,100*avg_diff,100*std_diff,'Linewidth',2);
 grid on;
 xlabel('Number of Vehicles');
 ylabel('Average % increase/decrease');
-title('Percentual increase/decrease on total travelled distance of DMPC wrt dec-iSCP');
-
+% title('Percentual increase/decrease on total travelled distance of DMPC wrt dec-iSCP');
+legend('DMPC w.r.t. dec-iSCP')

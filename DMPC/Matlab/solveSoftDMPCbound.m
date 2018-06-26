@@ -7,7 +7,7 @@ prev_p = l(:,:,n);
 % clip prev_p to within the boundaries
 % prev_p = bsxfun(@min,prev_p,pmax');
 % prev_p = bsxfun(@max,prev_p,pmin');
-constr_tol = 1e-2;
+constr_tol = 1e-3;
 Aeq = [];
 beq = [];
 options = optimoptions('quadprog','Display','off','ConstraintTolerance',constr_tol);
@@ -17,13 +17,11 @@ bin_coll = [];
 success = 0;
 
 for k = 1: k_hor
-    [violation,lim_epsilon] = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
+    violation = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
     if (violation)
         [Ainr, binr] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order);
-        Ain_coll = [Ainr eye(N-1,N-1);
-                     zeros(N-1,3*K) eye(N-1);
-                     zeros(N-1,3*K) -eye(N-1)];
-        bin_coll = [binr; zeros(N-1,1); lim_epsilon'];
+        Ain_coll = [Ainr eye(N-1,N-1)];
+        bin_coll = binr;
         break;
     end       
 end
@@ -63,6 +61,11 @@ if (violation) % In case of collisions, we relax the constraint with slack varia
     bin_total = [bin_coll; repmat((pmax)',K,1) - A_initp*([po';vo']); zeros(N-1,1); repmat(-(pmin)',K,1) + A_initp*([po';vo']); zeros(N-1,1)];
     ao_1 = [ao zeros(1,3*(K-1)+N-1)];
     A_initp = [A_initp; zeros(N-1,6)];
+    
+    % add bound on the relaxation variable
+    ub = [ub; zeros(N-1,1)];
+    
+    lb = [lb; -abs(min(bin_coll))*ones(N-1,1)];
     
     % Linear penalty on collision constraint relaxation
     f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
