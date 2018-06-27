@@ -19,8 +19,8 @@ success = 0;
 for k = 1: k_hor
     violation = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
     if (violation)
-        [Ainr, binr] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order);
-        Ain_coll = [Ainr eye(N-1,N-1)];
+        [Ainr, binr,prev_dist] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order);
+        Ain_coll = [Ainr diag(prev_dist)];
         bin_coll = binr;
         break;
     end       
@@ -64,8 +64,21 @@ if (violation) % In case of collisions, we relax the constraint with slack varia
     
     % add bound on the relaxation variable
     ub = [ub; zeros(N-1,1)];
-    
-    lb = [lb; -abs(min(bin_coll))*ones(N-1,1)];
+    lb = [lb; -0.05*ones(N-1,1)];
+%     min_bin = min(bin_coll);
+%     if (min_bin < 0)
+%         if (abs(min_bin) > 0.05)
+%             lb = [lb; -0.05*ones(N-1,1)];
+%         else
+%             lb = [lb; min(bin_coll)*ones(N-1,1) - constr_tol];
+%         end
+%          
+%     elseif (min(abs(bin_coll)) < 0.05)
+%         lb = [lb; -min(abs(bin_coll))*ones(N-1,1) - constr_tol];
+%         
+%     else
+%         lb = [lb; -0.05*ones(N-1,1)];
+%     end
     
     % Linear penalty on collision constraint relaxation
     f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
@@ -89,13 +102,16 @@ tries = 0;
 outbound = 0;
 x = [];
 %Solve and propagate states
-while(~success && tries < 5)
+while(~success && tries < 10)
     [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
     if (exitflag == -6)
         % Weird non-convex flag may appear, even though the problem is
         % very well defined as a convex problem
         % fix: increase constraint tolerance and retry solving
-        fprintf("Exitflag was -6 in Repair \n")
+        p = [];
+        v = [];
+        a = [];
+        fprintf("Exitflag was -6 in Bound \n")
         constr_tol = 2*constr_tol;
         options.ConstraintTolerance = constr_tol;
         success = 0;
@@ -123,9 +139,9 @@ while(~success && tries < 5)
         p = [];
         v = [];
         a = [];
-        constr_tol = 2*constr_tol;
-        options.ConstraintTolerance = constr_tol;
         success = 0;
+        fprintf("Retrying with more relaxed bound \n");
+        lb(3*K+1:end) = lb(3*K+1:end) - 0.01;
         tries = tries + 1;
         continue
     end

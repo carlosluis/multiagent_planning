@@ -873,7 +873,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPC(const MatrixXd &po,
     {
         cout << "All vehicles reached their goals" << endl;
         // Interpolate for better resolution (e.g. 100 Hz)
-        solution = interp_trajectory(all_trajectories,0.01);
+        solution = interp_trajectory(all_trajectories,0.0067);
 
         // Check if collision constraints were not violated
         bool violation = collision_violation(solution);
@@ -974,7 +974,7 @@ double DMPC::get_trajectory_time(const std::vector<Trajectory> &solution)
         {
             if(dist[k] >= 0.05)
             {
-                time[i] = k/100.0;
+                time[i] = (float)k/150;
                 break;
             }
         }

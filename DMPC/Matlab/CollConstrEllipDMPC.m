@@ -1,7 +1,8 @@
-function [Ain_total, bin_total] = CollConstrEllipDMPC(p,po,vo,n, k, l,rmin, Ain,A_initp,E1,E2,order)
+function [Ain_total, bin_total,prev_dist] = CollConstrEllipDMPC(p,po,vo,n, k, l,rmin, Ain,A_initp,E1,E2,order)
 N_obs = size(l,3);
 Ain_total = zeros(N_obs-1,3*size(l,2));
 bin_total = zeros(N_obs-1,1);
+prev_dist = zeros(N_obs-1,1);
 idx = 1;
 if (~isempty(l))
     for i = 1:size(l,3) %Iterate through the number of obstacles (other agents)
@@ -11,7 +12,8 @@ if (~isempty(l))
 
             dist = norm(E1*(p-pj(:,k)),order); %distance at time step k
             diff = (E2*(p-pj(:,k)).^(order-1))'; % Transpose of the difference
-
+            
+            prev_dist(idx) = dist;
             % Right side of inequality constraint (bin)
             r = dist^(order-1)*(rmin - dist + diff*p/(dist^(order-1))) - diff*A_initp(3*(k-1)+1:3*k,:)*[po';vo'];
 

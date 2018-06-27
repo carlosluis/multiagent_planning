@@ -201,7 +201,7 @@ for q = 1:length(N_vector)
                 ak(:,k,n) = ai(:,1);
             end
             if ~feasible4(q,r)
-%                 save(['Fail4_' num2str(fail4)]);
+                save(['Fail4_' num2str(fail4)]);
                 fail4 = fail4 + 1;
                 break;
             end
@@ -256,7 +256,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_bound_3')
+save('comp_bound_4')
 %% Post-Processing
 close all
 
@@ -334,8 +334,8 @@ xticks(N_vector/V);
 % xlim([min(N_vector/V)-1, max(N_vector/V)+1])
 xlabel('Workspace density [agent/m^3]');
 ylabel(['Failure rate % (out of ' ,num2str(trials), ')']);
-legend('Infeasibility Rep','Collisions Rep','Incomplete Trajectory Rep',...
-       'Infeasibility Bnd','Collisions Bnd','Incomplete Trajectory Bnd')
+legend('Infeasibility','Collisions','Incomplete Trajectory',...
+       'Infeasibility (bound)','Collisions (bound)','Incomplete Trajectory (bound)')
    
 % Print various statistics
 fprintf("--------------------------- \nREPAIR TEST STATISTICS \n");
@@ -364,4 +364,16 @@ fprintf("Percentage failure due to collisions --> %.2f%% (%d out of %d failures)
 fprintf("Percentage failure due to not reaching goal --> %.2f%% (%d out of %d failures) \n",...
     sum(goal_num4)/total_num4*100, sum(goal_num4), total_num4)
 
-
+%%
+% figure(4)
+% h2=bar(N_vector/V,StackData2,'stacked','BarWidth',0.3);
+% grid on;
+% hold on;
+% myC2= summer(size(StackData4,2));
+% for k = 1:size(StackData4,2)
+%     set(h2(k),'facecolor',myC2(k,:));
+% end
+% xticks(N_vector/V);
+% xlabel('Workspace density [agent/m^3]');
+% ylabel(['Failure rate % (out of ' ,num2str(trials), ')']);
+% legend('Infeasibility','Collisions','Incomplete Trajectory')

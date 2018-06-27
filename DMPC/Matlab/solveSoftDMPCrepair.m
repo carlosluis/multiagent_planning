@@ -91,6 +91,9 @@ while(~success && tries < 5)
         % Weird non-convex flag may appear, even though the problem is
         % very well defined as a convex problem
         % fix: increase constraint tolerance and retry solving
+        p = [];
+        v = [];
+        a = [];
         fprintf("Exitflag was -6 in Repair \n")
         constr_tol = 2*constr_tol;
         options.ConstraintTolerance = constr_tol;
