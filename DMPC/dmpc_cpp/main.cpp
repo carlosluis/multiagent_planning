@@ -37,11 +37,11 @@ int main()
     Vector3d po1(-1,1,1.5);
     Vector3d po2(0,1,1.5);
     Vector3d po3(1,1,1.5);
-    Vector3d po4(-1,0,1.5);
+    Vector3d po4(-0.5,0,1.5);
     Vector3d po5(0,0,1.5);
     Vector3d po6(1,0,1.5);
 
-    Vector3d pf1(0.5,0,0.75);
+    Vector3d pf1(0,-1,0.75);
     Vector3d pf2(0.25,0.43,0.75);
     Vector3d pf3(-0.25,0.43,0.75);
     Vector3d pf4(-0.5,0.0,0.75);
@@ -50,8 +50,8 @@ int main()
 
     MatrixXd po(3,4);
     po << po1,po2,po3,po4;
-    MatrixXd pf(3,4);
-    pf << pf1,pf2,pf3,pf4;
+    MatrixXd pf(3,3);
+    pf << pf1,pf2,pf3;
 //    pf = test.gen_rand_perm(po);
 
     test.set_final_pts(pf);

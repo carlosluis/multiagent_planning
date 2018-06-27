@@ -784,7 +784,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPC(const MatrixXd &po,
     std::vector<std::vector<int>> all_clusters(n_cluster);
 
     int agentsXcluster = N_cmd/n_cluster;
-    int residue = N%n_cluster;
+    int residue = N_cmd%n_cluster;
     int cluster_capacity;
     int N_index = 0;
 
