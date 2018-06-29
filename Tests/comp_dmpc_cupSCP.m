@@ -23,8 +23,8 @@ E1 = E^(-1);
 E2 = E^(-order);
 
 % Workspace boundaries
-pmin = [-1.0,-1.0,0.2];
-pmax = [1.0,1.0,2.2];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
 % Minimum distance between vehicles in m
 rmin_init = 0.75;
@@ -201,7 +201,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_dmpc_cupSCP3')
+save('comp_dmpc_cupSCP4')
 %% Post-Processing
 
 % Probability of success plots
@@ -235,7 +235,7 @@ legend('cup-SCP','DMPC');
 
 % Percentage increase/decrease on travelled dist of dmpc wrt dec
 % Positive number means that dmpc path was longer
-diff_dist = (totdist_dmpc-totdist_cup)./totdist_dmpc;
+diff_dist = (totdist_dmpc-totdist_cup)./totdist_cup;
 avg_diff = nanmean(diff_dist,2);
 std_diff = nanstd(diff_dist,1,2);
 figure(3)

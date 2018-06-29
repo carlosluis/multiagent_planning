@@ -1,4 +1,4 @@
-function [p,v,a,success,outbound] = solveSoftDMPCbound(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order,term)
+function [p,v,a,success,outbound,coll] = solveSoftDMPCbound(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order,term)
 
 k_hor = size(l,2);
 ub = alim*ones(3*K,1);
@@ -15,11 +15,23 @@ N = size(l,3);
 Ain_coll = []; 
 bin_coll = []; 
 success = 0;
+outbound = 0;
+coll = 0;
 
 for k = 1: k_hor
-    violation = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
+    [violation,min_dist] = CheckCollSoftDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
     if (violation)
-        [Ainr, binr,prev_dist] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order);
+        if (k==1 && min_dist < rmin - 0.05) %already violated constraint
+            p = [];
+            v = [];
+            a = [];
+            coll = 1;
+            return;
+            
+        elseif (k==1)
+            continue;
+        end     
+        [Ainr,binr,prev_dist] = CollConstrSoftDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order);
         Ain_coll = [Ainr diag(prev_dist)];
         bin_coll = binr;
         break;
@@ -65,23 +77,10 @@ if (violation) % In case of collisions, we relax the constraint with slack varia
     % add bound on the relaxation variable
     ub = [ub; zeros(N-1,1)];
     lb = [lb; -0.05*ones(N-1,1)];
-%     min_bin = min(bin_coll);
-%     if (min_bin < 0)
-%         if (abs(min_bin) > 0.05)
-%             lb = [lb; -0.05*ones(N-1,1)];
-%         else
-%             lb = [lb; min(bin_coll)*ones(N-1,1) - constr_tol];
-%         end
-%          
-%     elseif (min(abs(bin_coll)) < 0.05)
-%         lb = [lb; -min(abs(bin_coll))*ones(N-1,1) - constr_tol];
-%         
-%     else
-%         lb = [lb; -0.05*ones(N-1,1)];
-%     end
-    
+%     lb = [lb; -(0.1 + (k/2)^2*(0.04) - 0.04)*ones(N-1,1)];
+
     % Linear penalty on collision constraint relaxation
-    f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
+    f_eps = term*[zeros(3*K,1); 1./prev_dist]';
     
     % Quadratic penalty on collision constraint relaxation
     EPS = 1*10^0*[zeros(3*K,3*K) zeros(3*K,N-1);
@@ -99,10 +98,9 @@ end
 Ain_total = [Ain_coll; A; -A];
 H = 2*(A'*Q*A+ Delta'*S*Delta + R + EPS);
 tries = 0;
-outbound = 0;
 x = [];
 %Solve and propagate states
-while(~success && tries < 10)
+while(~success && tries < 30)
     [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
     if (exitflag == -6)
         % Weird non-convex flag may appear, even though the problem is
@@ -142,6 +140,9 @@ while(~success && tries < 10)
         success = 0;
         fprintf("Retrying with more relaxed bound \n");
         lb(3*K+1:end) = lb(3*K+1:end) - 0.01;
+        term = term*2;
+        f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
+        f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
         tries = tries + 1;
         continue
     end

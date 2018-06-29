@@ -221,7 +221,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_deciSCP_vs_DMPC2')
+save('comp_deciSCP_vs_DMPC3')
 %% Post-Processing
 
 % Probability of success plots
@@ -256,7 +256,7 @@ legend('dec-iSCP','DMPC');
 
 % Percentage increase/decrease on travelled dist of dmpc wrt dec
 % Positive number means that dmpc path was longer
-diff_dist = (totdist_dmpc-totdist_dec)./totdist_dmpc;
+diff_dist = (totdist_dmpc-totdist_dec)./totdist_dec;
 avg_diff = nanmean(diff_dist,2);
 std_diff = nanstd(diff_dist,1,2);
 figure(3)
