@@ -53,8 +53,8 @@ DMPC::DMPC(Params params)
     get_A0_mat(_k_hor);
 
     // Vicon Room boundaries
-    _pmin << -2.5, -2.5, 0.2;
-    _pmax << 2.5, 2.5, 2.2;
+    _pmin << -1.0, -1.0, 0.2;
+    _pmax << 1.0, 1.0, 2.2;
 }
 
 void DMPC::get_lambda_A_v_mat(const int &K)

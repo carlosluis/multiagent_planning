@@ -11,8 +11,8 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 10:10:80; % number of vehicles
-trials = 50; % number os trails per number of vehicles
+N_vector = 10:10:20; % number of vehicles
+trials = 2; % number os trails per number of vehicles
 fail2 = 0;
 fail4 = 0;
 
@@ -90,9 +90,9 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible2(q,r),outbound2(q,r)] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term2); 
+                    [pi,vi,ai,feasible2(q,r),outbound2(q,r),violation2(q,r)] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term2); 
                 end
-                if ~feasible2(q,r)
+                if (~feasible2(q,r) || outbound2(q,r) || violation2(q,r))
 %                     save(['Fail2_' num2str(fail2)]);
                     fail2 = fail2 + 1;
                     break;
@@ -107,14 +107,14 @@ for q = 1:length(N_vector)
             end
             l = new_l;
         end
-        if feasible2(q,r)
+        if (feasible2(q,r) && ~outbound2(q,r) && ~violation2(q,r))
             pass = ReachedGoal(pk,pf,K,error_tol,N);
             if  ~pass
                 failed_goal2(q,r) = failed_goal2(q,r) + 1;
             end
         end
 
-        if feasible2(q,r) && ~failed_goal2(q,r)               
+        if feasible2(q,r) && ~outbound2(q,r) && ~violation2(q,r) && ~failed_goal2(q,r)               
             for i = 1:N
                 p(:,:,i) = spline(tk,pk(:,:,i),t);
                 v(:,:,i) = spline(tk,vk(:,:,i),t);
@@ -190,7 +190,7 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible4(q,r),outbound4(q,r)] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term4); 
+                    [pi,vi,ai,feasible4(q,r),outbound4(q,r),violation4(q,r)] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term4); 
                 end
                 if ~feasible4(q,r)
                     break;
@@ -200,21 +200,21 @@ for q = 1:length(N_vector)
                 vk(:,k,n) = vi(:,1);
                 ak(:,k,n) = ai(:,1);
             end
-            if ~feasible4(q,r)
+            if ~feasible4(q,r) || outbound2(q,r) || violation2(q,r)
                 save(['Fail4_' num2str(fail4)]);
                 fail4 = fail4 + 1;
                 break;
             end
             l = new_l;
         end
-        if feasible4(q,r)
+        if feasible4(q,r) && ~outbound4(q,r) && ~violation4(q,r)
             pass = ReachedGoal(pk,pf,K,error_tol,N);
             if  ~pass
                 failed_goal4(q,r) = failed_goal4(q,r) + 1;
             end
         end
 
-        if feasible4(q,r) && ~failed_goal4(q,r)       
+        if feasible4(q,r) && ~outbound4(q,r) && ~violation4(q,r) && ~failed_goal4(q,r)       
             for i = 1:N
                 p(:,:,i) = spline(tk,pk(:,:,i),t);
                 v(:,:,i) = spline(tk,vk(:,:,i),t);
@@ -256,7 +256,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_bound_4')
+save('comp_bound_5')
 %% Post-Processing
 close all
 
@@ -372,17 +372,17 @@ fprintf("Percentage failure due to not reaching goal --> %.2f%% (%d out of %d fa
     sum(goal_num4)/total_num4*100, sum(goal_num4), total_num4)
 
 %%
-figure(4)
-h2=bar(N_vector/V,StackData2(),'stacked','BarWidth',0.3);
-% grid on;
-hold on;
-for k = 1:size(StackData2,2)
-    set(h2(k),'facecolor',myC2(k+1,:));
-end
-xticks(N_vector/V);
-set(gca,'fontsize',14)
-% set(gca,'LineWidth',2,'TickLength',[0.015 0.015]);
-xlim([0,max(N_vector)/V + 0.1])
-xlabel('Workspace Density [agent/m^3]');
-ylabel('Failure Rate %');
-legend('Collisions','Incomplete Trajectory')
+% figure(4)
+% h2=bar(N_vector/V,StackData2(),'stacked','BarWidth',0.3);
+% % grid on;
+% hold on;
+% for k = 1:size(StackData2,2)
+%     set(h2(k),'facecolor',myC2(k+1,:));
+% end
+% xticks(N_vector/V);
+% set(gca,'fontsize',14)
+% % set(gca,'LineWidth',2,'TickLength',[0.015 0.015]);
+% xlim([0,max(N_vector)/V + 0.1])
+% xlabel('Workspace Density [agent/m^3]');
+% ylabel('Failure Rate %');
+% legend('Collisions','Incomplete Trajectory')

@@ -13,7 +13,7 @@ if (~isempty(l))
             dist = norm(E1*(p-pj(:,k)),order); %distance at time step k
             diff = (E2*(p-pj(:,k)).^(order-1))'; % Transpose of the difference
             
-            prev_dist(idx) = dist;
+            prev_dist(idx) = dist^(order-1);
             % Right side of inequality constraint (bin)
             r = dist^(order-1)*(rmin - dist + diff*p/(dist^(order-1))) - diff*A_initp(3*(k-1)+1:3*k,:)*[po';vo'];
 

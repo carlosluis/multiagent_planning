@@ -20,11 +20,11 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 25; % number of vehicles
+N = 80; % number of vehicles
 
 % Workspace boundaries
-pmin = [-1.0,-1.0,0.2];
-pmax = [1.0,1.0,2.2];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
@@ -157,12 +157,12 @@ if passed
     for i = 1:N
         for j = 1:N
             if(i~=j)
-                differ = E1*(pk(:,:,i) - pk(:,:,j));
+                differ = E1*(p(:,:,i) - p(:,:,j));
                 dist = (sum(differ.^order,1)).^(1/order);
                 if min(dist) < (rmin - 0.05)
                     [value,index] = min(dist);
                     violation = 1;
-                    fprintf("Collision constraint violated by %.2fcm: vehicles %i and %i @ k = %i \n", (rmin -value)*100,i,j,index)
+                    fprintf("Collision constraint violated after interpolation by %.2fcm: vehicles %i and %i @ k = %i \n", (rmin -value)*100,i,j,index)
                 end
             end
         end

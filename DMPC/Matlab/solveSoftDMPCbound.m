@@ -78,7 +78,7 @@ if (any(violation)) % In case of collisions, we relax the constraint with slack 
     
     % add bound on the relaxation variable
     ub = [ub; zeros(N_violation,1)];
-    lb = [lb; -inf*ones(N_violation,1)];
+    lb = [lb; -0.05*ones(N_violation,1)];
 %     lb = [lb; -(0.1 + (k/2)^2*(0.04) - 0.04)*ones(N_violation,1)];
 
     % Linear penalty on collision constraint relaxation

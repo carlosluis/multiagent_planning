@@ -20,11 +20,11 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 25; % number of vehicles
+N = 80; % number of vehicles
 
 % Workspace boundaries
-pmin = [-1.0,-1.0,0.2];
-pmax = [1.0,1.0,2.2];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
@@ -50,6 +50,7 @@ rmin_init = 0.75;
 % pf4 = [-1.5,1.5,1.5];
 % pf  = cat(3,pf1,pf2,pf3,pf4);
 
+
 %% Solving the problem
 l = [];
 p = [];
@@ -63,6 +64,7 @@ at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
 error_tol = 0.05; % 5cm destination tolerance
 violation = 0; % checks if violations occured at end of algorithm
 outbound = 0;
+coll = 0;
 term = -5*10^4;
 
 % Penalty matrices when there're predicted collisions
@@ -106,9 +108,9 @@ for k = 1:K
             pok = pk(:,k-1,n);
             vok = vk(:,k-1,n);
             aok = ak(:,k-1,n);
-            [pi,vi,ai,success,outbound] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term); 
+            [pi,vi,ai,success,outbound,coll] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term); 
         end
-        if (~success || outbound) %problem was infeasible, exit and retry
+        if (~success || outbound || coll) %problem was infeasible, exit and retry
             break;
         end
         new_l(:,:,n) = pi;
@@ -118,9 +120,11 @@ for k = 1:K
     end
     if ~success %Heuristic: increase Q, make init more slowly,
         if outbound
-            fprintf("Failed - problem unfeasible, vehicle couldn't stay in workspace @ k_T = %i, n = %i: trial #%i\n",k,n,tries-1)
+            fprintf("Failed - problem unfeasible, vehicle couldn't stay in workspace @ k_T = %i, n = %i\n",k,n)
+        elseif coll
+            fprintf("Failed - collision detected @ k_T = %i by vehicle n = %i\n",k,n);
         else
-            fprintf("Failed - problem unfeasible @ k_T = %i, n = %i: trial #%i\n",k,n,tries-1)
+            fprintf("Failed - problem unfeasible @ k_T = %i, n = %i\n",k,n)
         end
         break;
     end
@@ -153,12 +157,12 @@ if passed
     for i = 1:N
         for j = 1:N
             if(i~=j)
-                differ = E1*(pk(:,:,i) - pk(:,:,j));
+                differ = E1*(p(:,:,i) - p(:,:,j));
                 dist = (sum(differ.^order,1)).^(1/order);
                 if min(dist) < (rmin - 0.05)
                     [value,index] = min(dist);
                     violation = 1;
-                    fprintf("Collision constraint violated by %.2fcm: vehicles %i and %i @ k = %i \n", (rmin -value)*100,i,j,index)
+                    fprintf("Collision constraint violated after interpolation by %.2fcm: vehicles %i and %i @ k = %i \n", (rmin -value)*100,i,j,index)
                 end
             end
         end

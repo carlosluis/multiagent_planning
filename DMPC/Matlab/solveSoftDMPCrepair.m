@@ -1,12 +1,9 @@
-function [p,v,a,success,outbound] = solveSoftDMPCrepair(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order,term)
+function [p,v,a,success,outbound,coll] = solveSoftDMPCrepair(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order,term)
 
 k_hor = size(l,2);
 ub = alim*ones(3*K,1);
 lb = -ub; 
 prev_p = l(:,:,n);
-% clip prev_p to within the boundaries
-% prev_p = bsxfun(@min,prev_p,pmax');
-% prev_p = bsxfun(@max,prev_p,pmin');
 constr_tol = 1e-3;
 Aeq = [];
 beq = [];
@@ -15,14 +12,26 @@ N = size(l,3);
 Ain_coll = []; 
 bin_coll = []; 
 success = 0;
+outbound = 0;
+coll = 0;
 
 for k = 1: k_hor
-    violation = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
+    [violation,min_dist] = CheckCollEllipDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
     if (violation)
-        [Ainr, binr] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order);
-        Ain_coll = [Ainr eye(N-1,N-1);
-                     zeros(N-1,3*K) eye(N-1)];
-        bin_coll = [binr; zeros(N-1,1)];
+        N_violation = N-1;
+        if (k==1 && min_dist < rmin - 0.05) %already violated constraint
+            p = [];
+            v = [];
+            a = [];
+            coll = 1;
+            return;
+            
+        elseif (k==1)
+            continue;
+        end     
+        [Ainr,binr,prev_dist] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order);
+        Ain_coll = [Ainr eye(N_violation,N_violation)];
+        bin_coll = binr;
         break;
     end       
 end
@@ -49,28 +58,33 @@ end
 
 if (violation) % In case of collisions, we relax the constraint with slack variable
     % Add dimensions for slack variable
-    Q = [Q zeros(3*K,N-1);
-         zeros(N-1,3*K) zeros(N-1,N-1)];
-    R = [R zeros(3*K,N-1);
-         zeros(N-1,3*K) zeros(N-1,N-1)];
-    S = [S zeros(3*K,N-1);
-         zeros(N-1,3*K) zeros(N-1,N-1)];
-    A = [A zeros(3*K,N-1);
-         zeros(N-1,3*K) zeros(N-1,N-1)];
-    Delta = [Delta zeros(3*K,N-1);
-         zeros(N-1,3*K) zeros(N-1,N-1)];
-    bin_total = [bin_coll; repmat((pmax)',K,1) - A_initp*([po';vo']); zeros(N-1,1); repmat(-(pmin)',K,1) + A_initp*([po';vo']); zeros(N-1,1)];
-    ao_1 = [ao zeros(1,3*(K-1)+N-1)];
-    A_initp = [A_initp; zeros(N-1,6)];
+    Q = [Q zeros(3*K,N_violation);
+         zeros(N_violation,3*K) zeros(N_violation,N_violation)];
+    R = [R zeros(3*K,N_violation);
+         zeros(N_violation,3*K) zeros(N_violation,N_violation)];
+    S = [S zeros(3*K,N_violation);
+         zeros(N_violation,3*K) zeros(N_violation,N_violation)];
+    A = [A zeros(3*K,N_violation);
+         zeros(N_violation,3*K) zeros(N_violation,N_violation)];
+    Delta = [Delta zeros(3*K,N_violation);
+         zeros(N_violation,3*K) zeros(N_violation,N_violation)];
+    bin_total = [bin_coll; repmat((pmax)',K,1) - A_initp*([po';vo']); zeros(N_violation,1); repmat(-(pmin)',K,1) + A_initp*([po';vo']); zeros(N_violation,1)];
+    ao_1 = [ao zeros(1,3*(K-1)+N_violation)];
+    A_initp = [A_initp; zeros(N_violation,6)];
     
+    % add bound on the relaxation variable
+    ub = [ub; zeros(N_violation,1)];
+    lb = [lb; -inf*ones(N_violation,1)];
+%     lb = [lb; -(0.1 + (k/2)^2*(0.04) - 0.04)*ones(N_violation,1)];
+
     % Linear penalty on collision constraint relaxation
-    f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
+    f_eps = term*[zeros(3*K,1); ones(N_violation,1)]';
     
     % Quadratic penalty on collision constraint relaxation
-    EPS = 1*10^0*[zeros(3*K,3*K) zeros(3*K,N-1);
-           zeros(N-1,3*K) eye(N-1,N-1)];
+    EPS = 1*10^0*[zeros(3*K,3*K) zeros(3*K,N_violation);
+           zeros(N_violation,3*K) eye(N_violation,N_violation)];
        
-    f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
+    f = -2*([repmat((pf)',K,1); zeros(N_violation,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
     
 else % case of no collisions, we don't even add collision constraints
     bin_total = [bin_coll; repmat((pmax)',K,1) - A_initp*([po';vo']); repmat(-(pmin)',K,1) + A_initp*([po';vo'])];
@@ -82,10 +96,9 @@ end
 Ain_total = [Ain_coll; A; -A];
 H = 2*(A'*Q*A+ Delta'*S*Delta + R + EPS);
 tries = 0;
-outbound = 0;
 x = [];
 %Solve and propagate states
-while(~success && tries < 5)
+while(~success && tries < 10)
     [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
     if (exitflag == -6)
         % Weird non-convex flag may appear, even though the problem is
@@ -94,7 +107,7 @@ while(~success && tries < 5)
         p = [];
         v = [];
         a = [];
-        fprintf("Exitflag was -6 in Repair \n")
+        fprintf("Exitflag was -6 in Bound \n")
         constr_tol = 2*constr_tol;
         options.ConstraintTolerance = constr_tol;
         success = 0;
@@ -111,18 +124,19 @@ while(~success && tries < 5)
         if (~is_inbounds(p(:,1),pmin,pmax))
             success = 0;
             outbound = 1;
-        end    
+        end 
         return
         
     elseif isempty(x)
         p = [];
         v = [];
         a = [];
-        constr_tol = 2*constr_tol;
-        options.ConstraintTolerance = constr_tol;
         success = 0;
         tries = tries + 1;
         continue
     end
+end
+if ~success
+    hola = 1;
 end
 end
