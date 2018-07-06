@@ -20,11 +20,11 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 80; % number of vehicles
+N = 25; % number of vehicles
 
 % Workspace boundaries
-pmin = [-2.5,-2.5,0.2];
-pmax = [2.5,2.5,2.2];
+pmin = [-1.0,-1.0,0.2];
+pmax = [1.0,1.0,2.2];
 
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
@@ -34,7 +34,7 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.75;
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomExchange(N,pmin,pmax,rmin_init);
 
 % % Initial positions
 % po1 = [1.501,1.5,1.5];
@@ -49,6 +49,7 @@ rmin_init = 0.75;
 % pf3 = [1.5,-1.5,1.5];
 % pf4 = [-1.5,1.5,1.5];
 % pf  = cat(3,pf1,pf2,pf3,pf4);
+
 
 %% Solving the problem
 l = [];

@@ -20,11 +20,11 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 80; % number of vehicles
+N = 25; % number of vehicles
 
 % Workspace boundaries
-pmin = [-2.5,-2.5,0.2];
-pmax = [2.5,2.5,2.2];
+pmin = [-1.0,-1.0,0.2];
+pmax = [1.0,1.0,2.2];
 
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
@@ -34,7 +34,7 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.75;
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomExchange(N,pmin,pmax,rmin_init);
 
 % % Initial positions
 % po1 = [1.501,1.5,1.5];
@@ -106,7 +106,7 @@ for k = 1:K
             pok = pk(:,k-1,n);
             vok = vk(:,k-1,n);
             aok = ak(:,k-1,n);
-            [pi,vi,ai,success,outbound] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term); 
+            [pi,vi,ai,success,outbound] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term); 
         end
         if (~success || outbound) %problem was infeasible, exit and retry
             break;
