@@ -223,7 +223,7 @@ end
 fprintf("Finished! \n")
 save('comp_deciSCP_vs_DMPC3')
 %% Post-Processing
-
+close all
 % Probability of success plots
 prob_dec = sum(success_dec,2)/trials;
 prob_dmpc = sum(success_dmpc,2)/trials;
@@ -243,15 +243,13 @@ tstd_dec = nanstd(t_dec,1,2);
 tmean_dmpc = nanmean(t_dmpc,2);
 tstd_dmpc = nanstd(t_dmpc,1,2);
 figure(2)
-plot(N_vector, tmean_dec,'LineWidth',2);
-% errorbar(N_vector,tmean_dec,tstd_dec,'Linewidth',2);
+errorbar(N_vector,tmean_dec,tstd_dec,'Linewidth',2);
 grid on;
 hold on;
-xlim([4 30]);
-plot(N_vector, tmean_dmpc,'LineWidth',2);
-% errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
+% xlim([4 30]);
+errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
-ylabel('Average Computation Time [s]');
+ylabel('Average Runtime [s]');
 legend('dec-iSCP','DMPC');
 
 % Percentage increase/decrease on travelled dist of dmpc wrt dec
@@ -260,10 +258,62 @@ diff_dist = (totdist_dmpc-totdist_dec)./totdist_dec;
 avg_diff = nanmean(diff_dist,2);
 std_diff = nanstd(diff_dist,1,2);
 figure(3)
-plot(N_vector, 100*avg_diff,'LineWidth', 2);
-% errorbar(N_vector,100*avg_diff,100*std_diff,'Linewidth',2);
+errorbar(N_vector,100*avg_diff,100*std_diff,'Linewidth',2);
 grid on;
 xlabel('Number of Vehicles');
-ylabel('Average % increase/decrease');
+ylabel('Distance % difference');
 % title('Percentual increase/decrease on total travelled distance of DMPC wrt dec-iSCP');
 legend('DMPC w.r.t. dec-iSCP')
+
+%% Post Processing v2.0
+close all
+% Probability of success plots
+prob_dec = sum(success_dec,2)/trials;
+prob_dmpc = sum(success_dmpc,2)/trials;
+figure(1)
+plot(N_vector,prob_dec','Linewidth',3);
+hold on;
+ylim([0,1.05])
+xlim([0,32])
+plot(N_vector,prob_dmpc,'Linewidth',3);
+xticks(N_vector);
+set(gca,'fontsize',16)
+% set(gca,'LineWidth',2,'TickLength',[0.025 0.025]);
+xlabel('Number of Vehicles');
+ylabel('Success Probability');
+legend('dec-SQP','DMPC');
+
+% Computation time
+tmean_dec = nanmean(t_dec,2);
+tstd_dec = nanstd(t_dec,1,2);
+tmean_dmpc = nanmean(t_dmpc,2);
+tstd_dmpc = nanstd(t_dmpc,1,2);
+figure(2)
+plot(N_vector, tmean_dec,'LineWidth',3);
+xticks(N_vector);
+hold on;
+% xlim([4 30]);
+xlim([0,32])
+plot(N_vector, tmean_dmpc,'LineWidth',3);
+set(gca,'fontsize',16)
+% set(gca,'LineWidth',2,'TickLength',[0.025 0.025]);
+xlabel('Number of Vehicles');
+ylabel('Computation Time [s]');
+legend('dec-SQP','DMPC');
+
+% Percentage increase/decrease on travelled dist of dmpc wrt dec
+% Positive number means that dmpc path was longer
+diff_dist = (totdist_dmpc-totdist_dec)./totdist_dec;
+avg_dist_dmpc = nanmean(totdist_dmpc,2);
+avg_dist_dec = nanmean(totdist_dec,2);
+figure(3)
+xlim([0,32])
+plot(N_vector, avg_dist_dec,'LineWidth', 3);
+xticks(N_vector);
+hold on;
+plot(N_vector, avg_dist_dmpc,'LineWidth', 3);
+set(gca,'fontsize',16)
+% set(gca,'LineWidth',2,'TickLength',[0.025 0.025]);
+xlabel('Number of Vehicles');
+ylabel('Total Travelled Distance [m]');
+legend('dec-SQP','DMPC');

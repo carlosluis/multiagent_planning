@@ -316,25 +316,32 @@ goal_num4 = sum(failed_goal4,2);
 infes_num4 = sum(~feasible4,2);
 total_num4 = sum(violation_num4) + sum(goal_num4) + sum(infes_num4);
 
-StackData2 = [infes_num2/trials*100 violation_num2/trials*100 goal_num2/trials*100];
+StackData2 = [violation_num2/trials*100 goal_num2/trials*100];
+% StackData2 = [infes_num2/trials*100 violation_num2/trials*100 goal_num2/trials*100];
 StackData4 = [infes_num4/trials*100 violation_num4/trials*100 goal_num4/trials*100];
 
 figure(4)
 h2=bar(N_vector/V-0.035,StackData2,'stacked','BarWidth',0.3);
-grid on;
+% grid on;
 hold on;
 h4 = bar(N_vector/V+0.035,StackData4,'stacked','BarWidth',0.3);
 myC2= summer(size(StackData4,2));
 myC4= winter(size(StackData4,2));
+for k = 1:size(StackData2,2)
+    set(h2(k),'facecolor',myC2(k+1,:));
+end
+
 for k = 1:size(StackData4,2)
-    set(h2(k),'facecolor',myC2(k,:));
     set(h4(k),'facecolor',myC4(k,:));
 end
 xticks(N_vector/V);
-% xlim([min(N_vector/V)-1, max(N_vector/V)+1])
-xlabel('Workspace density [agent/m^3]');
-ylabel(['Failure rate % (out of ' ,num2str(trials), ')']);
-legend('Infeasibility','Collisions','Incomplete Trajectory',...
+set(gca,'fontsize',14)
+% set(gca,'LineWidth',2,'TickLength',[0.015 0.015]);
+xlim([0,max(N_vector)/V + 0.1])
+xlabel('Workspace Density [agent/m^3]');
+ylabel('Failure Rate %');
+% ylabel(['Failure rate % (out of ' ,num2str(trials), ')']);
+legend('Collisions','Incomplete Trajectory',...
        'Infeasibility (bound)','Collisions (bound)','Incomplete Trajectory (bound)')
    
 % Print various statistics
@@ -365,15 +372,17 @@ fprintf("Percentage failure due to not reaching goal --> %.2f%% (%d out of %d fa
     sum(goal_num4)/total_num4*100, sum(goal_num4), total_num4)
 
 %%
-% figure(4)
-% h2=bar(N_vector/V,StackData2,'stacked','BarWidth',0.3);
+figure(4)
+h2=bar(N_vector/V,StackData2(),'stacked','BarWidth',0.3);
 % grid on;
-% hold on;
-% myC2= summer(size(StackData4,2));
-% for k = 1:size(StackData4,2)
-%     set(h2(k),'facecolor',myC2(k,:));
-% end
-% xticks(N_vector/V);
-% xlabel('Workspace density [agent/m^3]');
-% ylabel(['Failure rate % (out of ' ,num2str(trials), ')']);
-% legend('Infeasibility','Collisions','Incomplete Trajectory')
+hold on;
+for k = 1:size(StackData2,2)
+    set(h2(k),'facecolor',myC2(k+1,:));
+end
+xticks(N_vector/V);
+set(gca,'fontsize',14)
+% set(gca,'LineWidth',2,'TickLength',[0.015 0.015]);
+xlim([0,max(N_vector)/V + 0.1])
+xlabel('Workspace Density [agent/m^3]');
+ylabel('Failure Rate %');
+legend('Collisions','Incomplete Trajectory')

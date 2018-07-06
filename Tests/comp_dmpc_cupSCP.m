@@ -258,3 +258,56 @@ bar(N_vector,[infes_num violation_num goal_num],'stacked');
 xlabel('Number of Vehicles');
 ylabel(['Number of failed trials (out of ' ,num2str(trials), ')']);
 legend('Infeasibility','Collisions','Incomplete Trajectory')
+
+%% Post Processing v2.0
+close all
+% Probability of success plots
+prob_cup = sum(success_cup,2)/trials;
+prob_dmpc = sum(success_dmpc,2)/trials;
+figure(1)
+plot(N_vector,prob_cup','Linewidth',3);
+hold on;
+ylim([0,1.05])
+xlim([0,18])
+plot(N_vector,prob_cup,'Linewidth',3);
+set(gca,'fontsize',16)
+xticks(N_vector);
+% set(gca,'LineWidth',2,'TickLength',[0.025 0.025]);
+xlabel('Number of Vehicles');
+ylabel('Success Probability');
+legend('cup-SQP','DMPC');
+
+% Computation time
+tmean_cup = nanmean(t_cup,2);
+tstd_cup = nanstd(t_cup,1,2);
+tmean_dmpc = nanmean(t_dmpc,2);
+tstd_dmpc = nanstd(t_dmpc,1,2);
+figure(2)
+plot(N_vector, tmean_cup,'LineWidth',3);
+hold on;
+% xlim([4 30]);
+plot(N_vector, tmean_dmpc,'LineWidth',3);
+set(gca,'fontsize',16)
+xticks(N_vector);
+xlim([0,18])
+% set(gca,'LineWidth',2,'TickLength',[0.025 0.025]);
+xlabel('Number of Vehicles');
+ylabel('Computation Time [s]');
+legend('cup-SQP','DMPC');
+
+% Percentage increase/decrease on travelled dist of dmpc wrt dec
+% Positive number means that dmpc path was longer
+diff_dist = (totdist_dmpc-totdist_cup)./totdist_cup;
+avg_dist_dmpc = nanmean(totdist_dmpc,2);
+avg_dist_cup = nanmean(totdist_cup,2);
+figure(3)
+plot(N_vector, avg_dist_cup,'LineWidth', 3);
+hold on;
+plot(N_vector, avg_dist_dmpc,'LineWidth', 3);
+set(gca,'fontsize',16)
+xlim([0,18])
+xticks(N_vector);
+% set(gca,'LineWidth',2,'TickLength',[0.025 0.025]);
+xlabel('Number of Vehicles');
+ylabel('Total Travelled Distance [m]');
+legend('cup-SQP','DMPC');
