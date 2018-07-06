@@ -10,3 +10,7 @@ end
     
 
 pass = max_dist < error_tol;
+
+if ~pass
+    fprintf("Failed goal by max_dist = %.2f cm \n", max_dist*100)
+end

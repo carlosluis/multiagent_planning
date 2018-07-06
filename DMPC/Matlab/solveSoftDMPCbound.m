@@ -19,8 +19,9 @@ outbound = 0;
 coll = 0;
 
 for k = 1: k_hor
-    [violation,min_dist] = CheckCollSoftDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
-    if (violation)
+    [violation,min_dist,viol_constr] = CheckCollSoftDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
+    if (any(violation))
+        N_violation = sum(viol_constr);
         if (k==1 && min_dist < rmin - 0.05) %already violated constraint
             p = [];
             v = [];
@@ -31,8 +32,9 @@ for k = 1: k_hor
         elseif (k==1)
             continue;
         end     
-        [Ainr,binr,prev_dist] = CollConstrSoftDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order);
-        Ain_coll = [Ainr diag(prev_dist)];
+        [Ainr,binr,prev_dist] = CollConstrSoftDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order,viol_constr);
+        Ain_coll = [Ainr eye(N_violation,N_violation)];
+%         Ain_coll = [Ainr diag(prev_dist)];
         bin_coll = binr;
         break;
     end       
@@ -58,35 +60,35 @@ else     % collisions
     S = S1*eye(3*K);
 end
 
-if (violation) % In case of collisions, we relax the constraint with slack variable
+if (any(violation)) % In case of collisions, we relax the constraint with slack variable
     % Add dimensions for slack variable
-    Q = [Q zeros(3*K,N-1);
-         zeros(N-1,3*K) zeros(N-1,N-1)];
-    R = [R zeros(3*K,N-1);
-         zeros(N-1,3*K) zeros(N-1,N-1)];
-    S = [S zeros(3*K,N-1);
-         zeros(N-1,3*K) zeros(N-1,N-1)];
-    A = [A zeros(3*K,N-1);
-         zeros(N-1,3*K) zeros(N-1,N-1)];
-    Delta = [Delta zeros(3*K,N-1);
-         zeros(N-1,3*K) zeros(N-1,N-1)];
-    bin_total = [bin_coll; repmat((pmax)',K,1) - A_initp*([po';vo']); zeros(N-1,1); repmat(-(pmin)',K,1) + A_initp*([po';vo']); zeros(N-1,1)];
-    ao_1 = [ao zeros(1,3*(K-1)+N-1)];
-    A_initp = [A_initp; zeros(N-1,6)];
+    Q = [Q zeros(3*K,N_violation);
+         zeros(N_violation,3*K) zeros(N_violation,N_violation)];
+    R = [R zeros(3*K,N_violation);
+         zeros(N_violation,3*K) zeros(N_violation,N_violation)];
+    S = [S zeros(3*K,N_violation);
+         zeros(N_violation,3*K) zeros(N_violation,N_violation)];
+    A = [A zeros(3*K,N_violation);
+         zeros(N_violation,3*K) zeros(N_violation,N_violation)];
+    Delta = [Delta zeros(3*K,N_violation);
+         zeros(N_violation,3*K) zeros(N_violation,N_violation)];
+    bin_total = [bin_coll; repmat((pmax)',K,1) - A_initp*([po';vo']); zeros(N_violation,1); repmat(-(pmin)',K,1) + A_initp*([po';vo']); zeros(N_violation,1)];
+    ao_1 = [ao zeros(1,3*(K-1)+N_violation)];
+    A_initp = [A_initp; zeros(N_violation,6)];
     
     % add bound on the relaxation variable
-    ub = [ub; zeros(N-1,1)];
-    lb = [lb; -0.05*ones(N-1,1)];
-%     lb = [lb; -(0.1 + (k/2)^2*(0.04) - 0.04)*ones(N-1,1)];
+    ub = [ub; zeros(N_violation,1)];
+    lb = [lb; -inf*ones(N_violation,1)];
+%     lb = [lb; -(0.1 + (k/2)^2*(0.04) - 0.04)*ones(N_violation,1)];
 
     % Linear penalty on collision constraint relaxation
-    f_eps = term*[zeros(3*K,1); 1./prev_dist]';
+    f_eps = term*[zeros(3*K,1); ones(N_violation,1)]';
     
     % Quadratic penalty on collision constraint relaxation
-    EPS = 1*10^0*[zeros(3*K,3*K) zeros(3*K,N-1);
-           zeros(N-1,3*K) eye(N-1,N-1)];
+    EPS = 1*10^0*[zeros(3*K,3*K) zeros(3*K,N_violation);
+           zeros(N_violation,3*K) eye(N_violation,N_violation)];
        
-    f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
+    f = -2*([repmat((pf)',K,1); zeros(N_violation,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
     
 else % case of no collisions, we don't even add collision constraints
     bin_total = [bin_coll; repmat((pmax)',K,1) - A_initp*([po';vo']); repmat(-(pmin)',K,1) + A_initp*([po';vo'])];
@@ -141,8 +143,8 @@ while(~success && tries < 30)
         fprintf("Retrying with more relaxed bound \n");
         lb(3*K+1:end) = lb(3*K+1:end) - 0.01;
         term = term*2;
-        f_eps = term*[zeros(3*K,1); ones(N-1,1)]';
-        f = -2*([repmat((pf)',K,1); zeros(N-1,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
+        f_eps = term*[zeros(3*K,1); ones(N_violation,1)]';
+        f = -2*([repmat((pf)',K,1); zeros(N_violation,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
         tries = tries + 1;
         continue
     end
