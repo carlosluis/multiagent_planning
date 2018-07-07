@@ -38,7 +38,7 @@ struct Params {
     float alim;
 };
 
-static const Params default_params = {0.1,10,15,2,2.0,0.35,1.0};
+static const Params default_params = {0.2,15,15,2,2.0,0.35,1.0};
 
 // Class definition
 class DMPC {
@@ -68,6 +68,8 @@ public:
                                       const MatrixXd &pf);
     std::vector<Trajectory> solveParallelDMPC(const MatrixXd &po,
                                               const MatrixXd &pf);
+    std::vector<Trajectory> solveParallelDMPCv2(const MatrixXd &po,
+                                                const MatrixXd &pf);
 
     void trajectories2file(const std::vector<Trajectory> &src,
                            char const* pathAndName);
@@ -133,14 +135,29 @@ private:
     bool check_collisions(const Vector3d &prev_p,
                           const std::vector<MatrixXd> &obs,
                           const int &n, const int &k);
+    std::vector<bool> check_collisionsv2(const Vector3d &prev_p,
+                                         const std::vector<MatrixXd> &obs,
+                                         const int &n, const int &k);
+
     Constraint build_collconstraint (const Vector3d &prev_p,
                                      const Vector3d &po,
                                      const Vector3d &vo,
                                      const std::vector<MatrixXd> &obs,
                                      const int &n, const int &k);
 
+    Constraint build_collconstraintv2 (const Vector3d &prev_p,
+                                       const Vector3d &po,
+                                       const Vector3d &vo,
+                                       const std::vector<MatrixXd> &obs,
+                                       const std::vector<bool> &violation_vec,
+                                       const int &n, const int &k);
+
     // Optimization problem solving
     Trajectory solveQP(const Vector3d &po, const Vector3d &pf,
+                       const Vector3d &vo, const Vector3d &ao,
+                       const int &n, const std::vector<MatrixXd> &obs);
+
+    Trajectory solveQPv2(const Vector3d &po, const Vector3d &pf,
                        const Vector3d &vo, const Vector3d &ao,
                        const int &n, const std::vector<MatrixXd> &obs);
 
@@ -160,6 +177,12 @@ private:
                        std::vector<MatrixXd> &obs,
                        const std::vector<int> &agents,
                        const std::vector<MatrixXd> &prev_obs);
+
+    void cluster_solvev2(const int &k,
+                         std::vector<Trajectory> &all_trajectories,
+                         std::vector<MatrixXd> &obs,
+                         const std::vector<int> &agents,
+                         const std::vector<MatrixXd> &prev_obs);
 };
 
 #endif //DMPC_CPP_DMPC_H
