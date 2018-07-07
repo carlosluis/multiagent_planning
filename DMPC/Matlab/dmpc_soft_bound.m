@@ -14,8 +14,8 @@ k_hor = 15; % horizon length
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-rmin = 0.5; % X-Y protection radius for collisions
-c = 1.5; % make this one for spherical constraint
+rmin = 0.35; % X-Y protection radius for collisions
+c = 2.0; % make this one for spherical constraint
 E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
