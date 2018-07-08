@@ -26,6 +26,9 @@ N = 80; % number of vehicles
 pmin = [-2.5,-2.5,0.2];
 pmax = [2.5,2.5,2.2];
 
+% pmin = [-1.0,-1.0,0.2];
+% pmax = [1.0,1.0,2.2];
+
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
 % pmax = [5,5,5];
@@ -72,7 +75,7 @@ Q = 1000;
 S = 100;
 
 % Maximum acceleration in m/s^2
-alim = 0.5;
+alim = 1.0;
 
 % Some pre computations
 A = getPosMat(h,k_hor);

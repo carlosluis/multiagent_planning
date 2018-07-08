@@ -4,21 +4,21 @@ close all
 warning('off','all')
 
 % Time settings and variables
-T = 15; % Trajectory final time
+T = 20; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 8:4:28; % number of vehicles
+N_vector = 10:10:80; % number of vehicles
 trials = 50; % number os trails per number of vehicles
 fail2 = 0;
 fail4 = 0;
 
 % Workspace boundaries
-pmin = [-1.0,-1.0,0.2];
-pmax = [1.0,1.0,2.2];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
 % Minimum distance between vehicles in m
 rmin_init = 0.75;
@@ -58,8 +58,8 @@ for q = 1:length(N_vector)
         
         % Variables for ellipsoid constraint
         order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-        rmin = 0.35; % X-Y protection radius for collisions
-        c = 2.0; % make this one for spherical constraint
+        rmin = 0.5; % X-Y protection radius for collisions
+        c = 1.5; % make this one for spherical constraint
         E = diag([1,1,c]);
         E1 = E^(-1);
         E2 = E^(-order);
@@ -158,8 +158,8 @@ for q = 1:length(N_vector)
         
         % Variables for ellipsoid constraint
         order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-        rmin = 0.35; % X-Y protection radius for collisions
-        c = 2.0; % make this one for spherical constraint
+        rmin = 0.5; % X-Y protection radius for collisions
+        c = 1.5; % make this one for spherical constraint
         E = diag([1,1,c]);
         E1 = E^(-1);
         E2 = E^(-order);
@@ -254,7 +254,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_bound_8')
+save('comp_bound_9')
 %% Post-Processing
 close all
 
