@@ -40,7 +40,7 @@ for k = 1: k_hor
     end       
 end
 
-spd = 1;
+spd = 4;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp

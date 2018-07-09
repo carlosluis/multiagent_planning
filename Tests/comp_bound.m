@@ -11,14 +11,14 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 10:10:80; % number of vehicles
+N_vector = 8:4:28; % number of vehicles
 trials = 50; % number os trails per number of vehicles
 fail2 = 0;
 fail4 = 0;
 
 % Workspace boundaries
-pmin = [-2.5,-2.5,0.2];
-pmax = [2.5,2.5,2.2];
+pmin = [-1.0,-1.0,0.2];
+pmax = [1.0,1.0,2.2];
 
 % Minimum distance between vehicles in m
 rmin_init = 0.75;
@@ -254,7 +254,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_bound_10')
+save('comp_bound_12')
 %% Post-Processing
 close all
 

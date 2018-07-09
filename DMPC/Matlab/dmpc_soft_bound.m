@@ -37,7 +37,7 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.75;
 
 % Initial positions
-[po,pf] = randomExchange(N,pmin,pmax,rmin_init);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % % Initial positions
 % po1 = [1.501,1.5,1.5];
