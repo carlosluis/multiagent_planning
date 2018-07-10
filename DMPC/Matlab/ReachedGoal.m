@@ -8,9 +8,4 @@ else
     max_dist = max(sqrt(sum(differ.^2,1)));
 end
     
-
 pass = max_dist < error_tol;
-
-if ~pass
-    fprintf("Failed goal by max_dist = %.2f cm \n", max_dist*100)
-end

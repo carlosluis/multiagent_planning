@@ -30,7 +30,7 @@ for k = 1: k_hor
             continue;
         end     
         [Ainr,binr,prev_dist] = CollConstrEllipDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order);
-        Ain_coll = [Ainr eye(N_violation,N_violation)];
+        Ain_coll = [Ainr diag(prev_dist)];
         bin_coll = binr;
         break;
     end       
@@ -78,7 +78,7 @@ if (violation) % In case of collisions, we relax the constraint with slack varia
 %     lb = [lb; -(0.1 + (k/2)^2*(0.04) - 0.04)*ones(N_violation,1)];
 
     % Linear penalty on collision constraint relaxation
-    f_eps = term*[zeros(3*K,1); ones(N_violation,1)]';
+    f_eps = term*[zeros(3*K,1); 1./prev_dist]';
     
     % Quadratic penalty on collision constraint relaxation
     EPS = 1*10^0*[zeros(3*K,3*K) zeros(3*K,N_violation);

@@ -11,22 +11,20 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 10:10:20; % number of vehicles
-trials = 2; % number os trails per number of vehicles
+N_vector = 8:4:28; % number of vehicles
+trials = 50; % number os trails per number of vehicles
 fail2 = 0;
 fail4 = 0;
 
 % Workspace boundaries
-pmin = [-2.5,-2.5,0.2];
-pmin_gen = [-2.4,-2.4,0.3];
-pmax = [2.5,2.5,2.2];
-pmax_gen = [2.4,2.4,2.1];
+pmin = [-1.0,-1.0,0.2];
+pmax = [1.0,1.0,2.2];
 
 % Minimum distance between vehicles in m
 rmin_init = 0.75;
 
 % Maximum acceleration in m/s^2
-alim = 0.5;
+alim = 1.0;
 
 % Some pre computations DMPC
 A = getPosMat(h,k_hor);
@@ -90,10 +88,10 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible2(q,r),outbound2(q,r),violation2(q,r)] = solveSoftDMPCrepair(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term2); 
+                    [pi,vi,ai,feasible2(q,r),outbound2(q,r),violation2(q,r)] = solveSoftDMPCbound2(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term2); 
                 end
                 if (~feasible2(q,r) || outbound2(q,r) || violation2(q,r))
-%                     save(['Fail2_' num2str(fail2)]);
+                    save(['Fail2_' num2str(fail2)]);
                     fail2 = fail2 + 1;
                     break;
                 end
@@ -102,7 +100,7 @@ for q = 1:length(N_vector)
                 vk(:,k,n) = vi(:,1);
                 ak(:,k,n) = ai(:,1);
             end
-            if ~feasible2(q,r)
+            if (~feasible2(q,r) || outbound2(q,r) || violation2(q,r))
                 break;
             end
             l = new_l;
@@ -192,7 +190,7 @@ for q = 1:length(N_vector)
                     aok = ak(:,k-1,n);
                     [pi,vi,ai,feasible4(q,r),outbound4(q,r),violation4(q,r)] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term4); 
                 end
-                if ~feasible4(q,r)
+                if (~feasible4(q,r) || outbound4(q,r) || violation4(q,r))
                     break;
                 end
                 new_l(:,:,n) = pi;
@@ -200,7 +198,7 @@ for q = 1:length(N_vector)
                 vk(:,k,n) = vi(:,1);
                 ak(:,k,n) = ai(:,1);
             end
-            if ~feasible4(q,r) || outbound2(q,r) || violation2(q,r)
+            if ~feasible4(q,r) || outbound4(q,r) || violation4(q,r)
                 save(['Fail4_' num2str(fail4)]);
                 fail4 = fail4 + 1;
                 break;
@@ -256,7 +254,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_bound_5')
+save('comp_bound_12')
 %% Post-Processing
 close all
 

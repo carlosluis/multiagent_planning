@@ -33,14 +33,14 @@ for k = 1: k_hor
             continue;
         end     
         [Ainr,binr,prev_dist] = CollConstrSoftDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order,viol_constr);
-        Ain_coll = [Ainr eye(N_violation,N_violation)];
+        Ain_coll = [Ainr diag(prev_dist)];
 %         Ain_coll = [Ainr diag(prev_dist)];
         bin_coll = binr;
         break;
     end       
 end
 
-spd = 1;
+spd = 2;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp
@@ -82,7 +82,7 @@ if (any(violation)) % In case of collisions, we relax the constraint with slack 
 %     lb = [lb; -(0.1 + (k/2)^2*(0.04) - 0.04)*ones(N_violation,1)];
 
     % Linear penalty on collision constraint relaxation
-    f_eps = term*[zeros(3*K,1); ones(N_violation,1)]';
+    f_eps = term*[zeros(3*K,1); 1./prev_dist]';
     
     % Quadratic penalty on collision constraint relaxation
     EPS = 1*10^0*[zeros(3*K,3*K) zeros(3*K,N_violation);
@@ -140,6 +140,14 @@ while(~success && tries < 30)
         v = [];
         a = [];
         success = 0;
+        if (~any(violation))
+            fprintf("Couldn't solve in no violation case, retrying with higher tolerance \n");
+            constr_tol = 2*constr_tol;
+            options.ConstraintTolerance = constr_tol;
+            tries = tries + 1;
+            continue
+        end
+        
         fprintf("Retrying with more relaxed bound \n");
         lb(3*K+1:end) = lb(3*K+1:end) - 0.01;
         term = term*2;
