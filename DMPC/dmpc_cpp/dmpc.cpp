@@ -53,8 +53,8 @@ DMPC::DMPC(Params params)
     get_A0_mat(_k_hor);
 
     // Vicon Room boundaries
-    _pmin << -2.5, -2.5, 0.2;
-    _pmax << 2.5, 2.5, 2.2;
+    _pmin << -1.0, -1.0, 0.2;
+    _pmax << 1.0, 1.0, 2.2;
 }
 
 void DMPC::get_lambda_A_v_mat(const int &K)
@@ -585,7 +585,7 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
 
         //NOTE: W *NEEDS* to be different than zero, if not H has determinant 0
 
-        W.block(n_var,n_var,N-1,N-1) = pow(10,6)*(MatrixXd::Identity(N-1,N-1));
+        W.block(n_var,n_var,N-1,N-1) = pow(10,0)*(MatrixXd::Identity(N-1,N-1));
 
         a0_1 = VectorXd::Zero(n_var_aug);
         a0_1 << ao, VectorXd::Zero(3*(_k_hor-1) + N - 1);
@@ -737,7 +737,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     VectorXd f;
 
     // Tuning factor of speed
-    int spd = 1;
+    int spd = 4;
 
     // Auxiliary variables
     VectorXd init_propagation = _A0*initial_states;
@@ -867,7 +867,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         // Build linear and quadratic cost matrices
 
         f_w << VectorXd::Zero(n_var),
-                -5*pow(10,4)*VectorXd::Ones(N_violation);
+                -5*pow(10,6)*VectorXd::Ones(N_violation);
 
         //NOTE: W *NEEDS* to be different than zero, if not H has determinant 0
 

@@ -9,14 +9,14 @@ int main()
 
 {
     Vector3d pmin;
-    pmin << -2.5, -2.5, 0.2;
+    pmin << -1.0, -1.0, 0.2;
 //    pmin << -4, -4, 0.2;
     Vector3d pmax;
-    pmax << 2.5, 2.5, 2.2;
+    pmax << 1.0, 1.0, 2.2;
 //    pmax << 4, 4, 3.2;
 //    Params p = {0.4,20,15,2,1.5,0.5,0.5};
     DMPC test;
-    int N = 80;
+    int N = 25;
     float rmin_init = 0.75;
     MatrixXd po = test.gen_rand_pts(N,pmin,pmax,rmin_init);
     MatrixXd pf = test.gen_rand_perm(po);
@@ -61,26 +61,26 @@ int main()
     cout << "----------------------" << endl;
 
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
-    std::vector<Trajectory> sol_parallel = test.solveParallelDMPC(po,pf);
+    std::vector<Trajectory> sol_parallel = test.solveParallelDMPCv2(po,pf);
     std::vector<Trajectory> sol_para_short = test.solution_short;
     high_resolution_clock::time_point t2 = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
     cout << "Total Parallel Execution Computation time = "
          << duration/1000000.0 << "s" << endl << endl;
 
-    cout << "PARALLEL EXECUTION V2" << endl;
-    cout << "----------------------" << endl;
-
-    t1 = high_resolution_clock::now();
-    std::vector<Trajectory> sol_parallel2 = test.solveParallelDMPCv2(po,pf);
-    std::vector<Trajectory> sol_para2_short = test.solution_short;
-    t2 = high_resolution_clock::now();
-    duration = duration_cast<microseconds>( t2 - t1 ).count();
-    cout << "Total Parallel Execution Computation time = "
-         << duration/1000000.0 << "s" << endl;
+//    cout << "PARALLEL EXECUTION V2" << endl;
+//    cout << "----------------------" << endl;
+//
+//    t1 = high_resolution_clock::now();
+//    std::vector<Trajectory> sol_parallel2 = test.solveParallelDMPCv2(po,pf);
+//    std::vector<Trajectory> sol_para2_short = test.solution_short;
+//    t2 = high_resolution_clock::now();
+//    duration = duration_cast<microseconds>( t2 - t1 ).count();
+//    cout << "Total Parallel Execution Computation time = "
+//         << duration/1000000.0 << "s" << endl;
 
     // Write result to txt file (to be read by MATLAB)
 
     char const *file = "/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/CPP_results/trajectories.txt";
-    test.trajectories2file(sol_para2_short,file);
+    test.trajectories2file(sol_para_short,file);
 }
