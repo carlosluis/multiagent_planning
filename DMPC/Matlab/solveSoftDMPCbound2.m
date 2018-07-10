@@ -40,7 +40,7 @@ for k = 1: k_hor
     end       
 end
 
-spd = 4;
+spd = 1;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp
@@ -78,7 +78,7 @@ if (any(violation)) % In case of collisions, we relax the constraint with slack 
     
     % add bound on the relaxation variable
     ub = [ub; zeros(N_violation,1)];
-    lb = [lb; -inf*ones(N_violation,1)];
+    lb = [lb; -0.05*ones(N_violation,1)];
 %     lb = [lb; -(0.1 + (k/2)^2*(0.04) - 0.04)*ones(N_violation,1)];
 
     % Linear penalty on collision constraint relaxation
@@ -140,6 +140,13 @@ while(~success && tries < 30)
         v = [];
         a = [];
         success = 0;
+        if (~any(violation))
+            fprintf("Couldn't solve in no violation case, retrying with higher tolerance \n");
+            constr_tol = 2*constr_tol;
+            options.ConstraintTolerance = constr_tol;
+            tries = tries + 1;
+            continue
+        end
         fprintf("Retrying with more relaxed bound \n");
         lb(3*K+1:end) = lb(3*K+1:end) - 0.01;
         term = term*2;

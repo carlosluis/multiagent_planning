@@ -40,7 +40,7 @@ for k = 1: k_hor
     end       
 end
 
-spd = 4;
+spd = 2;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp
@@ -140,6 +140,14 @@ while(~success && tries < 30)
         v = [];
         a = [];
         success = 0;
+        if (~any(violation))
+            fprintf("Couldn't solve in no violation case, retrying with higher tolerance \n");
+            constr_tol = 2*constr_tol;
+            options.ConstraintTolerance = constr_tol;
+            tries = tries + 1;
+            continue
+        end
+        
         fprintf("Retrying with more relaxed bound \n");
         lb(3*K+1:end) = lb(3*K+1:end) - 0.01;
         term = term*2;
