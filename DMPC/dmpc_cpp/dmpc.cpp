@@ -16,7 +16,7 @@ DMPC::DMPC(Params params)
 {
     // Load parameters into private variables
     _h = params.h;
-    _T = params.T;
+    _T = params.maxT;
     _k_hor = params.k_hor;
     _order = params.order;
     _c = params.c;
@@ -322,7 +322,7 @@ std::vector<bool> DMPC::check_collisionsv2(const Vector3d &prev_p,
             diff = _E1*(prev_p - pj);
             dist[idx] = pow(((diff.array().pow(_order)).sum()),1.0/_order);
             violation[i] = (dist[idx] < _rmin);
-            viol_constr[i] = (dist[idx] < _rmin*(1+k/_K));
+            viol_constr[i] = (dist[idx] < _rmin*(1+k/_k_hor));
             idx++;
         }
         else
@@ -1311,7 +1311,9 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
 
     t1 = high_resolution_clock::now();
     // Generate trajectory for each time step of trajectory, for each agent
-    for (int k=0; k < _K; ++k)
+    // iterate until transition is completed or maximum number of time steps is exceeded
+    int k = 0;
+    while (!arrived || k > _K)
     {
         // this is the loop that we want to parallelize
         for (int i=0; i<all_clusters.size(); ++i)
@@ -1334,18 +1336,32 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
         }
 
         prev_obs = obs;
+
+        // check if the drones arrived at their goal
+        arrived = reached_goalv2(all_trajectories,pf,0.05,N_cmd,k);
+        k = k + 1;
     }
 
-    solution_short = all_trajectories;
+    // Routine to trim the resulting trajectory, which is a vector of size of the maximum allowed time
+    // So we trim it to k time steps only
+    solution_short.clear(); // just in case the variable was written befor by another call of the method
+    for (int i =0; i < N_cmd; ++i)
+    {
+        Trajectory aux;
+        aux.pos = all_trajectories.at(i).pos.leftCols(k-1);
+        aux.vel = all_trajectories.at(i).vel.leftCols(k-1);
+        aux.acc = all_trajectories.at(i).acc.leftCols(k-1);
+        solution_short.push_back(aux);
+    }
+
     t2 = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
     cout << "Solve al QPs computation time = " << duration/1000000.0 << "s" << endl;
 
+    // Sanity post-checks
     if(!execution_ended)
     {
         cout << "Optimization problem feasible: solution found" << endl;
-        // Check if every agent reached its goal
-        arrived = reached_goal(all_trajectories,pf,0.05,N_cmd);
     }
 
     t1 = high_resolution_clock::now();
@@ -1354,7 +1370,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     {
         cout << "All vehicles reached their goals" << endl;
         // Interpolate for better resolution (e.g. 100 Hz)
-        solution = interp_trajectory(all_trajectories,0.0067);
+        solution = interp_trajectory(solution_short,0.01);
 
         // Check if collision constraints were not violated
         bool violation = collision_violation(solution);
@@ -1488,6 +1504,21 @@ bool DMPC::reached_goal(const std::vector<Trajectory> &all_trajectories,
     return reached;
 }
 
+bool DMPC::reached_goalv2(const std::vector<Trajectory> &all_trajectories,
+                        const MatrixXd &pf, const float &error_tol, const int &N, const int &k)
+{   Vector3d diff;
+    double dist;
+    bool reached = true;
+    for (int i=0; i < N; ++i)
+    {
+        diff = all_trajectories.at(i).pos.col(k) - pf.col(i);
+        dist = pow(((diff.array().pow(2)).sum()),1.0/2);
+        if (dist > error_tol)
+            reached = false;
+    }
+    return reached;
+}
+
 double DMPC::get_trajectory_time(const std::vector<Trajectory> &solution)
 {
     MatrixXd diff;
@@ -1519,7 +1550,8 @@ double DMPC::get_trajectory_time(const std::vector<Trajectory> &solution)
 std::vector<Trajectory> DMPC::interp_trajectory(const std::vector<Trajectory> &sol,
                                                 const double &step_size)
 {
-    int K = _T/step_size + 1;
+    float T = (sol.at(0).pos.cols() - 1)*_h;
+    int K = T/step_size + 1;
     int N = sol.size();
     double t0 = 0;
     std::vector<Trajectory> all_trajectories(N);
