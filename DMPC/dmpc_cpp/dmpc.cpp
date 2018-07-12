@@ -402,6 +402,7 @@ Constraint DMPC::build_collconstraintv2(const Vector3d &prev_p,
     MatrixXd diff_row = MatrixXd::Zero(1,3*_k_hor);
     initial_states << po,vo;
     Constraint collision;
+    collision.prev_dist = VectorXd::Zero(N_violation);
 
     for (int i=0; i < N_obs; ++i)
     {
@@ -411,6 +412,8 @@ Constraint DMPC::build_collconstraintv2(const Vector3d &prev_p,
             diff = _E1*(prev_p - pj);
             dist = pow(((diff.array().pow(_order)).sum()),1.0/_order);
             diff = (_E2*(prev_p - pj)).array().pow(_order - 1);
+
+            collision.prev_dist[idx] = pow(dist,_order-1);
 
             r = pow(dist,_order-1)*(_rmin - dist) + diff.transpose()*prev_p
                 - diff.transpose()*_A0.middleRows(3*k,3)*initial_states;
@@ -778,8 +781,9 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             collconstrb_aug = VectorXd::Zero(3*N_violation);
 
             coll_constraint = build_collconstraintv2(prev_p.col(k),po,vo,obs,violation_vec,n,k);
+            MatrixXd diag_prevdist = coll_constraint.prev_dist.asDiagonal();
 
-            collconstrA_aug << coll_constraint.A, MatrixXd::Identity(N_violation,N_violation),
+            collconstrA_aug << coll_constraint.A, diag_prevdist,
                     MatrixXd::Zero(N_violation,n_var), MatrixXd::Identity(N_violation,N_violation),
                     MatrixXd::Zero(N_violation,n_var), -MatrixXd::Identity(N_violation,N_violation);
 
@@ -865,9 +869,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                 -MatrixXd::Identity(n_var,n_var_aug);
 
         // Build linear and quadratic cost matrices
-
         f_w << VectorXd::Zero(n_var),
-                -5*pow(10,6)*VectorXd::Ones(N_violation);
+                -5*pow(10,4)*coll_constraint.prev_dist.array().inverse() ;
 
         //NOTE: W *NEEDS* to be different than zero, if not H has determinant 0
 
@@ -1313,7 +1316,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     // Generate trajectory for each time step of trajectory, for each agent
     // iterate until transition is completed or maximum number of time steps is exceeded
     int k = 0;
-    while (!arrived || k > _K)
+    while (!arrived && k < _K )
     {
         // this is the loop that we want to parallelize
         for (int i=0; i<all_clusters.size(); ++i)
@@ -1365,6 +1368,9 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     }
 
     t1 = high_resolution_clock::now();
+
+    if (!execution_ended && !arrived)
+        cout << "The vehicles cannot finish the transition within the maximum allowed time" << endl;
 
     if (arrived && !execution_ended)
     {

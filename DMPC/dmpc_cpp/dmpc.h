@@ -19,6 +19,7 @@ using namespace std;
 struct Constraint {
     MatrixXd A;
     VectorXd b;
+    VectorXd prev_dist;
 };
 
 struct Trajectory {
@@ -37,7 +38,7 @@ struct Params {
     float alim;
 };
 
-static const Params default_params = {0.2,15,15,2,2.0,0.35,1.0};
+static const Params default_params = {0.2,30,15,2,2.0,0.35,1.0};
 
 // Class definition
 class DMPC {
