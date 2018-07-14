@@ -930,12 +930,14 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     }
 
     // Declare quadprog object and solve the QP
-    QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
+//    QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
+//
+//    _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
 
-    _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
+   _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(),f,Ain.sparseView(),bin,x);
 
-    x = _qp.result();
-    _fail = _qp.fail();
+//    x = _qp.result();
+//    _fail = _qp.fail();
     if(_fail){
         cout << "Fail = " << _fail << endl;
         execution_ended = true;

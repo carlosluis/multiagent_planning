@@ -11,6 +11,7 @@
 #include <thread>
 #include <fstream>
 #include <algorithm>
+#include <ooqp_eigen_interface/OoqpEigenInterface.hpp>
 
 using namespace Eigen;
 using namespace std;
