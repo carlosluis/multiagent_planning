@@ -63,6 +63,7 @@ public:
     // Setters
     void set_initial_pts(const MatrixXd &po);
     void set_final_pts(const MatrixXd &pf);
+    void use_OOQP();
 
     // Top level method to be called by program
     std::vector<Trajectory> solveDMPC(const MatrixXd &po,
@@ -92,6 +93,7 @@ private:
     float _c; // multiplier for constraint in the Z direction
     float _rmin;
     float _alim;
+    bool _use_OOQP;
 
     // Workspace boundaries
     Vector3d _pmin;

@@ -1,4 +1,4 @@
-% clc
+clc
 close all
 clear
 M = dlmread('trajectories.txt','');
@@ -12,15 +12,120 @@ po = M(2:4,1:N);
 po = reshape(po,1,3,N);
 pf = M(5:7,1:N_cmd);
 pf = reshape(pf,1,3,N_cmd);
-
-all_pos = M(8:end,:);
+%%
+start = 8;
+final = start + 3*N_cmd-1;
+all_pos = M(start:final,:);
 pk = [];
 
 for i=1:N_cmd
     pk(:,:,i) = all_pos(3*(i-1)+1:3*i,:);
 end
 
-%%
+start = final + 1;
+final = start + 3*N_cmd -1;
+all_vel = M(start:final,:);
+vk = [];
+
+for i=1:N_cmd
+    vk(:,:,i) = all_vel(3*(i-1)+1:3*i,:);
+end
+
+start = final + 1;
+final = start + 3*N_cmd -1 ;
+all_acc = M(start:final,:);
+ak = [];
+
+for i=1:N_cmd
+    ak(:,:,i) = all_acc(3*(i-1)+1:3*i,:);
+end
+
+%% Plot position, velocity and acceleration profiles
+h = 0.2;
+t = 0:h:h*(size(pk,2)-1);
+alim = 2.0;
+for i = 1:N_cmd  
+    figure(1)
+    subplot(3,1,1)
+    plot(t,pk(1,:,i),'LineWidth',1.5);
+    plot(t,pmin(1)*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,pmax(1)*ones(length(t),1),'--r','LineWidth',1.5);
+    ylabel('x [m]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,2)
+    plot(t,pk(2,:,i),'LineWidth',1.5);
+    plot(t,pmin(2)*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,pmax(2)*ones(length(t),1),'--r','LineWidth',1.5);
+    ylabel('y [m]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,3)
+    plot(t,pk(3,:,i),'LineWidth',1.5);
+    plot(t,pmin(3)*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,pmax(3)*ones(length(t),1),'--r','LineWidth',1.5);
+    ylabel('z [m]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    figure(4)
+    subplot(3,1,1)
+    plot(t,vk(1,:,i),'LineWidth',1.5);
+    ylabel('vx [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,2)
+    plot(t,vk(2,:,i),'LineWidth',1.5);
+    ylabel('vy [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,3)
+    plot(t,vk(3,:,i),'LineWidth',1.5);
+    ylabel('vz [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    figure(5)
+    subplot(3,1,1)
+    plot(t,ak(1,:,i),'LineWidth',1.5);
+    plot(t,alim*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,-alim*ones(length(t),1),'--r','LineWidth',1.5);
+    ylabel('ax [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,2)
+    plot(t,ak(2,:,i),'LineWidth',1.5);
+    plot(t,alim*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,-alim*ones(length(t),1),'--r','LineWidth',1.5);
+    ylabel('ay [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+
+    subplot(3,1,3)
+    plot(t,ak(3,:,i),'LineWidth',1.5);
+    plot(t,alim*ones(length(t),1),'--r','LineWidth',1.5);
+    plot(t,-alim*ones(length(t),1),'--r','LineWidth',1.5);
+    ylabel('az [m/s]')
+    xlabel ('t [s]')
+    grid on;
+    hold on;
+   
+end
+
+%% Animation of transition
 figure(1)
 colors = distinguishable_colors(N);
 
@@ -53,4 +158,5 @@ while get(gcf,'currentchar')==' '
     clf
     pause(0.1)
 end
+
 
