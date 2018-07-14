@@ -19,6 +19,7 @@ using namespace std;
 struct Constraint {
     MatrixXd A;
     VectorXd b;
+    VectorXd prev_dist;
 };
 
 struct Trajectory {
@@ -29,7 +30,7 @@ struct Trajectory {
 
 struct Params {
     float h; // time step, in seconds
-    int T; // Max time to complete trajectory
+    int maxT; // Max time to complete trajectory
     int k_hor; // length of the prediction horizon
     int order; // order of the ellipsoid for collision constraint
     float c; // multiplier for constraint in the Z direction
@@ -37,7 +38,7 @@ struct Params {
     float alim;
 };
 
-static const Params default_params = {0.2,15,15,2,2.0,0.35,1.0};
+static const Params default_params = {0.2,30,15,2,2.0,0.35,1.0};
 
 // Class definition
 class DMPC {
@@ -163,6 +164,9 @@ private:
     // Post checks
     bool reached_goal(const std::vector<Trajectory> &all_trajectories,
                       const MatrixXd &pf, const float &error_tol, const int &N);
+
+    bool reached_goalv2(const std::vector<Trajectory> &all_trajectories,
+                      const MatrixXd &pf, const float &error_tol, const int &N, const int &k);
 
     bool collision_violation(const std::vector<Trajectory> &solution);
 
