@@ -1,1 +1,1 @@
-/usr/bin/c++  -g   CMakeFiles/dmpc_cpp.dir/main.cpp.o  -o dmpc_cpp libdmpc.a -leigen-quadprog -lpthread 
+/usr/bin/c++  -g   CMakeFiles/dmpc_cpp.dir/main.cpp.o  -o dmpc_cpp libdmpc.a -leigen-quadprog -lpthread -looqpei -looqpbase -looqpdense -looqpgensparse -looqpmehrotra -looqpbound -looqpgendense -looqpgondzio -looqpsparse -lblas -lma27 -lgfortran 

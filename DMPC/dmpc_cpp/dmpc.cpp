@@ -24,6 +24,7 @@ DMPC::DMPC(Params params)
     _alim = params.alim;
     _K =  _T/_h + 1; // number of time steps
     srand((unsigned int) time(0)); // initialize srand DO THIS ONLY ONCE
+    _use_OOQP = false;
 
     // Ellipsoid definitions
     Vector3d v(3);
@@ -200,6 +201,10 @@ MatrixXd DMPC::gen_rand_perm(const MatrixXd &po)
         pf.col(i) = po.col(perm[i]);
     }
     return pf;
+}
+
+void DMPC::use_OOQP() {
+    _use_OOQP = true;
 }
 
 void DMPC::set_initial_pts(const MatrixXd &po) {
@@ -740,7 +745,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     VectorXd f;
 
     // Tuning factor of speed
-    int spd = 4;
+    int spd = 2;
+    int term = -1*pow(10,5);
 
     // Auxiliary variables
     VectorXd init_propagation = _A0*initial_states;
@@ -757,13 +763,26 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     int n_ineq_aug;
     MatrixXd collconstrA_aug;
     VectorXd collconstrb_aug;
+    MatrixXd Q_aug;
+    MatrixXd R_aug;
+    MatrixXd S_aug;
+
+    // Penalty matrices added in case of collision violation
+    VectorXd f_w;
+    MatrixXd W;
+
+    // Augmented model matrices in case of collisions
+    MatrixXd Lambda_aug;
+    MatrixXd Lambda_aug_in;
+    MatrixXd Delta_aug;
+    MatrixXd A0_aug;
 
     // QP results
     VectorXd x; // complete result
     VectorXd p; // position vector solution
     VectorXd v; // velocity vector solution
     VectorXd a; // acceleration vector solution
-
+    int debug_k = 0;
     for (int k=0; k < _k_hor; ++k)
     {
         violation_vec = check_collisionsv2(prev_p.col(k),obs,n,k);
@@ -788,6 +807,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                     MatrixXd::Zero(N_violation,n_var), -MatrixXd::Identity(N_violation,N_violation);
 
             collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), 0.05*VectorXd::Ones(N_violation);
+            debug_k = k;
             break;
         }
     }
@@ -826,19 +846,19 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         qp_nvar = n_var_aug;
         qp_nineq = n_ineq_aug;
 
-        MatrixXd Q_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
-        MatrixXd R_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
-        MatrixXd S_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
+        Q_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
+        R_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
+        S_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
 
         // Penalty matrices added in case of collision violation
-        VectorXd f_w = VectorXd::Zero(n_var_aug);
-        MatrixXd W = MatrixXd::Zero(n_var_aug,n_var_aug);
+        f_w = VectorXd::Zero(n_var_aug);
+        W = MatrixXd::Zero(n_var_aug,n_var_aug);
 
         // Augmented model matrices in case of collisions
-        MatrixXd Lambda_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
-        MatrixXd Lambda_aug_in = MatrixXd::Zero(n_var,n_var_aug);
-        MatrixXd Delta_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
-        MatrixXd A0_aug = MatrixXd::Zero(n_var_aug,6);
+        Lambda_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
+        Lambda_aug_in = MatrixXd::Zero(n_var,n_var_aug);
+        Delta_aug = MatrixXd::Zero(n_var_aug,n_var_aug);
+        A0_aug = MatrixXd::Zero(n_var_aug,6);
 
         Q_aug.block(0,0,n_var,n_var) = Q;
         R_aug.block(0,0,n_var,n_var) = R;
@@ -870,7 +890,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
 
         // Build linear and quadratic cost matrices
         f_w << VectorXd::Zero(n_var),
-                -5*pow(10,4)*coll_constraint.prev_dist.array().inverse() ;
+                term*coll_constraint.prev_dist.array().inverse() ;
 
         //NOTE: W *NEEDS* to be different than zero, if not H has determinant 0
 
@@ -929,15 +949,74 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                + R);
     }
 
-    // Declare quadprog object and solve the QP
-    QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
+    if (_use_OOQP) {
+        _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
+        int tries = 0;
+        float lim = 0.05;
+        while (_fail && tries < 20){
+            lim = 2*lim;
+            term = 2*term;
+            // Debug print
+            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim <<  endl;
+            collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim*VectorXd::Ones(N_violation);
+            bin << collconstrb_aug,
+                    _pmax.replicate(_k_hor,1) - init_propagation,
+                    -_pmin.replicate(_k_hor,1) + init_propagation,
+                    alim_rep, alim_rep;
 
-    _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
+            f_w << VectorXd::Zero(n_var),
+                    term*coll_constraint.prev_dist.array().inverse() ;
+            f = -2*(pf_rep.transpose()*Q_aug*Lambda_aug -
+                    init_propagation_aug.transpose()*Q_aug*Lambda_aug +
+                    a0_1.transpose()*S_aug*Delta_aug);
 
-    x = _qp.result();
-    _fail = _qp.fail();
+            f += f_w;
+            _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
+            tries++;
+        }
+    }
+    else
+    {
+        // Declare quadprog object and solve the QP
+        QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
+        _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
+        x = _qp.result();
+        _fail = _qp.fail();
+        int tries = 0;
+        float lim = 0.05;
+        while (_fail && tries < 20){
+            lim = 2*lim;
+            term = 2*term;
+            // Debug print
+            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim <<  endl;
+            collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim*VectorXd::Ones(N_violation);
+            bin << collconstrb_aug,
+                    _pmax.replicate(_k_hor,1) - init_propagation,
+                    -_pmin.replicate(_k_hor,1) + init_propagation,
+                    alim_rep, alim_rep;
+
+            f_w << VectorXd::Zero(n_var),
+                    term*coll_constraint.prev_dist.array().inverse() ;
+            f = -2*(pf_rep.transpose()*Q_aug*Lambda_aug -
+                    init_propagation_aug.transpose()*Q_aug*Lambda_aug +
+                    a0_1.transpose()*S_aug*Delta_aug);
+
+            f += f_w;
+            _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
+            x = _qp.result();
+            _fail = _qp.fail();
+            tries++;
+        }
+    }
+
     if(_fail){
-        cout << "Fail = " << _fail << endl;
+        cout << "Fail completely = " << _fail << endl;
+
+        // Debug print
+        cout << "distance to neighbours @ k = " << debug_k << " = " << endl << coll_constraint.prev_dist << endl;
+
+        cout << "bin_coll = " << endl << coll_constraint.b << endl;
+
         execution_ended = true;
         failed_i_global = n;
     }
@@ -1247,6 +1326,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     int N_cmd = pf.cols(); // Number of agents of transition = number of rows of pf
     execution_ended = false; // reset variable before solving
 
+    cout << "I was called with use_OOQP = " << _use_OOQP << endl;
+
     // Variables
     std::vector<Trajectory> all_trajectories(N_cmd);
     std::vector<MatrixXd> aux_trajectories(N-N_cmd);
@@ -1543,7 +1624,7 @@ double DMPC::get_trajectory_time(const std::vector<Trajectory> &solution)
         {
             if(dist[k] >= 0.05)
             {
-                time[i] = (float)k/150;
+                time[i] = (float)k/100;
                 break;
             }
         }
@@ -1720,7 +1801,16 @@ void DMPC::trajectories2file(const std::vector<Trajectory> &solution,
         for(int i=0; i < N_cmd; ++i)
         {
             file << solution.at(i).pos << endl;
+        }
 
+        for(int i=0; i < N_cmd; ++i)
+        {
+            file << solution.at(i).vel << endl;
+        }
+
+        for(int i=0; i < N_cmd; ++i)
+        {
+            file << solution.at(i).acc << endl;
         }
 
         file.close();  // close the file after finished
