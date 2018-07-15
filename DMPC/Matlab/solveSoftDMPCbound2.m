@@ -7,7 +7,7 @@ prev_p = l(:,:,n);
 % clip prev_p to within the boundaries
 % prev_p = bsxfun(@min,prev_p,pmax');
 % prev_p = bsxfun(@max,prev_p,pmin');
-constr_tol = 1e-3;
+constr_tol = 1e-8;
 Aeq = [];
 beq = [];
 options = optimoptions('quadprog','Display','off','ConstraintTolerance',constr_tol);
@@ -40,7 +40,7 @@ for k = 1: k_hor
     end       
 end
 
-spd = 1;
+spd = 2;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp
@@ -121,7 +121,7 @@ while(~success && tries < 30)
         % everything was good, return the solution
         a = x(1:3*K);
         [p,v] = propStatedmpc(po,vo,a,h);
-        p = vec2mat(p,3)';
+        p = vec2mat(p,3)'
         v = vec2mat(v,3)';
         a = vec2mat(a,3)';
         success = 1;
@@ -159,4 +159,5 @@ end
 if ~success
     hola = 1;
 end
+
 end

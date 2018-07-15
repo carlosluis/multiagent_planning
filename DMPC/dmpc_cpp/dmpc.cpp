@@ -1341,7 +1341,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     bool arrived = false;
 
     // Separate N agents into 4 clusters to be solved in parallel
-    int n_cluster = 8;
+    int n_cluster = 1;
     if (n_cluster > N_cmd)
         n_cluster = N_cmd;
     std::vector<int> all_idx(n_cluster);

@@ -3,6 +3,7 @@ idx = 1;
 N = size(l,3);
 violation = zeros(N,1);
 viol_constr = zeros(N,1);
+dist = [];
 for i = 1:N %Iterate through the number of obstacles (other agents)
     if(i~=n)
         pj = l(:,:,i); %position vector of the i-th neighbour over k iterations
