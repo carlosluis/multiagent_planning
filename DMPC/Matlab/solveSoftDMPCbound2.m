@@ -7,7 +7,7 @@ prev_p = l(:,:,n);
 % clip prev_p to within the boundaries
 % prev_p = bsxfun(@min,prev_p,pmax');
 % prev_p = bsxfun(@max,prev_p,pmin');
-constr_tol = 1e-3;
+constr_tol = 1e-8;
 Aeq = [];
 beq = [];
 options = optimoptions('quadprog','Display','off','ConstraintTolerance',constr_tol);
@@ -40,7 +40,7 @@ for k = 1: k_hor
     end       
 end
 
-spd = 1;
+spd = 4;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp

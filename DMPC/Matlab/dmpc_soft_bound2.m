@@ -11,20 +11,20 @@ k_hor = 15; % horizon length
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-rmin = 0.5; % X-Y protection radius for collisions
-c = 1.5; % make this one for spherical constraint
+rmin = 0.35; % X-Y protection radius for collisions
+c = 2.0; % make this one for spherical constraint
 E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 25; % number of vehicles
+N = 80; % number of vehicles
 
 % Workspace boundaries
-% pmin = [-2.5,-2.5,0.2];
-% pmax = [2.5,2.5,2.2];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
-pmin = [-1.0,-1.0,0.2];
-pmax = [1.0,1.0,2.2];
+% pmin = [-1.0,-1.0,0.2];
+% pmax = [1.0,1.0,2.2];
 
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
@@ -65,7 +65,7 @@ error_tol = 0.05; % 5cm destination tolerance
 violation = 0; % checks if violations occured at end of algorithm
 outbound = 0;
 coll = 0;
-term = -5*10^4;
+term = -1*10^5;
 
 % Penalty matrices when there're predicted collisions
 Q = 1000;
@@ -110,7 +110,7 @@ while ~reached_goal || k > max_K
             pok = pk(:,k-1,n);
             vok = vk(:,k-1,n);
             aok = ak(:,k-1,n);
-            [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term); 
+            [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound2(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term); 
         end
         if (~success || outbound || coll) %problem was infeasible, exit and retry
             break;

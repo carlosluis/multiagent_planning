@@ -745,7 +745,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     VectorXd f;
 
     // Tuning factor of speed
-    int spd = 2;
+    int spd = 1;
     int term = -1*pow(10,5);
 
     // Auxiliary variables
@@ -949,68 +949,83 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                + R);
     }
 
-    if (_use_OOQP) {
-        _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
-        int tries = 0;
-        float lim = 0.05;
-        while (_fail && tries < 20){
-            lim = 2*lim;
-            term = 2*term;
-            // Debug print
-            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim <<  endl;
-            collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim*VectorXd::Ones(N_violation);
-            bin << collconstrb_aug,
-                    _pmax.replicate(_k_hor,1) - init_propagation,
-                    -_pmin.replicate(_k_hor,1) + init_propagation,
-                    alim_rep, alim_rep;
+    bool fail = true;
 
-            f_w << VectorXd::Zero(n_var),
-                    term*coll_constraint.prev_dist.array().inverse() ;
-            f = -2*(pf_rep.transpose()*Q_aug*Lambda_aug -
-                    init_propagation_aug.transpose()*Q_aug*Lambda_aug +
-                    a0_1.transpose()*S_aug*Delta_aug);
+        if (_use_OOQP) {
+            fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
+            int tries = 0;
+            float lim = 0.05;
+            while (fail && tries < 20) {
+                lim = 2 * lim;
+                term = 2 * term;
+                // Debug print
+                cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim << endl;
+                collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim * VectorXd::Ones(N_violation);
+                bin << collconstrb_aug,
+                        _pmax.replicate(_k_hor, 1) - init_propagation,
+                        -_pmin.replicate(_k_hor, 1) + init_propagation,
+                        alim_rep, alim_rep;
 
-            f += f_w;
-            _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
-            tries++;
+                f_w << VectorXd::Zero(n_var),
+                        term * coll_constraint.prev_dist.array().inverse();
+                f = -2 * (pf_rep.transpose() * Q_aug * Lambda_aug -
+                          init_propagation_aug.transpose() * Q_aug * Lambda_aug +
+                          a0_1.transpose() * S_aug * Delta_aug);
+
+                f += f_w;
+                fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
+                tries++;
+            }
+        } else {
+            // Declare quadprog object and solve the QP
+            GurobiDense _qp(qp_nvar, qp_neq, qp_nineq);
+            _qp.displayOutput(false);
+            _qp.feasibilityTolerance(1e-3);
+//        QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
+            VectorXd xl = -1000000 * VectorXd::Ones(qp_nvar);
+            VectorXd xu = 1000000 * VectorXd::Ones(qp_nvar);
+//            _qp.inform();
+            int tries = 0;
+            float lim = 0.05;
+            while (fail && tries < 20) {
+                try {
+                    _qp.solve(H, f, MatrixXd::Zero(0, qp_nvar), VectorXd::Zero(0), Ain, bin, xl, xu);
+                }
+                catch (...) {
+                    lim = 2 * lim;
+                    term = 2 * term;
+                    cout << "Catched an exception" << endl;
+
+                    cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim << endl;
+                    collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim * VectorXd::Ones(N_violation);
+                    bin << collconstrb_aug,
+                            _pmax.replicate(_k_hor, 1) - init_propagation,
+                            -_pmin.replicate(_k_hor, 1) + init_propagation,
+                            alim_rep, alim_rep;
+
+                    f_w << VectorXd::Zero(n_var),
+                            term * coll_constraint.prev_dist.array().inverse();
+                    f = -2 * (pf_rep.transpose() * Q_aug * Lambda_aug -
+                              init_propagation_aug.transpose() * Q_aug * Lambda_aug +
+                              a0_1.transpose() * S_aug * Delta_aug);
+
+                    f += f_w;
+                    tries++;
+                }
+
+                fail = _qp.fail() != GRB_OPTIMAL;
+                if (fail)
+                    _qp.inform();
+                else
+                    x = _qp.result();
+
+                tries++;
+            }
+
         }
-    }
-    else
-    {
-        // Declare quadprog object and solve the QP
-        QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
-        _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
-        x = _qp.result();
-        _fail = _qp.fail();
-        int tries = 0;
-        float lim = 0.05;
-        while (_fail && tries < 20){
-            lim = 2*lim;
-            term = 2*term;
-            // Debug print
-            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim <<  endl;
-            collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim*VectorXd::Ones(N_violation);
-            bin << collconstrb_aug,
-                    _pmax.replicate(_k_hor,1) - init_propagation,
-                    -_pmin.replicate(_k_hor,1) + init_propagation,
-                    alim_rep, alim_rep;
 
-            f_w << VectorXd::Zero(n_var),
-                    term*coll_constraint.prev_dist.array().inverse() ;
-            f = -2*(pf_rep.transpose()*Q_aug*Lambda_aug -
-                    init_propagation_aug.transpose()*Q_aug*Lambda_aug +
-                    a0_1.transpose()*S_aug*Delta_aug);
-
-            f += f_w;
-            _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
-            x = _qp.result();
-            _fail = _qp.fail();
-            tries++;
-        }
-    }
-
-    if(_fail){
-        cout << "Fail completely = " << _fail << endl;
+    if(fail){
+        cout << "Fail completely = " << fail << endl;
 
         // Debug print
         cout << "distance to neighbours @ k = " << debug_k << " = " << endl << coll_constraint.prev_dist << endl;
@@ -1550,7 +1565,7 @@ void DMPC::cluster_solvev2(const int &k,
             poi = _po.col(i);
             pfi = _pf.col(i);
             trajectory_i = init_dmpc(poi,pfi);
-            _fail = 0;
+//            _fail = 0;
         }
         else
         {   // Update previous solution, solve current QP
@@ -1560,7 +1575,7 @@ void DMPC::cluster_solvev2(const int &k,
             trajectory_i = solveQPv2(pok,_pf.col(i),vok,aok,i,prev_obs);
         }
 
-        if (_fail)
+        if (execution_ended)
         {
 //            failed_i = i;
             break;
