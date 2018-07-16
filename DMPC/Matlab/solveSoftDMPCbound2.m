@@ -121,7 +121,7 @@ while(~success && tries < 30)
         % everything was good, return the solution
         a = x(1:3*K);
         [p,v] = propStatedmpc(po,vo,a,h);
-        p = vec2mat(p,3)'
+        p = vec2mat(p,3)';
         v = vec2mat(v,3)';
         a = vec2mat(a,3)';
         success = 1;
@@ -150,7 +150,7 @@ while(~success && tries < 30)
         fprintf("Retrying with more relaxed bound \n");
         lb(3*K+1:end) = lb(3*K+1:end) - 0.01;
         term = term*2;
-        f_eps = term*[zeros(3*K,1); ones(N_violation,1)]';
+        f_eps = term*[zeros(3*K,1); 1./prev_dist]';
         f = -2*([repmat((pf)',K,1); zeros(N_violation,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
         tries = tries + 1;
         continue

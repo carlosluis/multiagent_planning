@@ -126,7 +126,7 @@ Trajectory DMPC::init_dmpc(const Vector3d &po, const Vector3d &pf)
     init.acc = MatrixXd::Zero(3,t_hor.size());
     for (int i=0; i<t_hor.size(); ++i)
     {
-        init.pos.col(i) = po + t_hor[i]*diff/((_K-1)*_h);
+        init.pos.col(i) = po + t_hor[i]*diff/10;   //((_K-1)*_h);
     }
     return init;
 }
@@ -327,7 +327,7 @@ std::vector<bool> DMPC::check_collisionsv2(const Vector3d &prev_p,
             diff = _E1*(prev_p - pj);
             dist[idx] = pow(((diff.array().pow(_order)).sum()),1.0/_order);
             violation[i] = (dist[idx] < _rmin);
-            viol_constr[i] = (dist[idx] < _rmin*(1+k/_k_hor));
+            viol_constr[i] = (dist[idx] < _rmin*(1+(float)k/_k_hor));
             idx++;
         }
         else
@@ -745,7 +745,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     VectorXd f;
 
     // Tuning factor of speed
-    int spd = 2;
+    int spd = 1;
     int term = -1*pow(10,5);
 
     // Auxiliary variables
@@ -950,7 +950,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     }
 
     if (_use_OOQP) {
-        _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
+        _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x, true);
         int tries = 0;
         float lim = 0.05;
         while (_fail && tries < 20){
@@ -1341,7 +1341,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     bool arrived = false;
 
     // Separate N agents into 4 clusters to be solved in parallel
-    int n_cluster = 1;
+    int n_cluster = 8;
     if (n_cluster > N_cmd)
         n_cluster = N_cmd;
     std::vector<int> all_idx(n_cluster);
@@ -1397,6 +1397,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     // Generate trajectory for each time step of trajectory, for each agent
     // iterate until transition is completed or maximum number of time steps is exceeded
     int k = 0;
+    MatrixXd nada = MatrixXd::Zero(3,N_cmd);
     while (!arrived && k < _K )
     {
         // this is the loop that we want to parallelize
@@ -1418,7 +1419,17 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
                  << ", vehicle #" << failed_i_global << endl;
             break;
         }
+        /*
+        for (int i = 0; i<N; ++i){
+            nada.col(i) =  all_trajectories.at(i).pos.col(k);
+        }
 
+        IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
+
+        cout << nada.leftCols(15).format(CleanFmt) <<  endl << endl;
+        cout << nada.rightCols(10).format(CleanFmt) <<  endl << endl;
+        cout << "-------------------------------" << endl << endl;
+         */
         prev_obs = obs;
 
         // check if the drones arrived at their goal

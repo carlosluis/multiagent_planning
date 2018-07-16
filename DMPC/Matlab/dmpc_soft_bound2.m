@@ -1,5 +1,5 @@
 clc
-clear all
+% clear all
 close all
 warning('off','all')
 
@@ -17,7 +17,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 6; % number of vehicles
+% N = 25; % number of vehicles
 
 % Workspace boundaries
 % pmin = [-2.5,-2.5,0.2];
@@ -36,18 +36,18 @@ rmin_init = 0.75;
 % Initial positions
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
-po1 = [-1.0, 1.0, 1.0];
-po2 = [0.0, 1.0, 0.8];
-po3 = [1.0, 1.0, 1.5];
-po4 = [-1.0, 0.0, 0.4];
-po5 = [0.0, 0.0 , 1.3];
-po6 = [1.0, 0.0 , 0.7];
-po7 = [-1.0, -1.0 , 0.9];
-po8 = [0.0, -1.0 , 1.4];
-po9 = [1.0, -1.0 , 0.6];
-
-po = cat(3,po1,po2,po3,po4,po5,po6);
-pf = cat(3,po2,po1,po4,po3,po6,po5);
+% po1 = [-1.0, 1.0, 1.0];
+% po2 = [0.0, 1.0, 0.8];
+% po3 = [1.0, 1.0, 1.5];
+% po4 = [-1.0, 0.0, 0.4];
+% po5 = [0.0, 0.0 , 1.3];
+% po6 = [1.0, 0.0 , 0.7];
+% po7 = [-1.0, -1.0 , 0.9];
+% po8 = [0.0, -1.0 , 1.4];
+% po9 = [1.0, -1.0 , 0.6];
+% 
+% po = cat(3,po1,po2,po3,po4,po5,po6);
+% pf = cat(3,po2,po1,po4,po3,po6,po5);
 % % Initial positions
 % po1 = [1.501,1.5,1.5];
 % po2 = [-1.5,-1.5,1.5];
@@ -111,7 +111,7 @@ pred = [];
 moreconstr = [];
 reached_goal = 0;
 k = 1;
-while ~reached_goal || k > max_K
+while ~reached_goal && k < max_K
         for n = 1:N
         if k==1
             poi = po(:,:,n);
@@ -131,7 +131,8 @@ while ~reached_goal || k > max_K
         pk(:,k,n) = pi(:,1);
         vk(:,k,n) = vi(:,1);
         ak(:,k,n) = ai(:,1);
-    end
+        end
+    
     if ~success %Heuristic: increase Q, make init more slowly,
         if outbound
             fprintf("Failed - problem unfeasible, vehicle couldn't stay in workspace @ k_T = %i, n = %i\n",k,n)
