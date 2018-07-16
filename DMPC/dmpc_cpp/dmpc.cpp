@@ -1303,6 +1303,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPC(const MatrixXd &po,
     if (arrived && !execution_ended)
     {
         cout << "All vehicles reached their goals" << endl;
+
+        scale_solution(solution_short,2.0,3.0);
         // Interpolate for better resolution (e.g. 100 Hz)
         solution = interp_trajectory(all_trajectories,0.0067);
 
@@ -1419,17 +1421,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
                  << ", vehicle #" << failed_i_global << endl;
             break;
         }
-        /*
-        for (int i = 0; i<N; ++i){
-            nada.col(i) =  all_trajectories.at(i).pos.col(k);
-        }
 
-        IOFormat CleanFmt(4, 0, ", ", "\n", "[", "]");
-
-        cout << nada.leftCols(15).format(CleanFmt) <<  endl << endl;
-        cout << nada.rightCols(10).format(CleanFmt) <<  endl << endl;
-        cout << "-------------------------------" << endl << endl;
-         */
         prev_obs = obs;
 
         // check if the drones arrived at their goal
@@ -1467,6 +1459,9 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     if (arrived && !execution_ended)
     {
         cout << "All vehicles reached their goals" << endl;
+        // Scale solution to reach velocity and acceleration limits
+        scale_solution(solution_short,2.0,3.0);
+
         // Interpolate for better resolution (e.g. 100 Hz)
         solution = interp_trajectory(solution_short,0.01);
 
@@ -1645,10 +1640,36 @@ double DMPC::get_trajectory_time(const std::vector<Trajectory> &solution)
     return min_traj_time;
 }
 
+void DMPC::scale_solution(std::vector<Trajectory> &sol,
+                          const int &vmax, const int &amax)
+{
+    int N = sol.size();
+    int time_steps = sol.at(0).pos.cols();
+    MatrixXd ak_mod = MatrixXd::Zero(time_steps,N);
+    MatrixXd vk_mod = MatrixXd::Zero(time_steps,N);
+    for (int i = 0; i<N; ++i)
+    {
+        ak_mod.col(i) = pow(((sol.at(i).acc.array().pow(2)).colwise().sum()),1.0/2.0);
+        vk_mod.col(i) = pow(((sol.at(i).vel.array().pow(2)).colwise().sum()),1.0/2.0);
+    }
+
+    float r_factor = std::min(amax/ak_mod.maxCoeff(),vmax/vk_mod.maxCoeff());
+
+    _h_scaled = _h/sqrt(r_factor);
+
+    for(int i = 0; i < N; i++)
+    {
+        sol.at(i).acc = r_factor*sol.at(i).acc;
+        for(int k=0; k< (time_steps-1); ++k)
+        {
+            sol.at(i).vel.col(k+1) = sol.at(i).vel.col(k) + _h_scaled*sol.at(i).acc.col(k);
+        }
+    }
+}
 std::vector<Trajectory> DMPC::interp_trajectory(const std::vector<Trajectory> &sol,
                                                 const double &step_size)
 {
-    float T = (sol.at(0).pos.cols() - 1)*_h;
+    float T = (sol.at(0).pos.cols() - 1)*_h_scaled;
     int K = T/step_size + 1;
     int N = sol.size();
     double t0 = 0;
@@ -1805,7 +1826,7 @@ void DMPC::trajectories2file(const std::vector<Trajectory> &solution,
         cout << "Writing solution to text file..." << endl;
 
         // write a few simulation parameters used in the reading end
-        file << N << " " <<  N_cmd << " " << _pmin.transpose() << " " << _pmax.transpose() << endl;
+        file << N << " " <<  N_cmd << " "<< _h_scaled << " " << _pmin.transpose() << " " << _pmax.transpose() << endl;
         file << _po << endl;
         file << _pf << endl;
 

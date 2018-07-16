@@ -1,5 +1,5 @@
 clc
-% clear all
+clear all
 close all
 warning('off','all')
 
@@ -17,7 +17,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-% N = 25; % number of vehicles
+N = 25; % number of vehicles
 
 % Workspace boundaries
 % pmin = [-2.5,-2.5,0.2];
@@ -34,7 +34,7 @@ pmax = [1.0,1.0,2.2];
 rmin_init = 0.75;
 
 % Initial positions
-% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 % po1 = [-1.0, 1.0, 1.0];
 % po2 = [0.0, 1.0, 0.8];
@@ -150,14 +150,6 @@ while ~reached_goal && k < max_K
     k = k+1;
 end
 
-% Time settings and variables
-T = (k-2)*h; % Trajectory final time
-h = 0.2; % time step duration
-tk = 0:h:T;
-Ts = 0.01; % period for interpolation @ 100Hz
-t = 0:Ts:T; % interpolated time vector
-K = T/h + 1;
-
 if success && reached_goal
     at_goal = 1;
 elseif success && ~reached_goal %if not at goal, retry with more aggressive behaviour
@@ -168,6 +160,34 @@ passed = success && at_goal %DMPC was successful or not
 toc
 
 if passed
+    
+    % scale the trajectory to meet the limits and plot
+    vmax = 2;
+    amax = 3;
+    for i=1:N
+        ak_mod(:,i) = amax./sqrt(sum(ak(:,:,i).^2,1));
+        vk_mod(:,i) = vmax./sqrt(sum(vk(:,:,i).^2,1));
+    end
+    r_factor = min([min(min(ak_mod)), min(min(vk_mod))]);
+    h_scaled = h/sqrt(r_factor);
+    T_scaled = h_scaled*(size(pk,2)-1);
+    t = 0:h_scaled:T_scaled;
+    
+    % Time settings and variables
+    T = (k-2)*h_scaled; % Trajectory final time
+    tk = 0:h_scaled:T;
+    Ts = 0.01; % period for interpolation @ 100Hz
+    t = 0:Ts:T; % interpolated time vector
+    K = T/h_scaled + 1;
+
+    % Compute new velocity and acceleration profiles
+    for i = 1:N
+        for k = 1:size(pk,2)-1
+            ak(:,k,i) = ak(:,k,i)*r_factor;
+            vk(:,k+1,i) = vk(:,k,i) + h_scaled*ak(:,k,i);
+            pk(:,k+1,i) = pk(:,k,i) + h_scaled*vk(:,k,i) + h_scaled^2/2*ak(:,k,i);
+        end
+    end
     
     % Interpolate for better resolution
     for i = 1:N
@@ -213,6 +233,7 @@ if passed
     totdist_dmpc = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
     fprintf("The sum of trajectory length is %.2f\n",totdist_dmpc);
 end
+
 
 %%
 figure(1)

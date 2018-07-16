@@ -75,10 +75,10 @@ int main()
             po21,po22,po23,po24,po25;
 
     MatrixXd pf(3,25);
-//    pf << po25,po24,po23,po22,po21,po20,po19,po18,po17,po16,po15,
-//            po14,po13,po12,po11,po10,po9,po8,po7,po6,po5,
-//            po4,po3,po2,po1;
-    pf = test.gen_rand_perm(po);
+    pf << po25,po24,po23,po22,po21,po20,po19,po18,po17,po16,po15,
+            po14,po13,po12,po11,po10,po9,po8,po7,po6,po5,
+            po4,po3,po2,po1;
+//    pf = test.gen_rand_perm(po);
 
     test.set_final_pts(pf);
     test.set_initial_pts(po);

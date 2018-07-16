@@ -94,6 +94,7 @@ private:
     float _rmin;
     float _alim;
     bool _use_OOQP;
+    float _h_scaled;
 
     // Workspace boundaries
     Vector3d _pmin;
@@ -177,6 +178,9 @@ private:
                                               const double &step_size);
 
     double get_trajectory_time(const std::vector<Trajectory> &solution);
+
+    void scale_solution(std::vector<Trajectory> &sol,
+                        const int &vmax, const int &amax);
 
     void cluster_solve(const int &k,
                        std::vector<Trajectory> &all_trajectories,
