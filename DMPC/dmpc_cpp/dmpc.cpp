@@ -1736,17 +1736,17 @@ std::vector<Trajectory> DMPC::interp_trajectory(const std::vector<Trajectory> &s
         }
 
 
-        boost::math::cubic_b_spline<double> spline_px(px.begin(), px.end(),t0, _h);
-        boost::math::cubic_b_spline<double> spline_py(py.begin(), py.end(),t0, _h);
-        boost::math::cubic_b_spline<double> spline_pz(pz.begin(), pz.end(),t0, _h);
+        boost::math::cubic_b_spline<double> spline_px(px.begin(), px.end(),t0, _h_scaled);
+        boost::math::cubic_b_spline<double> spline_py(py.begin(), py.end(),t0, _h_scaled);
+        boost::math::cubic_b_spline<double> spline_pz(pz.begin(), pz.end(),t0, _h_scaled);
 
-        boost::math::cubic_b_spline<double> spline_vx(vx.begin(), vx.end(),t0, _h);
-        boost::math::cubic_b_spline<double> spline_vy(vy.begin(), vy.end(),t0, _h);
-        boost::math::cubic_b_spline<double> spline_vz(vz.begin(), vz.end(),t0, _h);
+        boost::math::cubic_b_spline<double> spline_vx(vx.begin(), vx.end(),t0, _h_scaled);
+        boost::math::cubic_b_spline<double> spline_vy(vy.begin(), vy.end(),t0, _h_scaled);
+        boost::math::cubic_b_spline<double> spline_vz(vz.begin(), vz.end(),t0, _h_scaled);
 
-        boost::math::cubic_b_spline<double> spline_ax(ax.begin(), ax.end(),t0, _h);
-        boost::math::cubic_b_spline<double> spline_ay(ay.begin(), ay.end(),t0, _h);
-        boost::math::cubic_b_spline<double> spline_az(az.begin(), az.end(),t0, _h);
+        boost::math::cubic_b_spline<double> spline_ax(ax.begin(), ax.end(),t0, _h_scaled);
+        boost::math::cubic_b_spline<double> spline_ay(ay.begin(), ay.end(),t0, _h_scaled);
+        boost::math::cubic_b_spline<double> spline_az(az.begin(), az.end(),t0, _h_scaled);
 
         for(int i=0; i<t.size(); ++i)
         {
