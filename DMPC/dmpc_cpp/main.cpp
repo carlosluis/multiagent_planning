@@ -15,8 +15,8 @@ int main()
     pmax << 1.0, 1.0, 2.2;
 //    pmax << 4, 4, 3.2;
 //    Params p = {0.4,20,15,2,1.5,0.5,0.5};
-    DMPC test;
-    DMPC test2;
+    DMPC test("ooqp");
+    DMPC test2("quadprog");
     int N = 25;
     float rmin_init = 0.75;
 //    MatrixXd po = test.gen_rand_pts(N,pmin,pmax,rmin_init);
@@ -48,27 +48,6 @@ int main()
     Vector3d po24(0.5, -1.0, 1.0);
     Vector3d po25(1.0, -1.0, 1.0);
 
-
-//    Vector3d po1(-1.0, 1.0, 1.0);
-//    Vector3d po2( 0.0, 1.0, 0.8);
-//    Vector3d po3(1.0, 1.0, 1.5);
-//    Vector3d po4( -1.0, 0.0, 0.4);
-//    Vector3d po5 (0.0, 0.0 , 1.3);
-//    Vector3d po6 (1.0, 0.0 , 0.7);
-//    Vector3d po7( -1.0, -1.0 , 0.9);
-//    Vector3d po8( 0.0, -1.0 , 1.4);
-//    Vector3d po9 (1.0, -1.0 , 0.6);
-
-//    Vector3d po1(1.0,1.0,1.5);
-//    Vector3d po2(-1,-1,1.5);
-//    Vector3d po3(-1,1,1.5);
-//    Vector3d po4(1,-1,1.5);
-//
-//    Vector3d pf1(-1.0,-1.0,1.5);
-//    Vector3d pf2(1,1,1.5);
-//    Vector3d pf3(1,-1,1.5);
-//    Vector3d pf4(-1,1,1.5);
-
     MatrixXd po(3,25);
     po << po1,po2,po3,po4,po5,po6,po7,po8,po9,po10,
             po11,po12,po13,po14,po15,po16,po17,po18,po19,po20,
@@ -87,7 +66,6 @@ int main()
 
     cout << "OOQP" << endl;
     cout << "----------------------" << endl;
-    test.use_OOQP();
     high_resolution_clock::time_point t1 = high_resolution_clock::now();
     std::vector<Trajectory> sol_parallel = test.solveParallelDMPCv2(po,pf);
     std::vector<Trajectory> sol_para_short = test.solution_short;
@@ -96,16 +74,15 @@ int main()
     cout << "Total Parallel Execution Computation time = "
          << duration/1000000.0 << "s" << endl << endl;
 
-//    cout << "EIGEN-QUADPROG" << endl;
-//    cout << "----------------------" << endl;
-////    test2.use_OOQP();
-//    t1 = high_resolution_clock::now();
-//    std::vector<Trajectory> sol_parallel2 = test2.solveParallelDMPCv2(po,pf);
-//    std::vector<Trajectory> sol_para2_short = test2.solution_short;
-//    t2 = high_resolution_clock::now();
-//    duration = duration_cast<microseconds>( t2 - t1 ).count();
-//    cout << "Total Parallel Execution Computation time = "
-//         << duration/1000000.0 << "s" << endl;
+    cout << "EIGEN-QUADPROG" << endl;
+    cout << "----------------------" << endl;
+    t1 = high_resolution_clock::now();
+    std::vector<Trajectory> sol_parallel2 = test2.solveParallelDMPCv2(po,pf);
+    std::vector<Trajectory> sol_para2_short = test2.solution_short;
+    t2 = high_resolution_clock::now();
+    duration = duration_cast<microseconds>( t2 - t1 ).count();
+    cout << "Total Parallel Execution Computation time = "
+         << duration/1000000.0 << "s" << endl;
 
     // Write result to txt file (to be read by MATLAB)
 

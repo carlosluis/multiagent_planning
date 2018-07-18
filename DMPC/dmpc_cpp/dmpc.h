@@ -45,7 +45,7 @@ static const Params default_params = {0.2,30,15,2,2.0,0.35,1.0};
 class DMPC {
 public:
     // Constructor
-    DMPC(Params params = default_params);
+    DMPC(std::string solver_name = "quadprog", Params params = default_params);
     // Destructor
     ~DMPC(){};
 
@@ -93,8 +93,9 @@ private:
     float _c; // multiplier for constraint in the Z direction
     float _rmin;
     float _alim;
-    bool _use_OOQP;
     float _h_scaled;
+
+    std::string _solver_name;
 
     // Workspace boundaries
     Vector3d _pmin;

@@ -12,7 +12,7 @@ using namespace std::chrono;
 bool execution_ended;
 int failed_i_global;
 
-DMPC::DMPC(Params params)
+DMPC::DMPC(std::string solver_name,Params params)
 {
     // Load parameters into private variables
     _h = params.h;
@@ -24,7 +24,7 @@ DMPC::DMPC(Params params)
     _alim = params.alim;
     _K =  _T/_h + 1; // number of time steps
     srand((unsigned int) time(0)); // initialize srand DO THIS ONLY ONCE
-    _use_OOQP = false;
+    _solver_name = solver_name;
 
     // Ellipsoid definitions
     Vector3d v(3);
@@ -201,10 +201,6 @@ MatrixXd DMPC::gen_rand_perm(const MatrixXd &po)
         pf.col(i) = po.col(perm[i]);
     }
     return pf;
-}
-
-void DMPC::use_OOQP() {
-    _use_OOQP = true;
 }
 
 void DMPC::set_initial_pts(const MatrixXd &po) {
@@ -949,33 +945,11 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                + R);
     }
 
-    if (_use_OOQP) {
-        _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x, true);
-        int tries = 0;
-        float lim = 0.05;
-        while (_fail && tries < 20){
-            lim = 2*lim;
-            term = 2*term;
-            // Debug print
-            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim <<  endl;
-            collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim*VectorXd::Ones(N_violation);
-            bin << collconstrb_aug,
-                    _pmax.replicate(_k_hor,1) - init_propagation,
-                    -_pmin.replicate(_k_hor,1) + init_propagation,
-                    alim_rep, alim_rep;
+    /*
+     * Differentiate between the different possible solvers to use
+     */
 
-            f_w << VectorXd::Zero(n_var),
-                    term*coll_constraint.prev_dist.array().inverse() ;
-            f = -2*(pf_rep.transpose()*Q_aug*Lambda_aug -
-                    init_propagation_aug.transpose()*Q_aug*Lambda_aug +
-                    a0_1.transpose()*S_aug*Delta_aug);
-
-            f += f_w;
-            _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
-            tries++;
-        }
-    }
-    else
+    if (!strcmp(_solver_name.c_str(),"quadprog")) // Eigen-quadprog solver
     {
         // Declare quadprog object and solve the QP
         QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
@@ -984,6 +958,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         _fail = _qp.fail();
         int tries = 0;
         float lim = 0.05;
+
         while (_fail && tries < 20){
             lim = 2*lim;
             term = 2*term;
@@ -996,7 +971,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                     alim_rep, alim_rep;
 
             f_w << VectorXd::Zero(n_var),
-                    term*coll_constraint.prev_dist.array().inverse() ;
+                    term * VectorXd::Ones(N_violation);
+//                    term*coll_constraint.prev_dist.array().inverse() ;
             f = -2*(pf_rep.transpose()*Q_aug*Lambda_aug -
                     init_propagation_aug.transpose()*Q_aug*Lambda_aug +
                     a0_1.transpose()*S_aug*Delta_aug);
@@ -1005,6 +981,34 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
             x = _qp.result();
             _fail = _qp.fail();
+            tries++;
+        }
+    }
+
+    else if (!strcmp(_solver_name.c_str(),"ooqp"))
+    {
+        _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
+        int tries = 0;
+        float lim = 0.05;
+        while (_fail && tries < 20) {
+            lim = 2 * lim;
+            term = 2 * term;
+            // Debug print
+            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim << endl;
+            collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim * VectorXd::Ones(N_violation);
+            bin << collconstrb_aug,
+                    _pmax.replicate(_k_hor, 1) - init_propagation,
+                    -_pmin.replicate(_k_hor, 1) + init_propagation,
+                    alim_rep, alim_rep;
+
+            f_w << VectorXd::Zero(n_var),
+                    term * VectorXd::Ones(N_violation);
+            f = -2 * (pf_rep.transpose() * Q_aug * Lambda_aug -
+                      init_propagation_aug.transpose() * Q_aug * Lambda_aug +
+                      a0_1.transpose() * S_aug * Delta_aug);
+
+            f += f_w;
+            _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
             tries++;
         }
     }
@@ -1328,7 +1332,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     int N_cmd = pf.cols(); // Number of agents of transition = number of rows of pf
     execution_ended = false; // reset variable before solving
 
-    cout << "I was called with use_OOQP = " << _use_OOQP << endl;
+    cout << "I'm solving the problem using " << _solver_name << endl;
 
     // Variables
     std::vector<Trajectory> all_trajectories(N_cmd);
