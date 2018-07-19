@@ -11,6 +11,7 @@ using namespace std::chrono;
 
 bool execution_ended;
 int failed_i_global;
+int bla;
 
 DMPC::DMPC(std::string solver_name,Params params)
 {
@@ -56,8 +57,6 @@ DMPC::DMPC(std::string solver_name,Params params)
     // Vicon Room boundaries
     _pmin << -1.0, -1.0, 0.2;
     _pmax << 1.0, 1.0, 2.2;
-
-    init_cplex();
 }
 
 void DMPC::get_lambda_A_v_mat(const int &K)
@@ -709,8 +708,10 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                          const Vector3d &vo, const Vector3d &ao,
                          const int &n, const std::vector<MatrixXd> &obs, const int &id_cluster)
 {
-//    CPXENVptr env = _env.at(id_cluster);
-//    CPXLPptr lp = _lp.at(id_cluster);
+    CPXENVptr env = _env.at(id_cluster);
+    CPXLPptr lp = _lp.at(id_cluster);
+
+    int status = 0;
 
     int N = obs.size(); // number of vehicles for transition
     int N_violation;
@@ -960,11 +961,11 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
         _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
         x = _qp.result();
-        _fail = _qp.fail();
+        status = _qp.fail();
         int tries = 0;
         float lim = 0.05;
 
-        while (_fail && tries < 20){
+        while (status && tries < 20){
             lim = 2*lim;
             term = 2*term;
             // Debug print
@@ -985,17 +986,18 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             f += f_w;
             _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
             x = _qp.result();
-            _fail = _qp.fail();
+            status = _qp.fail();
             tries++;
         }
     }
 
     else if (!strcmp(_solver_name.c_str(),"ooqp"))
     {
-        _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
+        high_resolution_clock::time_point t1 = high_resolution_clock::now();
+        status = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
         int tries = 0;
         float lim = 0.05;
-        while (_fail && tries < 20) {
+        while (status && tries < 20) {
             lim = 2 * lim;
             term = 2 * term;
             // Debug print
@@ -1013,17 +1015,21 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                       a0_1.transpose() * S_aug * Delta_aug);
 
             f += f_w;
-            _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
+            status = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
             tries++;
         }
+
+        high_resolution_clock::time_point t2 = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>( t2 - t1 ).count();
+        cout << "QP time OOQP = "
+             << duration/1000000.0 << "s" << endl;
     }
 
     else if (!strcmp(_solver_name.c_str(),"cplex"))
     {
-        int status;
+        high_resolution_clock::time_point t1 = high_resolution_clock::now();
         int lpstat;
         double objval;
-//        H = MatrixXd::Identity(qp_nvar,qp_nvar);
         MatrixXd H_sym = MatrixXd::Zero(qp_nvar,qp_nvar);
         H_sym = 0.5*(H+H.transpose());
 
@@ -1070,34 +1076,35 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
 //        std::cout << "number of environments = " << _env.size() << "id = " << id_cluster << endl;
 
         // Copy linear problem, constraint matrix. specify that it is a minimization problem
-        status = CPXcopylp(_env, _lp, tnumcols, tnumrows, CPX_MIN, objective, rhs, sense, tmatbeg, tmatcnt, tmatind, tmatval, lb, ub, NULL);
+        CPXcopylp(env, lp, tnumcols, tnumrows, CPX_MIN, objective, rhs, sense, tmatbeg, tmatcnt, tmatind, tmatval, lb, ub, NULL);
         if (status) {
             printf("CPXcopylp failed.\n");
-            terminate_cplex();
+            terminate_cplex(id_cluster);
         }
 
         // Copy quadratic problem, H quadratic cost function matrix
-        status = CPXcopyquad(_env, _lp, hmatbeg, hmatcnt, hmatind, hmatval);
+        CPXcopyquad(env, lp, hmatbeg, hmatcnt, hmatind, hmatval);
         if (status) {
             printf("Failed to copy quadratic matrix. \n");
-            terminate_cplex();
+            terminate_cplex(id_cluster);
         }
+
         // Solve optimization
-        _fail = CPXqpopt(_env, _lp);
+        status = CPXqpopt(env,lp);
 
-        if (_fail) {
+        if (status) {
             printf("Failed to optimize QP: status= %i \n", status);
-            terminate_cplex();
+            terminate_cplex(id_cluster);
         }
 
-        status = CPXsolution(_env, _lp, &lpstat, &objval, sol, NULL, NULL, NULL);
+        status = CPXsolution(env, lp, &lpstat, &objval, sol, NULL, NULL, NULL);
         // Check if solution was successfully returned
         if (status) {
             printf("Failed to retreive CPXsolution.\n");
-            terminate_cplex();
+            terminate_cplex(id_cluster);
         } else {
             if (lpstat != 1) {
-                printf("******Failed\n");
+//                printf("******Failed\n");
             }
         }
 
@@ -1105,18 +1112,20 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         // Copy optimized solution to learned input vector xl
         for (uint i = 0; i < qp_nvar; i++) {
             x(i) = sol[i];
-            //std::cout << "solution " << i << " " << sol[i] << std::endl;
         }
+
+        high_resolution_clock::time_point t2 = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>( t2 - t1 ).count();
+        cout << "QP time CPLEX = "
+             << duration/1000000.0 << "s" << endl;
     }
 
-    if(_fail){
-        cout << "Fail completely = " << _fail << endl;
-
-        // Debug print
-        cout << "distance to neighbours @ k = " << debug_k << " = " << endl << coll_constraint.prev_dist << endl;
-
-        cout << "bin_coll = " << endl << coll_constraint.b << endl;
-
+    if(status){
+        cout << "Fail completely" << endl;
+//        // Debug print
+//        cout << "distance to neighbours @ k = " << debug_k << " = " << endl << coll_constraint.prev_dist << endl;
+//
+//        cout << "bin_coll = " << endl << coll_constraint.b << endl;
         execution_ended = true;
         failed_i_global = n;
     }
@@ -1456,14 +1465,13 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     int N_index = 0;
 
     // initialize n_cluster CPLEX environments
-//    std::vector<CPXENVptr> env(n_cluster);
-//    std::vector<CPXLPptr> lp(n_cluster);
-//    _env = env;
-//    _lp = lp;
-
+    std::vector<CPXENVptr> env(n_cluster);
+    std::vector<CPXLPptr> lp(n_cluster);
+    _env = env;
+    _lp = lp;
     for(int i=0; i<n_cluster; ++i)
     {
-
+        init_cplex(i);
         if (residue!=0){
             cluster_capacity = agentsXcluster + 1;
             residue--;
@@ -1514,7 +1522,6 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
         // this is the loop that we want to parallelize
         for (int i=0; i<all_clusters.size(); ++i)
         {
-            std::cout << "i = " << i << endl;
             int id = i;
             all_threads.at(i) = std::thread{&DMPC::cluster_solvev2, *this,
                                             ref(k),
@@ -1522,7 +1529,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
                                             ref(obs),
                                             ref(all_clusters.at(i)),
                                             ref(prev_obs),
-                                            ref(id)};
+                                            id};
+
         }
         for (int i=0; i<all_clusters.size(); ++i)
             all_threads.at(i).join();
@@ -1678,7 +1686,7 @@ void DMPC::cluster_solvev2(const int &k,
             trajectory_i = solveQPv2(pok,_pf.col(i),vok,aok,i,prev_obs, id_cluster);
         }
 
-        if (_fail)
+        if (execution_ended)
         {
 //            failed_i = i;
             break;
@@ -1976,38 +1984,38 @@ void DMPC::trajectories2file(const std::vector<Trajectory> &solution,
 ///
 /// To view console output: CPXPARAM_ScreenOutput = CPX_ON
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void DMPC::init_cplex() {
+void DMPC::init_cplex(int id) {
 
-    _env = NULL;
-    _lp = NULL;
+    _env.at(id) = NULL;
+    _lp.at(id) = NULL;
     int status;
 
     // Initialize CPLEX
-    _env = CPXopenCPLEX(&status);
-    if (_env == NULL) {
+    _env.at(id) = CPXopenCPLEX(&status);
+    if (_env.at(id) == NULL) {
         char errmsg[1024];
         fprintf(stderr, "Could not open CPLEX .\n");
-        CPXgeterrorstring(_env, status, errmsg);
+        CPXgeterrorstring(_env.at(id), status, errmsg);
         fprintf(stderr, "%s", errmsg);
-        terminate_cplex();
+        terminate_cplex(id);
     }
-    status = CPXsetintparam(_env, CPXPARAM_ScreenOutput, CPX_OFF);
+    status = CPXsetintparam(_env.at(id), CPXPARAM_ScreenOutput, CPX_OFF);
     if ( status ) {
         fprintf(stderr, "Failure to turn on screen indicator, error %d.\n", status);
-        terminate_cplex();
+        terminate_cplex(id);
     }
-    status = CPXsetintparam(_env, CPXPARAM_Read_DataCheck, CPX_OFF);
+    status = CPXsetintparam(_env.at(id), CPXPARAM_Read_DataCheck, CPX_OFF);
     if ( status ) {
         fprintf(stderr,
                 "Failure to turn on data checking, error %d.\n", status);
-        terminate_cplex();
+        terminate_cplex(id);
     }
     // Create problem
-    _lp = CPXcreateprob(_env, &status, "This_problem");
-    if (_lp == NULL) {
+    _lp.at(id) = CPXcreateprob(_env.at(id), &status, "This_problem");
+    if (_lp.at(id) == NULL) {
         printf("Failed to create problem. \n");
         status = 1;
-        terminate_cplex();
+        terminate_cplex(id);
     }
     return;
 }
@@ -2015,23 +2023,23 @@ void DMPC::init_cplex() {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /// @brief Free the CPLEX environment.
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-void DMPC::terminate_cplex() {
+void DMPC::terminate_cplex(int id) {
 
     int status = 0;
     std::cout << "Terminating CPLEX" << std::endl;
     // Free lplem allocated by CPXcreatelp
-    if (_lp != NULL) {
-        status = CPXfreeprob(_env, &_lp);
+    if (_lp.at(id) != NULL) {
+        status = CPXfreeprob(_env.at(id), &_lp.at(id));
         if (status)
             fprintf(stderr, "CPXfreelp failed, error code %d. \n", status);
     }
     // Free cplex enviromnent
-    if (_env != NULL) {
-        status = CPXcloseCPLEX(&_env);
+    if (_env.at(id) != NULL) {
+        status = CPXcloseCPLEX(&_env.at(id));
         if (status) {
             char errmsg[1024];
             fprintf(stderr, "Could not close CPLEX enviroment.\n");
-            CPXgeterrorstring(_env, status, errmsg);
+            CPXgeterrorstring(_env.at(id), status, errmsg);
             fprintf(stderr, "%s", errmsg);
         }
     }

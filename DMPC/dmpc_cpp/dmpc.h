@@ -124,12 +124,13 @@ private:
     MatrixXd _A0; // Propagation of initial states in position
 
     int _fail; //keeps track if QP failed or not
+    int _bla;
     bool _execution_ended;
     int _failed_i;
 
     //CPLEX variables
-    CPXENVptr _env;
-    CPXLPptr _lp;
+    std::vector<CPXENVptr> _env;
+    std::vector<CPXLPptr> _lp;
 
     // Private Methods
 
@@ -202,8 +203,8 @@ private:
                          const std::vector<int> &agents,
                          const std::vector<MatrixXd> &prev_obs,
                          const int id_cluster);
-    void init_cplex();
-    void terminate_cplex();
+    void init_cplex(int id);
+    void terminate_cplex(int id);
     void eigen_to_cplex(const Eigen::MatrixXd &H, int *&matbeg,
                         int *&matcnt, int *&matind, double *&matval,
                         int &numrows, int &numcols, int &numnz);
