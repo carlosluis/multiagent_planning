@@ -1,4 +1,8 @@
 /home/carlos/clion-2017.3.3/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" "/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp"
+-- CPLEX Library: /opt/ibm/ILOG/CPLEX_Studio128/cplex/lib/x86-64_linux/static_pic/libcplex.a
+-- ILOCPLEX Library: /opt/ibm/ILOG/CPLEX_Studio128/cplex/lib/x86-64_linux/static_pic/libilocplex.a
+-- CONCERT Library: /opt/ibm/ILOG/CPLEX_Studio128/concert/lib/x86-64_linux/static_pic/libconcert.a
+-- CPLEX Bin Dir: CPLEX_BIN_DIR-NOTFOUND
 -- Configuring done
 -- Generating done
 -- Build files have been written to: /home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug

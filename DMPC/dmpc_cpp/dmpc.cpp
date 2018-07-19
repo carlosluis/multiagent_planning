@@ -56,6 +56,8 @@ DMPC::DMPC(std::string solver_name,Params params)
     // Vicon Room boundaries
     _pmin << -1.0, -1.0, 0.2;
     _pmax << 1.0, 1.0, 2.2;
+
+    init_cplex();
 }
 
 void DMPC::get_lambda_A_v_mat(const int &K)
@@ -705,8 +707,11 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
 
 Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                          const Vector3d &vo, const Vector3d &ao,
-                         const int &n, const std::vector<MatrixXd> &obs)
+                         const int &n, const std::vector<MatrixXd> &obs, const int &id_cluster)
 {
+//    CPXENVptr env = _env.at(id_cluster);
+//    CPXLPptr lp = _lp.at(id_cluster);
+
     int N = obs.size(); // number of vehicles for transition
     int N_violation;
     bool violation = false;
@@ -1010,6 +1015,97 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             f += f_w;
             _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
             tries++;
+        }
+    }
+
+    else if (!strcmp(_solver_name.c_str(),"cplex"))
+    {
+        int status;
+        int lpstat;
+        double objval;
+//        H = MatrixXd::Identity(qp_nvar,qp_nvar);
+        MatrixXd H_sym = MatrixXd::Zero(qp_nvar,qp_nvar);
+        H_sym = 0.5*(H+H.transpose());
+
+        // Variables for the sparse rep. of the quadratic cost term, H
+        int hnumrows,hnumcols,hnumnz;
+        int *hmatbeg,*hmatcnt,*hmatind;
+        double *hmatval;
+
+        // Variables for the sparse rep. of the stacked constraint matrices [A_ineq;A_eq]
+        int tnumrows,tnumcols,tnumnz;
+        int *tmatbeg,*tmatcnt,*tmatind;
+        double *tmatval;
+
+        // convert matrices to CPLEX representation
+        eigen_to_cplex(Ain, tmatbeg, tmatcnt, tmatind, tmatval, tnumrows, tnumcols, tnumnz);
+        eigen_to_cplex(H_sym, hmatbeg, hmatcnt, hmatind, hmatval, hnumrows, hnumcols, hnumnz);
+
+        // IBM information on how to use the functions here
+        // http://www-01.ibm.com/support/knowledgecenter/SSSA5P_12.4.0/
+        // ilog.odms.cplex.help/refcallablelibrary/html/functions/CPXcopylp.html
+        double * objective = new double[f.size()];
+        double * lb = new double[tnumcols];
+        double * ub = new double[tnumcols];
+        double * rhs = new double[tnumrows];
+        double * sol = new double[tnumcols];
+        char * sense = new char[tnumrows];
+
+        // Array of length at least numcols with objective function coefficients
+        for (uint i = 0; i < f.rows(); i++){
+            objective[i] = f(i);
+        }
+        // Lower and upper bounds on each of the variables
+        // TODO: Use this instead of A_ineq_box
+        for (uint i = 0; i < f.rows(); i++) {
+            lb[i] = -CPX_INFBOUND;
+            ub[i] = CPX_INFBOUND;
+        }
+        // Inequality constraints
+        for (uint i = 0; i < bin.size(); i++) {
+            rhs[i] = bin(i);
+            sense[i] = 'L';
+        }
+
+//        std::cout << "number of environments = " << _env.size() << "id = " << id_cluster << endl;
+
+        // Copy linear problem, constraint matrix. specify that it is a minimization problem
+        status = CPXcopylp(_env, _lp, tnumcols, tnumrows, CPX_MIN, objective, rhs, sense, tmatbeg, tmatcnt, tmatind, tmatval, lb, ub, NULL);
+        if (status) {
+            printf("CPXcopylp failed.\n");
+            terminate_cplex();
+        }
+
+        // Copy quadratic problem, H quadratic cost function matrix
+        status = CPXcopyquad(_env, _lp, hmatbeg, hmatcnt, hmatind, hmatval);
+        if (status) {
+            printf("Failed to copy quadratic matrix. \n");
+            terminate_cplex();
+        }
+        // Solve optimization
+        _fail = CPXqpopt(_env, _lp);
+
+        if (_fail) {
+            printf("Failed to optimize QP: status= %i \n", status);
+            terminate_cplex();
+        }
+
+        status = CPXsolution(_env, _lp, &lpstat, &objval, sol, NULL, NULL, NULL);
+        // Check if solution was successfully returned
+        if (status) {
+            printf("Failed to retreive CPXsolution.\n");
+            terminate_cplex();
+        } else {
+            if (lpstat != 1) {
+                printf("******Failed\n");
+            }
+        }
+
+        x = VectorXd::Zero(qp_nvar);
+        // Copy optimized solution to learned input vector xl
+        for (uint i = 0; i < qp_nvar; i++) {
+            x(i) = sol[i];
+            //std::cout << "solution " << i << " " << sol[i] << std::endl;
         }
     }
 
@@ -1347,7 +1443,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     bool arrived = false;
 
     // Separate N agents into 4 clusters to be solved in parallel
-    int n_cluster = 8;
+    int n_cluster = 1;
     if (n_cluster > N_cmd)
         n_cluster = N_cmd;
     std::vector<int> all_idx(n_cluster);
@@ -1359,8 +1455,15 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     int cluster_capacity;
     int N_index = 0;
 
+    // initialize n_cluster CPLEX environments
+//    std::vector<CPXENVptr> env(n_cluster);
+//    std::vector<CPXLPptr> lp(n_cluster);
+//    _env = env;
+//    _lp = lp;
+
     for(int i=0; i<n_cluster; ++i)
     {
+
         if (residue!=0){
             cluster_capacity = agentsXcluster + 1;
             residue--;
@@ -1374,6 +1477,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
             N_index = j+1;
         }
     }
+
+//    std::cout << "We have " << _env.size() << " cplex environments" << endl;
 
     high_resolution_clock::time_point t1;
     high_resolution_clock::time_point t2;
@@ -1409,12 +1514,15 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
         // this is the loop that we want to parallelize
         for (int i=0; i<all_clusters.size(); ++i)
         {
+            std::cout << "i = " << i << endl;
+            int id = i;
             all_threads.at(i) = std::thread{&DMPC::cluster_solvev2, *this,
                                             ref(k),
                                             ref(all_trajectories),
                                             ref(obs),
                                             ref(all_clusters.at(i)),
-                                            ref(prev_obs)};
+                                            ref(prev_obs),
+                                            ref(id)};
         }
         for (int i=0; i<all_clusters.size(); ++i)
             all_threads.at(i).join();
@@ -1537,7 +1645,7 @@ void DMPC::cluster_solvev2(const int &k,
                          std::vector<Trajectory> &all_trajectories,
                          std::vector<MatrixXd> &obs,
                          const std::vector<int> &agents,
-                         const std::vector<MatrixXd> &prev_obs)
+                         const std::vector<MatrixXd> &prev_obs,const int id_cluster)
 {
     Vector3d poi;
     Vector3d pfi;
@@ -1567,7 +1675,7 @@ void DMPC::cluster_solvev2(const int &k,
             pok = all_trajectories.at(i).pos.col(k-1);
             vok = all_trajectories.at(i).vel.col(k-1);
             aok = all_trajectories.at(i).acc.col(k-1);
-            trajectory_i = solveQPv2(pok,_pf.col(i),vok,aok,i,prev_obs);
+            trajectory_i = solveQPv2(pok,_pf.col(i),vok,aok,i,prev_obs, id_cluster);
         }
 
         if (_fail)
@@ -1855,5 +1963,118 @@ void DMPC::trajectories2file(const std::vector<Trajectory> &solution,
     else
     {
         cerr << "Error while trying to open file" << endl;
+    }
+}
+
+/*
+ *      CPLEX functions
+ *
+ */
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// @brief Initialize the CPLEX environment.
+///
+/// To view console output: CPXPARAM_ScreenOutput = CPX_ON
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DMPC::init_cplex() {
+
+    _env = NULL;
+    _lp = NULL;
+    int status;
+
+    // Initialize CPLEX
+    _env = CPXopenCPLEX(&status);
+    if (_env == NULL) {
+        char errmsg[1024];
+        fprintf(stderr, "Could not open CPLEX .\n");
+        CPXgeterrorstring(_env, status, errmsg);
+        fprintf(stderr, "%s", errmsg);
+        terminate_cplex();
+    }
+    status = CPXsetintparam(_env, CPXPARAM_ScreenOutput, CPX_OFF);
+    if ( status ) {
+        fprintf(stderr, "Failure to turn on screen indicator, error %d.\n", status);
+        terminate_cplex();
+    }
+    status = CPXsetintparam(_env, CPXPARAM_Read_DataCheck, CPX_OFF);
+    if ( status ) {
+        fprintf(stderr,
+                "Failure to turn on data checking, error %d.\n", status);
+        terminate_cplex();
+    }
+    // Create problem
+    _lp = CPXcreateprob(_env, &status, "This_problem");
+    if (_lp == NULL) {
+        printf("Failed to create problem. \n");
+        status = 1;
+        terminate_cplex();
+    }
+    return;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// @brief Free the CPLEX environment.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DMPC::terminate_cplex() {
+
+    int status = 0;
+    std::cout << "Terminating CPLEX" << std::endl;
+    // Free lplem allocated by CPXcreatelp
+    if (_lp != NULL) {
+        status = CPXfreeprob(_env, &_lp);
+        if (status)
+            fprintf(stderr, "CPXfreelp failed, error code %d. \n", status);
+    }
+    // Free cplex enviromnent
+    if (_env != NULL) {
+        status = CPXcloseCPLEX(&_env);
+        if (status) {
+            char errmsg[1024];
+            fprintf(stderr, "Could not close CPLEX enviroment.\n");
+            CPXgeterrorstring(_env, status, errmsg);
+            fprintf(stderr, "%s", errmsg);
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// @brief Convert Eigen matrices to the CPLEX (sparse) format
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DMPC::eigen_to_cplex(const Eigen::MatrixXd &H, int *&matbeg,
+                    int *&matcnt, int *&matind, double *&matval, int &numrows, int &numcols, int &numnz) {
+    // Process matrices to fit cplex matrix requirements
+    int i, j, cnt, k;
+    numrows = H.rows();
+    numcols = H.cols();
+    numnz = 0;
+
+    // Find nonzero values
+    for (i = 0; i < numrows; i++) {
+        for (j = 0; j < numcols; j++) {
+            if (H(i, j) != 0.0)
+                numnz++;
+        }
+    }
+
+    matbeg = new int[numcols];  // Contains index of beginning of column j
+    matcnt = new int[numcols];  // Contains how many nz entries in columns j
+    matind = new int[numnz];  // Contains row number of coefficient value val[k]
+    matval = new double[numnz];
+    numnz = 0;
+    k = 0;
+    // Arrange nonzero values into corresponding vectors
+    for (j = 0; j < numcols; j++) {
+        cnt = 0;
+        for (i = 0; i < numrows; i++) {
+            if (H(i, j) != 0.0) {
+                cnt++;  // Number of nz values in this column
+                numnz++;
+                matind[k] = i;
+                matval[k] = H(i, j);
+                k++;
+            }
+        }
+        matbeg[j] = numnz-cnt;
+        matcnt[j] = cnt;
     }
 }

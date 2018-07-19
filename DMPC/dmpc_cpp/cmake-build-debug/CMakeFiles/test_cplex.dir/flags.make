@@ -4,7 +4,7 @@
 # compile CXX with /usr/bin/c++
 CXX_FLAGS =  -std=c++11 -g  
 
-CXX_DEFINES = 
+CXX_DEFINES = -DIL_STD
 
 CXX_INCLUDES = -I/opt/ibm/ILOG/CPLEX_Studio128/cplex/include -I/opt/ibm/ILOG/CPLEX_Studio128/concert/include 
 

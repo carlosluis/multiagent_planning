@@ -10,6 +10,8 @@ set(CMAKE_CXX_COMPILER_ID "GNU")
 
 # The include file search paths:
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
+  "/opt/ibm/ILOG/CPLEX_Studio128/cplex/include"
+  "/opt/ibm/ILOG/CPLEX_Studio128/concert/include"
   )
 
 # Targets to which this target links.

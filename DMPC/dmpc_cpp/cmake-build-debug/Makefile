@@ -111,6 +111,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named test_cplex
+
+# Build rule for target.
+test_cplex: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_cplex
+.PHONY : test_cplex
+
+# fast build rule for target.
+test_cplex/fast:
+	$(MAKE) -f CMakeFiles/test_cplex.dir/build.make CMakeFiles/test_cplex.dir/build
+.PHONY : test_cplex/fast
+
+#=============================================================================
 # Target rules for targets named dmpc
 
 # Build rule for target.
@@ -163,6 +176,33 @@ dmpc.cpp.s:
 	$(MAKE) -f CMakeFiles/dmpc.dir/build.make CMakeFiles/dmpc.dir/dmpc.cpp.s
 .PHONY : dmpc.cpp.s
 
+iloqpex1.o: iloqpex1.cpp.o
+
+.PHONY : iloqpex1.o
+
+# target to build an object file
+iloqpex1.cpp.o:
+	$(MAKE) -f CMakeFiles/test_cplex.dir/build.make CMakeFiles/test_cplex.dir/iloqpex1.cpp.o
+.PHONY : iloqpex1.cpp.o
+
+iloqpex1.i: iloqpex1.cpp.i
+
+.PHONY : iloqpex1.i
+
+# target to preprocess a source file
+iloqpex1.cpp.i:
+	$(MAKE) -f CMakeFiles/test_cplex.dir/build.make CMakeFiles/test_cplex.dir/iloqpex1.cpp.i
+.PHONY : iloqpex1.cpp.i
+
+iloqpex1.s: iloqpex1.cpp.s
+
+.PHONY : iloqpex1.s
+
+# target to generate assembly for a file
+iloqpex1.cpp.s:
+	$(MAKE) -f CMakeFiles/test_cplex.dir/build.make CMakeFiles/test_cplex.dir/iloqpex1.cpp.s
+.PHONY : iloqpex1.cpp.s
+
 main.o: main.cpp.o
 
 .PHONY : main.o
@@ -198,11 +238,15 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
+	@echo "... test_cplex"
 	@echo "... dmpc"
 	@echo "... dmpc_cpp"
 	@echo "... dmpc.o"
 	@echo "... dmpc.i"
 	@echo "... dmpc.s"
+	@echo "... iloqpex1.o"
+	@echo "... iloqpex1.i"
+	@echo "... iloqpex1.s"
 	@echo "... main.o"
 	@echo "... main.i"
 	@echo "... main.s"
