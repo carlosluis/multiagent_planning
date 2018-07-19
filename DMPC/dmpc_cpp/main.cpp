@@ -18,6 +18,7 @@ int main()
 //    Params p = {0.4,20,15,2,1.5,0.5,0.5};
     DMPC test("cplex");
     DMPC test2("ooqp");
+    DMPC test3("quadprog");
     int N = 1;
     float rmin_init = 0.75;
 //    MatrixXd po = test.gen_rand_pts(N,pmin,pmax,rmin_init);
@@ -57,15 +58,17 @@ int main()
 
     MatrixXd pf(3,25);
 //    pf << po2,po1;
-    pf << po25,po24,po23,po22,po21,po20,po19,po18,po17,po16,po15,
-            po14,po13,po12,po11,po10,po9,po8,po7,po6,po5,
-            po4,po3,po2,po1;
-//    pf = test.gen_rand_perm(po);
+//    pf << po25,po24,po23,po22,po21,po20,po19,po18,po17,po16,po15,
+//            po14,po13,po12,po11,po10,po9,po8,po7,po6,po5,
+//            po4,po3,po2,po1;
+    pf = test.gen_rand_perm(po);
 
     test.set_final_pts(pf);
     test.set_initial_pts(po);
     test2.set_final_pts(pf);
     test2.set_initial_pts(po);
+    test3.set_final_pts(pf);
+    test3.set_initial_pts(po);
 
     cout << "CPLEX" << endl;
     cout << "----------------------" << endl;
@@ -77,11 +80,21 @@ int main()
     cout << "Total Parallel Execution Computation time = "
          << duration/1000000.0 << "s" << endl << endl;
 
-    cout << "EIGEN-QUADPROG" << endl;
+    cout << "OOQP" << endl;
     cout << "----------------------" << endl;
     t1 = high_resolution_clock::now();
     std::vector<Trajectory> sol_parallel2 = test2.solveParallelDMPCv2(po,pf);
     std::vector<Trajectory> sol_para2_short = test2.solution_short;
+    t2 = high_resolution_clock::now();
+    duration = duration_cast<microseconds>( t2 - t1 ).count();
+    cout << "Total Parallel Execution Computation time = "
+         << duration/1000000.0 << "s" << endl << endl;
+
+    cout << "EIGEN-QUADPROG" << endl;
+    cout << "----------------------" << endl;
+    t1 = high_resolution_clock::now();
+    std::vector<Trajectory> sol_parallel3 = test3.solveParallelDMPCv2(po,pf);
+    std::vector<Trajectory> sol_para3_short = test3.solution_short;
     t2 = high_resolution_clock::now();
     duration = duration_cast<microseconds>( t2 - t1 ).count();
     cout << "Total Parallel Execution Computation time = "

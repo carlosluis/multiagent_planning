@@ -969,7 +969,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             lim = 2*lim;
             term = 2*term;
             // Debug print
-            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim <<  endl;
+//            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim <<  endl;
             collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim*VectorXd::Ones(N_violation);
             bin << collconstrb_aug,
                     _pmax.replicate(_k_hor,1) - init_propagation,
@@ -994,14 +994,14 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     else if (!strcmp(_solver_name.c_str(),"ooqp"))
     {
         high_resolution_clock::time_point t1 = high_resolution_clock::now();
-        status = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
+        status = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x,true);
         int tries = 0;
         float lim = 0.05;
         while (status && tries < 20) {
             lim = 2 * lim;
             term = 2 * term;
             // Debug print
-            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim << endl;
+//            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim << endl;
             collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim * VectorXd::Ones(N_violation);
             bin << collconstrb_aug,
                     _pmax.replicate(_k_hor, 1) - init_propagation,
@@ -1021,12 +1021,17 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
 
         high_resolution_clock::time_point t2 = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>( t2 - t1 ).count();
-        cout << "QP time OOQP = "
-             << duration/1000000.0 << "s" << endl;
+//        cout << "QP time OOQP = "
+//             << duration/1000000.0 << "s" << endl;
     }
 
     else if (!strcmp(_solver_name.c_str(),"cplex"))
     {
+
+        CPXsetdblparam(env,CPX_PARAM_BAREPCOMP, 1e-4);
+//        CPXsetintparam(env,CPX_PARAM_BARITLIM,1000);
+        CPXsetintparam(env,CPX_PARAM_BARORDER, 2);
+//        CPXsetintparam(env,CPXPARAM_QPMethod,CPX_ALG_SIFTING);
         high_resolution_clock::time_point t1 = high_resolution_clock::now();
         int lpstat;
         double objval;
@@ -1116,8 +1121,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
 
         high_resolution_clock::time_point t2 = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>( t2 - t1 ).count();
-        cout << "QP time CPLEX = "
-             << duration/1000000.0 << "s" << endl;
+//        cout << "QP time CPLEX = "
+//             << duration/1000000.0 << "s" << endl;
     }
 
     if(status){
@@ -1452,7 +1457,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     bool arrived = false;
 
     // Separate N agents into 4 clusters to be solved in parallel
-    int n_cluster = 1;
+    int n_cluster = 8;
     if (n_cluster > N_cmd)
         n_cluster = N_cmd;
     std::vector<int> all_idx(n_cluster);
