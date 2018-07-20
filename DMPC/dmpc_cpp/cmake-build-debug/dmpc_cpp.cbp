@@ -5,7 +5,7 @@
 		<Option title="dmpc_cpp"/>
 		<Option makefile_is_custom="1"/>
 		<Option compiler="gcc"/>
-		<Option virtualFolders="CMake Files\;"/>
+		<Option virtualFolders="CMake Files\;CMake Files\cmake-modules\;"/>
 		<Build>
 			<Target title="all">
 				<Option working_dir="/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug"/>
@@ -37,6 +37,58 @@
 					<DistClean command="/usr/bin/make -j8 -f &quot;/home/carlos/Documents/UTIAS/First\ Year/Winter\ 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
 				</MakeCommands>
 			</Target>
+			<Target title="test_cplex">
+				<Option output="/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug/test_cplex" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DIL_STD"/>
+					<Add directory="/opt/ibm/ILOG/CPLEX_Studio128/cplex/include"/>
+					<Add directory="/opt/ibm/ILOG/CPLEX_Studio128/concert/include"/>
+					<Add directory="/usr/include/c++/5"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
+					<Add directory="/usr/include/c++/5/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/carlos/Documents/UTIAS/First\ Year/Winter\ 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 test_cplex"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/carlos/Documents/UTIAS/First\ Year/Winter\ 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/carlos/Documents/UTIAS/First\ Year/Winter\ 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/carlos/Documents/UTIAS/First\ Year/Winter\ 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test_cplex/fast">
+				<Option output="/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug/test_cplex" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add option="-DIL_STD"/>
+					<Add directory="/opt/ibm/ILOG/CPLEX_Studio128/cplex/include"/>
+					<Add directory="/opt/ibm/ILOG/CPLEX_Studio128/concert/include"/>
+					<Add directory="/usr/include/c++/5"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
+					<Add directory="/usr/include/c++/5/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j8 -f &quot;/home/carlos/Documents/UTIAS/First\ Year/Winter\ 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 test_cplex/fast"/>
+					<CompileFile command="/usr/bin/make -j8 -f &quot;/home/carlos/Documents/UTIAS/First\ Year/Winter\ 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j8 -f &quot;/home/carlos/Documents/UTIAS/First\ Year/Winter\ 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j8 -f &quot;/home/carlos/Documents/UTIAS/First\ Year/Winter\ 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
 			<Target title="dmpc">
 				<Option output="/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug/libdmpc.a" prefix_auto="0" extension_auto="0"/>
 				<Option working_dir="/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-build-debug"/>
@@ -44,6 +96,8 @@
 				<Option type="2"/>
 				<Option compiler="gcc"/>
 				<Compiler>
+					<Add directory="/opt/ibm/ILOG/CPLEX_Studio128/cplex/include"/>
+					<Add directory="/opt/ibm/ILOG/CPLEX_Studio128/concert/include"/>
 					<Add directory="/usr/include/c++/5"/>
 					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
 					<Add directory="/usr/include/c++/5/backward"/>
@@ -67,6 +121,8 @@
 				<Option type="2"/>
 				<Option compiler="gcc"/>
 				<Compiler>
+					<Add directory="/opt/ibm/ILOG/CPLEX_Studio128/cplex/include"/>
+					<Add directory="/opt/ibm/ILOG/CPLEX_Studio128/concert/include"/>
 					<Add directory="/usr/include/c++/5"/>
 					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
 					<Add directory="/usr/include/c++/5/backward"/>
@@ -90,6 +146,8 @@
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
+					<Add directory="/opt/ibm/ILOG/CPLEX_Studio128/cplex/include"/>
+					<Add directory="/opt/ibm/ILOG/CPLEX_Studio128/concert/include"/>
 					<Add directory="/usr/include/c++/5"/>
 					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
 					<Add directory="/usr/include/c++/5/backward"/>
@@ -113,6 +171,8 @@
 				<Option type="1"/>
 				<Option compiler="gcc"/>
 				<Compiler>
+					<Add directory="/opt/ibm/ILOG/CPLEX_Studio128/cplex/include"/>
+					<Add directory="/opt/ibm/ILOG/CPLEX_Studio128/concert/include"/>
 					<Add directory="/usr/include/c++/5"/>
 					<Add directory="/usr/include/x86_64-linux-gnu/c++/5"/>
 					<Add directory="/usr/include/c++/5/backward"/>
@@ -136,11 +196,17 @@
 		<Unit filename="/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/dmpc.h">
 			<Option target="dmpc"/>
 		</Unit>
+		<Unit filename="/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/iloqpex1.cpp">
+			<Option target="test_cplex"/>
+		</Unit>
 		<Unit filename="/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/main.cpp">
 			<Option target="dmpc_cpp"/>
 		</Unit>
 		<Unit filename="/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/dmpc_cpp/cmake-modules/Findcplex.cmake">
+			<Option virtualFolder="CMake Files\cmake-modules\"/>
 		</Unit>
 	</Project>
 </CodeBlocks_project_file>

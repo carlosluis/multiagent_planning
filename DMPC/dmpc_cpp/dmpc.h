@@ -12,6 +12,8 @@
 #include <fstream>
 #include <algorithm>
 #include <ooqp_eigen_interface/OoqpEigenInterface.hpp>
+#define IL_STD 1
+#include <ilcplex/ilocplex.h>
 
 using namespace Eigen;
 using namespace std;
@@ -122,8 +124,13 @@ private:
     MatrixXd _A0; // Propagation of initial states in position
 
     int _fail; //keeps track if QP failed or not
+    int _bla;
     bool _execution_ended;
     int _failed_i;
+
+    //CPLEX variables
+    std::vector<CPXENVptr> _env;
+    std::vector<CPXLPptr> _lp;
 
     // Private Methods
 
@@ -164,7 +171,8 @@ private:
 
     Trajectory solveQPv2(const Vector3d &po, const Vector3d &pf,
                        const Vector3d &vo, const Vector3d &ao,
-                       const int &n, const std::vector<MatrixXd> &obs);
+                       const int &n, const std::vector<MatrixXd> &obs,
+                        const int &id_cluster);
 
     // Post checks
     bool reached_goal(const std::vector<Trajectory> &all_trajectories,
@@ -193,7 +201,13 @@ private:
                          std::vector<Trajectory> &all_trajectories,
                          std::vector<MatrixXd> &obs,
                          const std::vector<int> &agents,
-                         const std::vector<MatrixXd> &prev_obs);
+                         const std::vector<MatrixXd> &prev_obs,
+                         const int id_cluster);
+    void init_cplex(int id);
+    void terminate_cplex(int id);
+    void eigen_to_cplex(const Eigen::MatrixXd &H, int *&matbeg,
+                        int *&matcnt, int *&matind, double *&matval,
+                        int &numrows, int &numcols, int &numnz);
 };
 
 #endif //DMPC_CPP_DMPC_H

@@ -11,6 +11,7 @@ using namespace std::chrono;
 
 bool execution_ended;
 int failed_i_global;
+int bla;
 
 DMPC::DMPC(std::string solver_name,Params params)
 {
@@ -705,8 +706,13 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
 
 Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                          const Vector3d &vo, const Vector3d &ao,
-                         const int &n, const std::vector<MatrixXd> &obs)
+                         const int &n, const std::vector<MatrixXd> &obs, const int &id_cluster)
 {
+    CPXENVptr env = _env.at(id_cluster);
+    CPXLPptr lp = _lp.at(id_cluster);
+
+    int status = 0;
+
     int N = obs.size(); // number of vehicles for transition
     int N_violation;
     bool violation = false;
@@ -955,15 +961,15 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
         _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
         x = _qp.result();
-        _fail = _qp.fail();
+        status = _qp.fail();
         int tries = 0;
         float lim = 0.05;
 
-        while (_fail && tries < 20){
+        while (status && tries < 20){
             lim = 2*lim;
             term = 2*term;
             // Debug print
-            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim <<  endl;
+//            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim <<  endl;
             collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim*VectorXd::Ones(N_violation);
             bin << collconstrb_aug,
                     _pmax.replicate(_k_hor,1) - init_propagation,
@@ -980,21 +986,22 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             f += f_w;
             _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
             x = _qp.result();
-            _fail = _qp.fail();
+            status = _qp.fail();
             tries++;
         }
     }
 
     else if (!strcmp(_solver_name.c_str(),"ooqp"))
     {
-        _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
+        high_resolution_clock::time_point t1 = high_resolution_clock::now();
+        status = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x,true);
         int tries = 0;
         float lim = 0.05;
-        while (_fail && tries < 20) {
+        while (status && tries < 20) {
             lim = 2 * lim;
             term = 2 * term;
             // Debug print
-            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim << endl;
+//            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim << endl;
             collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim * VectorXd::Ones(N_violation);
             bin << collconstrb_aug,
                     _pmax.replicate(_k_hor, 1) - init_propagation,
@@ -1008,19 +1015,122 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                       a0_1.transpose() * S_aug * Delta_aug);
 
             f += f_w;
-            _fail = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
+            status = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
             tries++;
         }
+
+        high_resolution_clock::time_point t2 = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>( t2 - t1 ).count();
+//        cout << "QP time OOQP = "
+//             << duration/1000000.0 << "s" << endl;
     }
 
-    if(_fail){
-        cout << "Fail completely = " << _fail << endl;
+    else if (!strcmp(_solver_name.c_str(),"cplex"))
+    {
 
-        // Debug print
-        cout << "distance to neighbours @ k = " << debug_k << " = " << endl << coll_constraint.prev_dist << endl;
+        CPXsetdblparam(env,CPX_PARAM_BAREPCOMP, 1e-4);
+//        CPXsetintparam(env,CPX_PARAM_BARITLIM,1000);
+        CPXsetintparam(env,CPX_PARAM_BARORDER, 2);
+//        CPXsetintparam(env,CPXPARAM_QPMethod,CPX_ALG_SIFTING);
+        high_resolution_clock::time_point t1 = high_resolution_clock::now();
+        int lpstat;
+        double objval;
+        MatrixXd H_sym = MatrixXd::Zero(qp_nvar,qp_nvar);
+        H_sym = 0.5*(H+H.transpose());
 
-        cout << "bin_coll = " << endl << coll_constraint.b << endl;
+        // Variables for the sparse rep. of the quadratic cost term, H
+        int hnumrows,hnumcols,hnumnz;
+        int *hmatbeg,*hmatcnt,*hmatind;
+        double *hmatval;
 
+        // Variables for the sparse rep. of the stacked constraint matrices [A_ineq;A_eq]
+        int tnumrows,tnumcols,tnumnz;
+        int *tmatbeg,*tmatcnt,*tmatind;
+        double *tmatval;
+
+        // convert matrices to CPLEX representation
+        eigen_to_cplex(Ain, tmatbeg, tmatcnt, tmatind, tmatval, tnumrows, tnumcols, tnumnz);
+        eigen_to_cplex(H_sym, hmatbeg, hmatcnt, hmatind, hmatval, hnumrows, hnumcols, hnumnz);
+
+        // IBM information on how to use the functions here
+        // http://www-01.ibm.com/support/knowledgecenter/SSSA5P_12.4.0/
+        // ilog.odms.cplex.help/refcallablelibrary/html/functions/CPXcopylp.html
+        double * objective = new double[f.size()];
+        double * lb = new double[tnumcols];
+        double * ub = new double[tnumcols];
+        double * rhs = new double[tnumrows];
+        double * sol = new double[tnumcols];
+        char * sense = new char[tnumrows];
+
+        // Array of length at least numcols with objective function coefficients
+        for (uint i = 0; i < f.rows(); i++){
+            objective[i] = f(i);
+        }
+        // Lower and upper bounds on each of the variables
+        // TODO: Use this instead of A_ineq_box
+        for (uint i = 0; i < f.rows(); i++) {
+            lb[i] = -CPX_INFBOUND;
+            ub[i] = CPX_INFBOUND;
+        }
+        // Inequality constraints
+        for (uint i = 0; i < bin.size(); i++) {
+            rhs[i] = bin(i);
+            sense[i] = 'L';
+        }
+
+//        std::cout << "number of environments = " << _env.size() << "id = " << id_cluster << endl;
+
+        // Copy linear problem, constraint matrix. specify that it is a minimization problem
+        CPXcopylp(env, lp, tnumcols, tnumrows, CPX_MIN, objective, rhs, sense, tmatbeg, tmatcnt, tmatind, tmatval, lb, ub, NULL);
+        if (status) {
+            printf("CPXcopylp failed.\n");
+            terminate_cplex(id_cluster);
+        }
+
+        // Copy quadratic problem, H quadratic cost function matrix
+        CPXcopyquad(env, lp, hmatbeg, hmatcnt, hmatind, hmatval);
+        if (status) {
+            printf("Failed to copy quadratic matrix. \n");
+            terminate_cplex(id_cluster);
+        }
+
+        // Solve optimization
+        status = CPXqpopt(env,lp);
+
+        if (status) {
+            printf("Failed to optimize QP: status= %i \n", status);
+            terminate_cplex(id_cluster);
+        }
+
+        status = CPXsolution(env, lp, &lpstat, &objval, sol, NULL, NULL, NULL);
+        // Check if solution was successfully returned
+        if (status) {
+            printf("Failed to retreive CPXsolution.\n");
+            terminate_cplex(id_cluster);
+        } else {
+            if (lpstat != 1) {
+//                printf("******Failed\n");
+            }
+        }
+
+        x = VectorXd::Zero(qp_nvar);
+        // Copy optimized solution to learned input vector xl
+        for (uint i = 0; i < qp_nvar; i++) {
+            x(i) = sol[i];
+        }
+
+        high_resolution_clock::time_point t2 = high_resolution_clock::now();
+        auto duration = duration_cast<microseconds>( t2 - t1 ).count();
+//        cout << "QP time CPLEX = "
+//             << duration/1000000.0 << "s" << endl;
+    }
+
+    if(status){
+        cout << "Fail completely" << endl;
+//        // Debug print
+//        cout << "distance to neighbours @ k = " << debug_k << " = " << endl << coll_constraint.prev_dist << endl;
+//
+//        cout << "bin_coll = " << endl << coll_constraint.b << endl;
         execution_ended = true;
         failed_i_global = n;
     }
@@ -1359,8 +1469,14 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     int cluster_capacity;
     int N_index = 0;
 
+    // initialize n_cluster CPLEX environments
+    std::vector<CPXENVptr> env(n_cluster);
+    std::vector<CPXLPptr> lp(n_cluster);
+    _env = env;
+    _lp = lp;
     for(int i=0; i<n_cluster; ++i)
     {
+        init_cplex(i);
         if (residue!=0){
             cluster_capacity = agentsXcluster + 1;
             residue--;
@@ -1374,6 +1490,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
             N_index = j+1;
         }
     }
+
+//    std::cout << "We have " << _env.size() << " cplex environments" << endl;
 
     high_resolution_clock::time_point t1;
     high_resolution_clock::time_point t2;
@@ -1409,12 +1527,15 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
         // this is the loop that we want to parallelize
         for (int i=0; i<all_clusters.size(); ++i)
         {
+            int id = i;
             all_threads.at(i) = std::thread{&DMPC::cluster_solvev2, *this,
                                             ref(k),
                                             ref(all_trajectories),
                                             ref(obs),
                                             ref(all_clusters.at(i)),
-                                            ref(prev_obs)};
+                                            ref(prev_obs),
+                                            id};
+
         }
         for (int i=0; i<all_clusters.size(); ++i)
             all_threads.at(i).join();
@@ -1537,7 +1658,7 @@ void DMPC::cluster_solvev2(const int &k,
                          std::vector<Trajectory> &all_trajectories,
                          std::vector<MatrixXd> &obs,
                          const std::vector<int> &agents,
-                         const std::vector<MatrixXd> &prev_obs)
+                         const std::vector<MatrixXd> &prev_obs,const int id_cluster)
 {
     Vector3d poi;
     Vector3d pfi;
@@ -1567,10 +1688,10 @@ void DMPC::cluster_solvev2(const int &k,
             pok = all_trajectories.at(i).pos.col(k-1);
             vok = all_trajectories.at(i).vel.col(k-1);
             aok = all_trajectories.at(i).acc.col(k-1);
-            trajectory_i = solveQPv2(pok,_pf.col(i),vok,aok,i,prev_obs);
+            trajectory_i = solveQPv2(pok,_pf.col(i),vok,aok,i,prev_obs, id_cluster);
         }
 
-        if (_fail)
+        if (execution_ended)
         {
 //            failed_i = i;
             break;
@@ -1855,5 +1976,118 @@ void DMPC::trajectories2file(const std::vector<Trajectory> &solution,
     else
     {
         cerr << "Error while trying to open file" << endl;
+    }
+}
+
+/*
+ *      CPLEX functions
+ *
+ */
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// @brief Initialize the CPLEX environment.
+///
+/// To view console output: CPXPARAM_ScreenOutput = CPX_ON
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DMPC::init_cplex(int id) {
+
+    _env.at(id) = NULL;
+    _lp.at(id) = NULL;
+    int status;
+
+    // Initialize CPLEX
+    _env.at(id) = CPXopenCPLEX(&status);
+    if (_env.at(id) == NULL) {
+        char errmsg[1024];
+        fprintf(stderr, "Could not open CPLEX .\n");
+        CPXgeterrorstring(_env.at(id), status, errmsg);
+        fprintf(stderr, "%s", errmsg);
+        terminate_cplex(id);
+    }
+    status = CPXsetintparam(_env.at(id), CPXPARAM_ScreenOutput, CPX_OFF);
+    if ( status ) {
+        fprintf(stderr, "Failure to turn on screen indicator, error %d.\n", status);
+        terminate_cplex(id);
+    }
+    status = CPXsetintparam(_env.at(id), CPXPARAM_Read_DataCheck, CPX_OFF);
+    if ( status ) {
+        fprintf(stderr,
+                "Failure to turn on data checking, error %d.\n", status);
+        terminate_cplex(id);
+    }
+    // Create problem
+    _lp.at(id) = CPXcreateprob(_env.at(id), &status, "This_problem");
+    if (_lp.at(id) == NULL) {
+        printf("Failed to create problem. \n");
+        status = 1;
+        terminate_cplex(id);
+    }
+    return;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// @brief Free the CPLEX environment.
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DMPC::terminate_cplex(int id) {
+
+    int status = 0;
+    std::cout << "Terminating CPLEX" << std::endl;
+    // Free lplem allocated by CPXcreatelp
+    if (_lp.at(id) != NULL) {
+        status = CPXfreeprob(_env.at(id), &_lp.at(id));
+        if (status)
+            fprintf(stderr, "CPXfreelp failed, error code %d. \n", status);
+    }
+    // Free cplex enviromnent
+    if (_env.at(id) != NULL) {
+        status = CPXcloseCPLEX(&_env.at(id));
+        if (status) {
+            char errmsg[1024];
+            fprintf(stderr, "Could not close CPLEX enviroment.\n");
+            CPXgeterrorstring(_env.at(id), status, errmsg);
+            fprintf(stderr, "%s", errmsg);
+        }
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/// @brief Convert Eigen matrices to the CPLEX (sparse) format
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void DMPC::eigen_to_cplex(const Eigen::MatrixXd &H, int *&matbeg,
+                    int *&matcnt, int *&matind, double *&matval, int &numrows, int &numcols, int &numnz) {
+    // Process matrices to fit cplex matrix requirements
+    int i, j, cnt, k;
+    numrows = H.rows();
+    numcols = H.cols();
+    numnz = 0;
+
+    // Find nonzero values
+    for (i = 0; i < numrows; i++) {
+        for (j = 0; j < numcols; j++) {
+            if (H(i, j) != 0.0)
+                numnz++;
+        }
+    }
+
+    matbeg = new int[numcols];  // Contains index of beginning of column j
+    matcnt = new int[numcols];  // Contains how many nz entries in columns j
+    matind = new int[numnz];  // Contains row number of coefficient value val[k]
+    matval = new double[numnz];
+    numnz = 0;
+    k = 0;
+    // Arrange nonzero values into corresponding vectors
+    for (j = 0; j < numcols; j++) {
+        cnt = 0;
+        for (i = 0; i < numrows; i++) {
+            if (H(i, j) != 0.0) {
+                cnt++;  // Number of nz values in this column
+                numnz++;
+                matind[k] = i;
+                matval[k] = H(i, j);
+                k++;
+            }
+        }
+        matbeg[j] = numnz-cnt;
+        matcnt[j] = cnt;
     }
 }
