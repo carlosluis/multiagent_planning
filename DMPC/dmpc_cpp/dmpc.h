@@ -11,6 +11,7 @@
 #include <thread>
 #include <fstream>
 #include <algorithm>
+#include <qpOASES.hpp>
 #include <ooqp_eigen_interface/OoqpEigenInterface.hpp>
 #define IL_STD 1
 #include <ilcplex/ilocplex.h>

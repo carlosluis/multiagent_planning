@@ -12,6 +12,7 @@ set(CMAKE_CXX_COMPILER_ID "GNU")
 set(CMAKE_CXX_TARGET_INCLUDE_PATH
   "/opt/ibm/ILOG/CPLEX_Studio128/cplex/include"
   "/opt/ibm/ILOG/CPLEX_Studio128/concert/include"
+  "/home/carlos/qpOASES-3.2.1/include"
   )
 
 # Targets to which this target links.

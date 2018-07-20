@@ -1125,6 +1125,41 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
 //             << duration/1000000.0 << "s" << endl;
     }
 
+    else if (!strcmp(_solver_name.c_str(),"qpoases"))
+    {
+        // Build qpOASES
+        USING_NAMESPACE_QPOASES
+        SQProblem prob(qp_nvar,qp_nineq);
+        real_t H_[qp_nvar*qp_nvar];
+        real_t Ain_[qp_nineq*qp_nvar];
+        real_t f_[qp_nvar];
+        real_t bin_[qp_nineq];
+        int idx = 0;
+        cout << Ain(0,0) << Ain(0,1) << endl;
+        for(int i=0; i < qp_nineq; ++i){
+            bin_[i] = bin(i);
+            for(int j=0; j < qp_nvar; ++j){
+                Ain_[idx] = Ain(i,j);
+                idx++;
+            }
+        }
+        idx = 0;
+        for(int i=0; i < qp_nvar; ++i){
+            f_[i] = f(i);
+            for(int j=0; j < qp_nvar; ++j){
+                H_[idx] = H(i,j);
+                idx++;
+            }
+        }
+
+        int_t nWSR = 100000;
+        prob.init(H_,f_,Ain_,NULL,NULL,NULL,bin_,nWSR);
+
+        real_t xOpt[qp_nvar];
+        prob.getPrimalSolution(xOpt);
+
+    }
+
     if(status){
         cout << "Fail completely" << endl;
 //        // Debug print
@@ -1457,7 +1492,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     bool arrived = false;
 
     // Separate N agents into 4 clusters to be solved in parallel
-    int n_cluster = 8;
+    int n_cluster = 1;
     if (n_cluster > N_cmd)
         n_cluster = N_cmd;
     std::vector<int> all_idx(n_cluster);

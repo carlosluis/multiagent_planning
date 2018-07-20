@@ -91,9 +91,15 @@ dmpc_cpp_EXTERNAL_OBJECTS =
 dmpc_cpp: CMakeFiles/dmpc_cpp.dir/main.cpp.o
 dmpc_cpp: CMakeFiles/dmpc_cpp.dir/build.make
 dmpc_cpp: libdmpc.a
+dmpc_cpp: /usr/lib/liblapack.so
+dmpc_cpp: /usr/lib/libblas.so
+dmpc_cpp: /home/carlos/qpOASES-3.2.1/bin/libqpOASES.so
 dmpc_cpp: /opt/ibm/ILOG/CPLEX_Studio128/concert/lib/x86-64_linux/static_pic/libconcert.a
 dmpc_cpp: /opt/ibm/ILOG/CPLEX_Studio128/cplex/lib/x86-64_linux/static_pic/libilocplex.a
 dmpc_cpp: /opt/ibm/ILOG/CPLEX_Studio128/cplex/lib/x86-64_linux/static_pic/libcplex.a
+dmpc_cpp: /usr/lib/liblapack.so
+dmpc_cpp: /usr/lib/libblas.so
+dmpc_cpp: /home/carlos/qpOASES-3.2.1/bin/libqpOASES.so
 dmpc_cpp: /opt/ibm/ILOG/CPLEX_Studio128/concert/lib/x86-64_linux/static_pic/libconcert.a
 dmpc_cpp: /opt/ibm/ILOG/CPLEX_Studio128/cplex/lib/x86-64_linux/static_pic/libilocplex.a
 dmpc_cpp: /opt/ibm/ILOG/CPLEX_Studio128/cplex/lib/x86-64_linux/static_pic/libcplex.a

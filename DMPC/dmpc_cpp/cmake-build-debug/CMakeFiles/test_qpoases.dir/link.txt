@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++11 -g   CMakeFiles/test_qpoases.dir/example1.cpp.o  -o test_qpoases  -L/home/carlos/qpOASES-3.2.1/bin -Wl,-rpath,/home/carlos/qpOASES-3.2.1/bin /usr/lib/liblapack.so /usr/lib/libblas.so -lqpOASES 

@@ -55,6 +55,9 @@ target_link_libraries(dmpc_cpp
         pthread
         ooqpei
         ${OOQP_LIBS}
+        ${LAPACK_LIB}
+        ${BLAS_LIB}
+        ${QPOASES_LIBRARY}
         ${CPLEX_LIBRARIES}
         ${CMAKE_DL_LIBS}
         )

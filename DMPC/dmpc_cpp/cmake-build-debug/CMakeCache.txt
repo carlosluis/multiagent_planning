@@ -14,6 +14,9 @@
 # EXTERNAL cache entries
 ########################
 
+//Path to a library.
+BLAS_LIB:FILEPATH=/usr/lib/libblas.so
+
 //Path to a program.
 CMAKE_AR:FILEPATH=/usr/bin/ar
 
@@ -236,11 +239,20 @@ CPLEX_LIBRARY:FILEPATH=/opt/ibm/ILOG/CPLEX_Studio128/cplex/lib/x86-64_linux/stat
 //CPLEX root directory.
 CPLEX_ROOT_DIR:PATH=
 
+//Path to a library.
+LAPACK_LIB:FILEPATH=/usr/lib/liblapack.so
+
 //Path to a program.
 ProcessorCount_cmd_getconf:FILEPATH=/usr/bin/getconf
 
 //Path to a program.
 ProcessorCount_cmd_sysctl:FILEPATH=/sbin/sysctl
+
+//Path to a file.
+QPOASES_INCLUDE_DIR:PATH=/home/carlos/qpOASES-3.2.1/include
+
+//Path to a library.
+QPOASES_LIBRARY:FILEPATH=/home/carlos/qpOASES-3.2.1/bin/libqpOASES.so
 
 //Dependencies for target
 dmpc_LIB_DEPENDS:STATIC=

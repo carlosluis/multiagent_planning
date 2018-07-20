@@ -111,6 +111,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named test_qpoases
+
+# Build rule for target.
+test_qpoases: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_qpoases
+.PHONY : test_qpoases
+
+# fast build rule for target.
+test_qpoases/fast:
+	$(MAKE) -f CMakeFiles/test_qpoases.dir/build.make CMakeFiles/test_qpoases.dir/build
+.PHONY : test_qpoases/fast
+
+#=============================================================================
 # Target rules for targets named test_cplex
 
 # Build rule for target.
@@ -176,6 +189,33 @@ dmpc.cpp.s:
 	$(MAKE) -f CMakeFiles/dmpc.dir/build.make CMakeFiles/dmpc.dir/dmpc.cpp.s
 .PHONY : dmpc.cpp.s
 
+example1.o: example1.cpp.o
+
+.PHONY : example1.o
+
+# target to build an object file
+example1.cpp.o:
+	$(MAKE) -f CMakeFiles/test_qpoases.dir/build.make CMakeFiles/test_qpoases.dir/example1.cpp.o
+.PHONY : example1.cpp.o
+
+example1.i: example1.cpp.i
+
+.PHONY : example1.i
+
+# target to preprocess a source file
+example1.cpp.i:
+	$(MAKE) -f CMakeFiles/test_qpoases.dir/build.make CMakeFiles/test_qpoases.dir/example1.cpp.i
+.PHONY : example1.cpp.i
+
+example1.s: example1.cpp.s
+
+.PHONY : example1.s
+
+# target to generate assembly for a file
+example1.cpp.s:
+	$(MAKE) -f CMakeFiles/test_qpoases.dir/build.make CMakeFiles/test_qpoases.dir/example1.cpp.s
+.PHONY : example1.cpp.s
+
 iloqpex1.o: iloqpex1.cpp.o
 
 .PHONY : iloqpex1.o
@@ -237,6 +277,7 @@ help:
 	@echo "... clean"
 	@echo "... depend"
 	@echo "... rebuild_cache"
+	@echo "... test_qpoases"
 	@echo "... edit_cache"
 	@echo "... test_cplex"
 	@echo "... dmpc"
@@ -244,6 +285,9 @@ help:
 	@echo "... dmpc.o"
 	@echo "... dmpc.i"
 	@echo "... dmpc.s"
+	@echo "... example1.o"
+	@echo "... example1.i"
+	@echo "... example1.s"
 	@echo "... iloqpex1.o"
 	@echo "... iloqpex1.i"
 	@echo "... iloqpex1.s"

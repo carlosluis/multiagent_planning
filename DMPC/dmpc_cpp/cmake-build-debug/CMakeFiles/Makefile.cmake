@@ -12,6 +12,7 @@ set(CMAKE_MAKEFILE_DEPENDS
   "CMakeFiles/3.9.6/CMakeCXXCompiler.cmake"
   "CMakeFiles/3.9.6/CMakeSystem.cmake"
   "../cmake-modules/Findcplex.cmake"
+  "../cmake-modules/Findqpoases.cmake"
   "/home/carlos/clion-2017.3.3/bin/cmake/share/cmake-3.9/Modules/CMakeCInformation.cmake"
   "/home/carlos/clion-2017.3.3/bin/cmake/share/cmake-3.9/Modules/CMakeCXXInformation.cmake"
   "/home/carlos/clion-2017.3.3/bin/cmake/share/cmake-3.9/Modules/CMakeCommonLanguageInclude.cmake"
@@ -48,6 +49,7 @@ set(CMAKE_MAKEFILE_PRODUCTS
 
 # Dependency information for all targets:
 set(CMAKE_DEPEND_INFO_FILES
+  "CMakeFiles/test_qpoases.dir/DependInfo.cmake"
   "CMakeFiles/test_cplex.dir/DependInfo.cmake"
   "CMakeFiles/dmpc.dir/DependInfo.cmake"
   "CMakeFiles/dmpc_cpp.dir/DependInfo.cmake"
