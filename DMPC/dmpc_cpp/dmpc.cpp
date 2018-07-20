@@ -1028,10 +1028,10 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     else if (!strcmp(_solver_name.c_str(),"cplex"))
     {
 
-        CPXsetdblparam(env,CPX_PARAM_BAREPCOMP, 1e-4);
+        CPXsetdblparam(env,CPX_PARAM_BAREPCOMP, 1e-8);
 //        CPXsetintparam(env,CPX_PARAM_BARITLIM,1000);
-        CPXsetintparam(env,CPX_PARAM_BARORDER, 2);
-//        CPXsetintparam(env,CPXPARAM_QPMethod,CPX_ALG_SIFTING);
+//        CPXsetintparam(env,CPX_PARAM_BARORDER, 2);
+        CPXsetintparam(env,CPXPARAM_QPMethod,CPX_ALG_PRIMAL);
         high_resolution_clock::time_point t1 = high_resolution_clock::now();
         int lpstat;
         double objval;
