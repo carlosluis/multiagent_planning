@@ -8,7 +8,7 @@ max_T = 20; % Trajectory final time
 h = 0.2; % time step duration
 max_K = max_T/h + 1; % number of time steps
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 2:2:4; % number of vehicles
+N_vector = 2:2:20; % number of vehicles
 trials = 50; % number os trails per number of vehicles
 
 % Variables for ellipsoid constraint
@@ -20,8 +20,8 @@ E1 = E^(-1);
 E2 = E^(-order);
 
 % Workspace boundaries
-pmin = [-0.8,-0.8,0.2];
-pmax = [0.8,0.8,2.2];
+pmin = [-1.0,-1.0,0.2];
+pmax = [1.0,1.0,2.2];
 
 % Minimum distance between vehicles in m
 rmin_init = 0.75;
@@ -40,7 +40,6 @@ Aux = [1 0 0 h 0 0;
 A_initp = [];
 A_init = eye(6);
 fail = 0;
-error_tol = 0.05; % 5cm destination tolerance
 
 Delta = getDeltaMat(k_hor); 
 
@@ -189,6 +188,9 @@ for q = 1:length(N_vector)
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % Cup-SCP
+        pk = [];
+        vk = [];
+        ak = [];
         p = [];
         v = [];
         a = [];
@@ -235,6 +237,12 @@ for q = 1:length(N_vector)
         % dec-iSCP
         % Empty list of obstacles
         l = [];
+        pk = [];
+        vk = [];
+        ak = [];
+        p = [];
+        v = [];
+        a = [];
         
         % DEC-ISCP
         t_start = tic; 
@@ -269,7 +277,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_all_1')
+save('comp_all_2')
 %% Post-Processing
 
 % Probability of success plots
@@ -331,56 +339,3 @@ bar(N_vector,[infes_num violation_num goal_num],'stacked');
 xlabel('Number of Vehicles');
 ylabel(['Number of failed trials (out of ' ,num2str(trials), ')']);
 legend('Infeasibility','Collisions','Incomplete Trajectory')
-
-%% Post Processing v2.0
-close all
-% Probability of success plots
-prob_cup = sum(success_cup,2)/trials;
-prob_dmpc = sum(success_dmpc,2)/trials;
-figure(1)
-plot(N_vector,prob_cup','Linewidth',3);
-hold on;
-ylim([0,1.05])
-xlim([0,18])
-plot(N_vector,prob_cup,'Linewidth',3);
-set(gca,'fontsize',16)
-xticks(N_vector);
-% set(gca,'LineWidth',2,'TickLength',[0.025 0.025]);
-xlabel('Number of Vehicles');
-ylabel('Success Probability');
-legend('cup-SQP','DMPC');
-
-% Computation time
-tmean_cup = nanmean(t_cup,2);
-tstd_cup = nanstd(t_cup,1,2);
-tmean_dmpc = nanmean(t_dmpc,2);
-tstd_dmpc = nanstd(t_dmpc,1,2);
-figure(2)
-plot(N_vector, tmean_cup,'LineWidth',3);
-hold on;
-% xlim([4 30]);
-plot(N_vector, tmean_dmpc,'LineWidth',3);
-set(gca,'fontsize',16)
-xticks(N_vector);
-xlim([0,18])
-% set(gca,'LineWidth',2,'TickLength',[0.025 0.025]);
-xlabel('Number of Vehicles');
-ylabel('Computation Time [s]');
-legend('cup-SQP','DMPC');
-
-% Percentage increase/decrease on travelled dist of dmpc wrt dec
-% Positive number means that dmpc path was longer
-diff_dist = (totdist_dmpc-totdist_cup)./totdist_cup;
-avg_dist_dmpc = nanmean(totdist_dmpc,2);
-avg_dist_cup = nanmean(totdist_cup,2);
-figure(3)
-plot(N_vector, avg_dist_cup,'LineWidth', 3);
-hold on;
-plot(N_vector, avg_dist_dmpc,'LineWidth', 3);
-set(gca,'fontsize',16)
-xlim([0,18])
-xticks(N_vector);
-% set(gca,'LineWidth',2,'TickLength',[0.025 0.025]);
-xlabel('Number of Vehicles');
-ylabel('Total Travelled Distance [m]');
-legend('cup-SQP','DMPC');

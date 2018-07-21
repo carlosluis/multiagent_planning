@@ -3,7 +3,7 @@ clear all
 close all
 
 % Time settings and variables
-T = 15; % Trajectory final time
+T = 6; % Trajectory final time
 h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
@@ -14,20 +14,20 @@ N = 10; % number of vehicles
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-rmin = 0.5; % X-Y protection radius for collisions
-c = 1.5; % make this one for spherical constraint
+rmin = 0.35; % X-Y protection radius for collisions
+c = 2.0; % make this one for spherical constraint
 E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
 % Workspace boundaries
-pmin = [-2.5,-2.5,0.2];
-pmax = [2.5,2.5,2.2];
+pmin = [-1.0,-1.0,0.2];
+pmax = [1.0,1.0,2.2];
 
 rmin_init = 0.75;
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomExchange(N,pmin,pmax,rmin_init);
 
 %% Some Precomputations
 % Kinematic model A,b matrices
@@ -59,7 +59,7 @@ end
 l = [];
 
 % Maximum acceleration in m/s^2
-alim = 0.7;
+alim = 1.0;
 
 tic %measure the time it gets to solve the optimization problem
 for i = 1:N 
@@ -67,6 +67,7 @@ for i = 1:N
     pfi = pf(:,:,i);
     [pi, vi, ai,success] = singleiSCP(poi,pfi,h,K,pmin,pmax,rmin,alim,l,A_p,A_v,E1,E2,order);
     if ~success
+        fprintf('Failed solving for vehicle %i\n',i);
         break;
     end
     l = cat(3,l,pi);

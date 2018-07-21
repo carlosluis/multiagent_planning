@@ -77,7 +77,7 @@ error_tol = 0.05; % 5cm destination tolerance
 violation = 0; % checks if violations occured at end of algorithm
 outbound = 0;
 coll = 0;
-term = -1*10^5;
+term = -5*10^4;
 
 % Penalty matrices when there're predicted collisions
 Q = 1000;
