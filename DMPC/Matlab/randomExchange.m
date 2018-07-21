@@ -28,10 +28,28 @@ while(~pass)
 end
 
 %Make a random permutation of initial states to assign final states
+perm = [];
+array = 1:N;
+array_aux = [];
+for i=1:N
+    array_aux = [];
+    array_aux = array;
+    array_aux(array_aux == i) = [];
+    
+    if i== N
+        perm(i) = array;
+    elseif (i == N-1 && array_aux(end) == N)
+        perm(i) = N;
+        array(array == perm(i)) = [];
+    else
+        j = randi([1 N-i]);
+        perm(i) = array_aux(j);
+        array(array == array_aux(j)) = [];
+    end  
+end
 
-idx_vector = randperm(N);
 for n = 1:N
-    pf(:,n) = po(:,idx_vector(n));
+    pf(:,n) = po(:,perm(n));
 end
 
 po = reshape(po,1,3,N);
