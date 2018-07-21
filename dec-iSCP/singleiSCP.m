@@ -8,10 +8,10 @@ success = 1;
 H = eye(3*K);
 A = getPosMat(h,K);
 Aeq = getPosVelMat(h,K);
-options = optimset('Display', 'off');
+constr_tol = 1e-3;
+options = optimoptions('quadprog','Display','off','ConstraintTolerance',constr_tol);
 check = true;
 addConstr = [];
-
 
 while (i <= K && check)
     newConstrCount = 0; 

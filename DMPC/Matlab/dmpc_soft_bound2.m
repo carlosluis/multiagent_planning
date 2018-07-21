@@ -17,14 +17,14 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 25; % number of vehicles
+N = 16; % number of vehicles
 
 % Workspace boundaries
 % pmin = [-2.5,-2.5,0.2];
 % pmax = [2.5,2.5,2.2];
 
-pmin = [-1.0,-1.0,0.2];
-pmax = [1.0,1.0,2.2];
+pmin = [-0.8,-0.8,0.2];
+pmax = [0.8,0.8,2.2];
 
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
@@ -163,15 +163,13 @@ if passed
     
     % scale the trajectory to meet the limits and plot
     vmax = 2;
-    amax = 3;
+    amax = 1;
     for i=1:N
         ak_mod(:,i) = amax./sqrt(sum(ak(:,:,i).^2,1));
         vk_mod(:,i) = vmax./sqrt(sum(vk(:,:,i).^2,1));
     end
     r_factor = min([min(min(ak_mod)), min(min(vk_mod))]);
     h_scaled = h/sqrt(r_factor);
-    T_scaled = h_scaled*(size(pk,2)-1);
-    t = 0:h_scaled:T_scaled;
     
     % Time settings and variables
     T = (k-2)*h_scaled; % Trajectory final time

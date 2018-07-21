@@ -19,9 +19,9 @@ int main()
     DMPC test("cplex");
     DMPC test2("ooqp");
     DMPC test3("quadprog");
-    int N = 1;
+    int N = 25;
     float rmin_init = 0.75;
-//    MatrixXd po = test.gen_rand_pts(N,pmin,pmax,rmin_init);
+    MatrixXd po = test.gen_rand_pts(N,pmin,pmax,rmin_init);
 //    MatrixXd pf = test.gen_rand_perm(po);
 
     Vector3d po1(-1.0, 1.0, 1.0);
@@ -50,11 +50,11 @@ int main()
     Vector3d po24(0.5, -1.0, 1.0);
     Vector3d po25(1.0, -1.0, 1.0);
 
-    MatrixXd po(3,25);
+//    MatrixXd po(3,25);
 //    po << po1,po2;
-    po << po1,po2,po3,po4,po5,po6,po7,po8,po9,po10,
-            po11,po12,po13,po14,po15,po16,po17,po18,po19,po20,
-            po21,po22,po23,po24,po25;
+//    po << po1,po2,po3,po4,po5,po6,po7,po8,po9,po10,
+//            po11,po12,po13,po14,po15,po16,po17,po18,po19,po20,
+//            po21,po22,po23,po24,po25;
 
     MatrixXd pf(3,25);
 //    pf << po2,po1;
@@ -103,5 +103,5 @@ int main()
     // Write result to txt file (to be read by MATLAB)
 
     char const *file = "/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/DMPC/CPP_results/trajectories.txt";
-    test.trajectories2file(sol_para_short,file);
+    test.trajectories2file(sol_para3_short,file);
 }

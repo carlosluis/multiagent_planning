@@ -969,7 +969,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             lim = 2*lim;
             term = 2*term;
             // Debug print
-//            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim <<  endl;
+            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim <<  endl;
             collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim*VectorXd::Ones(N_violation);
             bin << collconstrb_aug,
                     _pmax.replicate(_k_hor,1) - init_propagation,
@@ -977,8 +977,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                     alim_rep, alim_rep;
 
             f_w << VectorXd::Zero(n_var),
-                    term * VectorXd::Ones(N_violation);
-//                    term*coll_constraint.prev_dist.array().inverse() ;
+//                    term * VectorXd::Ones(N_violation);
+                    term*coll_constraint.prev_dist.array().inverse() ;
             f = -2*(pf_rep.transpose()*Q_aug*Lambda_aug -
                     init_propagation_aug.transpose()*Q_aug*Lambda_aug +
                     a0_1.transpose()*S_aug*Delta_aug);
@@ -1001,7 +1001,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             lim = 2 * lim;
             term = 2 * term;
             // Debug print
-//            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim << endl;
+            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim << endl;
             collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim * VectorXd::Ones(N_violation);
             bin << collconstrb_aug,
                     _pmax.replicate(_k_hor, 1) - init_propagation,
@@ -1009,7 +1009,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                     alim_rep, alim_rep;
 
             f_w << VectorXd::Zero(n_var),
-                    term * VectorXd::Ones(N_violation);
+//                    term * VectorXd::Ones(N_violation);
+                    term*coll_constraint.prev_dist.array().inverse() ;
             f = -2 * (pf_rep.transpose() * Q_aug * Lambda_aug -
                       init_propagation_aug.transpose() * Q_aug * Lambda_aug +
                       a0_1.transpose() * S_aug * Delta_aug);
@@ -1028,10 +1029,10 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     else if (!strcmp(_solver_name.c_str(),"cplex"))
     {
 
-        CPXsetdblparam(env,CPX_PARAM_BAREPCOMP, 1e-4);
+        CPXsetdblparam(env,CPX_PARAM_BAREPCOMP, 1e-8);
 //        CPXsetintparam(env,CPX_PARAM_BARITLIM,1000);
-        CPXsetintparam(env,CPX_PARAM_BARORDER, 2);
-//        CPXsetintparam(env,CPXPARAM_QPMethod,CPX_ALG_SIFTING);
+//        CPXsetintparam(env,CPX_PARAM_BARORDER, 2);
+        CPXsetintparam(env,CPXPARAM_QPMethod,CPX_ALG_DUAL);
         high_resolution_clock::time_point t1 = high_resolution_clock::now();
         int lpstat;
         double objval;
@@ -1585,7 +1586,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     {
         cout << "All vehicles reached their goals" << endl;
         // Scale solution to reach velocity and acceleration limits
-        scale_solution(solution_short,2.0,3.0);
+        scale_solution(solution_short,1.0,1.0);
 
         // Interpolate for better resolution (e.g. 100 Hz)
         solution = interp_trajectory(solution_short,0.01);

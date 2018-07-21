@@ -20,8 +20,8 @@ E1 = E^(-1);
 E2 = E^(-order);
 
 % Workspace boundaries
-pmin = [-1.0,-1.0,0.2];
-pmax = [1.0,1.0,2.2];
+pmin = [-0.8,-0.8,0.2];
+pmax = [0.8,0.8,2.2];
 
 % Minimum distance between vehicles in m
 rmin_init = 0.75;
@@ -62,7 +62,6 @@ for q = 1:length(N_vector)
         
         %SoftDMPC with bound on relaxation variable
         T = 0;
-        K_reached = 0; %reset to zero in case dmpc fails, to be used by cup
         l = [];
         p = [];
         v = [];
@@ -74,7 +73,7 @@ for q = 1:length(N_vector)
         term = -5*10^4;
     
         feasible(q,r) = 0; %check if QP was feasible
-        error_tol = 0.05; % 5cm destination tolerance
+        error_tol = 0.01; % 5cm destination tolerance
         violation(q,r) = 0; % checks if violations occured at end of algorithm
 
         % Penalty matrices when there're predicted collisions
@@ -121,7 +120,6 @@ for q = 1:length(N_vector)
         end
 
         if feasible(q,r) && ~failed_goal(q,r) 
-            K_reached = k - 1;
             % scale the trajectory to meet the limits and plot
             vmax = 2;
             amax = 1;
@@ -231,55 +229,96 @@ for q = 1:length(N_vector)
         else
             t_cup(q,r) = nan;
             totdist_cup(q,r) = nan;
-        end    
+        end
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % dec-iSCP
+        % Empty list of obstacles
+        l = [];
+        
+        % DEC-ISCP
+        t_start = tic; 
+        for i = 1:N 
+            poi = po(:,:,i);
+            pfi = pf(:,:,i);
+            [pi, vi, ai,success] = singleiSCP(poi,pfi,h,K,pmin,pmax,rmin,alim,l,A_p,A_v,E1,E2,order);
+            if ~success
+                break;
+            end
+            l = cat(3,l,pi);
+            pk(:,:,i) = pi;
+            vk(:,:,i) = vi;
+            ak(:,:,i) = ai;
+
+            % Interpolate solution with a 100Hz sampling
+            p(:,:,i) = spline(tk,pi,t);
+            v(:,:,i) = spline(tk,vi,t);
+            a(:,:,i) = spline(tk,ai,t);
+        end
+        if success
+            t_dec(q,r) = toc(t_start);
+            totdist_dec(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
+        
+        else
+            t_dec(q,r) = nan;
+            totdist_dec(q,r) = nan;
+        end
+        success_dec(q,r) = success;
+        
+        
     end
 end
 fprintf("Finished! \n")
-% save('comp_dmpc_cupSCP4')
+save('comp_all_1')
 %% Post-Processing
 
 % Probability of success plots
 prob_dmpc = sum(success_dmpc,2)/trials;
 prob_cup = sum(success_cup,2)/trials;
+prob_dec = sum(success_dec,2)/trials;
 figure(1)
 grid on;
 hold on;
 ylim([0,1.05])
 plot(N_vector,prob_cup,'Linewidth',2);
+plot(N_vector,prob_dec','Linewidth',2);
 plot(N_vector,prob_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Success Probability');
-legend('cup-SCP','DMPC');
+legend('cup-SCP','dec-iSCP','DMPC');
 
 % Computation time
 tmean_dmpc = nanmean(t_dmpc,2);
 tstd_dmpc = nanstd(t_dmpc,1,2);
 tmean_cup = nanmean(t_cup,2);
 tstd_cup = nanstd(t_cup,1,2);
+tmean_dec = nanmean(t_dec,2);
+tstd_dec = nanstd(t_dec,1,2);
 figure(2)
 grid on;
 hold on;
 plot(N_vector, tmean_cup,'LineWidth',2);
+plot(N_vector, tmean_dec,'LineWidth',2);
 plot(N_vector, tmean_dmpc,'LineWidth',2);
 % errorbar(N_vector,tmean_cup,tstd_cup,'Linewidth',2);
 % errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Average Computation time [s]');
-legend('cup-SCP','DMPC');
+legend('cup-SCP','dec-iSCP','DMPC');
 
-% Percentage increase/decrease on travelled dist of dmpc wrt dec
-% Positive number means that dmpc path was longer
-diff_dist = (totdist_dmpc-totdist_cup)./totdist_cup;
-avg_diff = nanmean(diff_dist,2);
-std_diff = nanstd(diff_dist,1,2);
+% Average travelled distance
+avg_dist_dmpc = nanmean(totdist_dmpc,2);
+avg_dist_cup = nanmean(totdist_cup,2);
+avg_dist_dec = nanmean(totdist_dec,2);
 figure(3)
-plot(N_vector, 100*avg_diff,'LineWidth', 2);
-% errorbar(N_vector,100*avg_diff,100*std_diff,'Linewidth',2);
+plot(N_vector, avg_dist_cup,'LineWidth', 3);
+hold on;
 grid on;
+plot(N_vector, avg_dist_dec,'LineWidth', 3);
+plot(N_vector, avg_dist_dmpc,'LineWidth', 3);
 xlabel('Number of Vehicles');
-ylabel('Average % increase');
-% title('Percentage increase on travelled distance of DMPC wrt cup-SCP');
-legend('DMPC w.r.t. cup-SCP')
+ylabel('Total Travelled Distance [m]');
+legend('cup-SQP','dec-iSCP','DMPC');
 
 % Failure analysis
 violation_num = sum(violation,2);
