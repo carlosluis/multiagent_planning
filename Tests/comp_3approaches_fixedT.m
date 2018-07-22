@@ -4,11 +4,12 @@ close all
 warning('off','all')
 
 % Time settings and variables
-max_T = 20; % Trajectory final time
+T = 15; % Trajectory final time
 h = 0.2; % time step duration
-max_K = max_T/h + 1; % number of time steps
+tk = 0:h:T;
+K = T/h + 1; % number of time steps
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 2:4:30; % number of vehicles
+N_vector = 2:2:20; % number of vehicles
 trials = 50; % number os trails per number of vehicles
 
 % Variables for ellipsoid constraint
@@ -20,8 +21,8 @@ E1 = E^(-1);
 E2 = E^(-order);
 
 % Workspace boundaries
-pmin = [-1.5,-1.5,0.2];
-pmax = [1.5,1.5,2.2];
+pmin = [-1.0,-1.0,0.2];
+pmax = [1.0,1.0,2.2];
 
 % Minimum distance between vehicles in m
 rmin_init = 0.75;
@@ -48,6 +49,23 @@ for k = 1:k_hor
     A_initp = [A_initp; A_init(1:3,:)];  
 end
 
+b = [h^2/2*eye(3);
+     h*eye(3)];
+
+prev_row = zeros(6,3*K); % For the first iteration of constructing matrix Ain
+A_p = zeros(3*(K-1),3*K);
+A_v = zeros(3*(K-1),3*K);
+idx=1;
+% Build matrix to convert acceleration to position
+for k = 1:(K-1)
+    add_b = [zeros(size(b,1),size(b,2)*(k-1)) b zeros(size(b,1),size(b,2)*(K-k))];
+    new_row = Aux*prev_row + add_b;   
+    A_p(idx:idx+2,:) = new_row(1:3,:);
+    A_v(idx:idx+2,:) = new_row(4:6,:);
+    prev_row = new_row;
+    idx = idx+3;
+end
+
 % Start Test
 
 for q = 1:length(N_vector)
@@ -55,7 +73,7 @@ for q = 1:length(N_vector)
     for r = 1:trials
         fprintf("Doing trial #%i with %i vehicles\n",r,N)
         % Initial positions
-        [po,pf] = randomExchange(N,pmin,pmax,rmin_init);
+        [po,pf] = randomTest(N,pmin,pmax,rmin_init);
         
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
         
@@ -82,13 +100,12 @@ for q = 1:length(N_vector)
         outbound(q,r) = 0;
         reached_goal = 0;
         t_start = tic;
-        k = 1;
-        while ~reached_goal && k < max_K
+        for k = 1:K
             for n = 1:N
                 if k==1
                     poi = po(:,:,n);
                     pfi = pf(:,:,n);
-                    [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,max_K);
+                    [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,K);
                     feasible(q,r) = 1;
                 else
                     pok = pk(:,k-1,n);
@@ -108,45 +125,17 @@ for q = 1:length(N_vector)
                 break;
             end
             l = new_l;
-            reached_goal = ReachedGoal(pk,pf,k,error_tol,N);
-            k = k+1;
         end
         
-        if feasible(q,r) && reached_goal
-            at_goal = 1;
-        elseif feasible(q,r) && ~reached_goal
-            failed_goal(q,r) = 1;
+        if feasible(q,r)
+            reached_goal = ReachedGoal(pk,pf,k,error_tol,N);       
+            if ~reached_goal
+                failed_goal(q,r) = 1;
+            end   
         end
-
-        if feasible(q,r) && ~failed_goal(q,r) 
-            % scale the trajectory to meet the limits and plot
-            vmax = 2;
-            amax = 1;
-            ak_mod = [];
-            vk_mod = [];
-            for i=1:N
-                ak_mod(:,i) = amax./sqrt(sum(ak(:,:,i).^2,1));
-                vk_mod(:,i) = vmax./sqrt(sum(vk(:,:,i).^2,1));
-            end
-            r_factor = min([min(min(ak_mod)), min(min(vk_mod))]);
-            h_scaled = h/sqrt(r_factor);
-
-            % Time settings and variables
-            T = (k-2)*h_scaled; % Trajectory final time
-            tk = 0:h_scaled:T;
-            Ts = 0.01; % period for interpolation @ 100Hz
-            t = 0:Ts:T; % interpolated time vector
-            K = T/h_scaled + 1;
-            
-            % Compute new velocity and acceleration profiles
-            for i = 1:N
-                for k = 1:size(pk,2)-1
-                    ak(:,k,i) = ak(:,k,i)*r_factor;
-                    vk(:,k+1,i) = vk(:,k,i) + h_scaled*ak(:,k,i);
-                    pk(:,k+1,i) = pk(:,k,i) + h_scaled*vk(:,k,i) + h_scaled^2/2*ak(:,k,i);
-                end
-            end
-
+        
+        if feasible(q,r) && ~failed_goal(q,r)             
+            % Interpolate @ 100 Hz
             for i = 1:N
                 p(:,:,i) = spline(tk,pk(:,:,i),t);
                 v(:,:,i) = spline(tk,vk(:,:,i),t);
@@ -171,7 +160,7 @@ for q = 1:length(N_vector)
             for i = 1:N
                 diff_goal = p(:,:,i) - repmat(pf(:,:,i),length(t),1)';
                 dist_goal = sqrt(sum(diff_goal.^2,1));
-                hola = find(dist_goal >= 0.05,1,'last');
+                hola = find(dist_goal >= error_tol,1,'last');
                 if isempty(hola)
                     time_index(i) = 0;
                 else
@@ -185,30 +174,36 @@ for q = 1:length(N_vector)
             traj_time(q,r) = nan;
         end
         success_dmpc(q,r) = feasible(q,r) && ~failed_goal(q,r) && ~violation(q,r);
-                
+        
+        %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % Cup-SCP
+        pk = [];
+        vk = [];
+        ak = [];
+        p = [];
+        v = [];
+        a = [];
+        
+        t_start = tic;
+        % Solve SCP
+        [pk,vk,ak,success_cup(q,r)] = solveCupSCP(po,pf,h,K,N,pmin,pmax,rmin,alim,A_p,A_v,E1,E2,order);
+        
+        if (success_cup(q,r))
+            % Interpolate solution with a 100Hz sampling
+            for i = 1:N
+                p(:,:,i) = spline(tk,pk(:,:,i),t);
+                v(:,:,i) = spline(tk,vk(:,:,i),t);
+                a(:,:,i) = spline(tk,ak(:,:,i),t); 
+            end
+            t_cup(q,r) = toc(t_start);
+            totdist_cup(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));        
+        else
+            t_cup(q,r) = nan;
+            totdist_cup(q,r) = nan;
+        end
+        
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
         % dec-iSCP
-        b = [h^2/2*eye(3);
-             h*eye(3)];
-        if T==0
-            T = max_T;
-        end
-        tk = 0:h:T;
-        K = length(tk);
-        prev_row = zeros(6,3*K); % For the first iteration of constructing matrix Ain
-        A_p = zeros(3*(K-1),3*K);
-        A_v = zeros(3*(K-1),3*K);
-        idx=1;
-        % Build matrix to convert acceleration to position
-        for k = 1:(K-1)
-            add_b = [zeros(size(b,1),size(b,2)*(k-1)) b zeros(size(b,1),size(b,2)*(K-k))];
-            new_row = Aux*prev_row + add_b;   
-            A_p(idx:idx+2,:) = new_row(1:3,:);
-            A_v(idx:idx+2,:) = new_row(4:6,:);
-            prev_row = new_row;
-            idx = idx+3;
-        end
-
         % Empty list of obstacles
         l = [];
         pk = [];
@@ -251,49 +246,56 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_deciSCP_vs_DMPC4')
+save('comp_all_fixedT_1')
 %% Post-Processing
 
 % Probability of success plots
 prob_dmpc = sum(success_dmpc,2)/trials;
+prob_cup = sum(success_cup,2)/trials;
 prob_dec = sum(success_dec,2)/trials;
 figure(1)
 grid on;
 hold on;
 ylim([0,1.05])
+plot(N_vector,prob_cup,'Linewidth',2);
 plot(N_vector,prob_dec','Linewidth',2);
 plot(N_vector,prob_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Success Probability');
-legend('dec-iSCP','DMPC');
+legend('cup-SCP','dec-iSCP','DMPC');
 
 % Computation time
 tmean_dmpc = nanmean(t_dmpc,2);
 tstd_dmpc = nanstd(t_dmpc,1,2);
+tmean_cup = nanmean(t_cup,2);
+tstd_cup = nanstd(t_cup,1,2);
 tmean_dec = nanmean(t_dec,2);
 tstd_dec = nanstd(t_dec,1,2);
 figure(2)
 grid on;
 hold on;
+plot(N_vector, tmean_cup,'LineWidth',2);
 plot(N_vector, tmean_dec,'LineWidth',2);
 plot(N_vector, tmean_dmpc,'LineWidth',2);
 % errorbar(N_vector,tmean_cup,tstd_cup,'Linewidth',2);
 % errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
 xlabel('Number of Vehicles');
 ylabel('Average Computation time [s]');
-legend('dec-iSCP','DMPC');
+legend('cup-SCP','dec-iSCP','DMPC');
 
 % Average travelled distance
 avg_dist_dmpc = nanmean(totdist_dmpc,2);
+avg_dist_cup = nanmean(totdist_cup,2);
 avg_dist_dec = nanmean(totdist_dec,2);
 figure(3)
+plot(N_vector, avg_dist_cup,'LineWidth', 3);
 hold on;
 grid on;
 plot(N_vector, avg_dist_dec,'LineWidth', 3);
 plot(N_vector, avg_dist_dmpc,'LineWidth', 3);
 xlabel('Number of Vehicles');
 ylabel('Total Travelled Distance [m]');
-legend('dec-iSCP','DMPC');
+legend('cup-SQP','dec-iSCP','DMPC');
 
 % Failure analysis
 violation_num = sum(violation,2);
