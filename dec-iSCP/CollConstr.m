@@ -11,7 +11,7 @@ if (~isempty(l))
         diff = (E2*(p-pj(:,k)).^(order-1))'; % Transpose of the difference
 
         % Right side of inequality constraint (bin)
-        r = dist^(order-1)*(rmin - dist + diff*p/(dist^(order-1))) - (p-pj(:,k))'*po';
+        r = dist^(order-1)*(rmin - dist + diff*p/(dist^(order-1))) - diff*po';
 
         % Construct diagonal matrix with vector difference
         diff_mat = [zeros(1,3*(k-1)) diff zeros(1,3*(K-k))];

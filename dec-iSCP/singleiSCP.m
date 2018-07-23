@@ -8,7 +8,7 @@ success = 1;
 H = eye(3*K);
 A = getPosMat(h,K);
 Aeq = getPosVelMat(h,K);
-constr_tol = 1e-3;
+constr_tol = 1e-8;
 options = optimoptions('quadprog','Display','off','ConstraintTolerance',constr_tol);
 check = true;
 addConstr = [];
@@ -51,7 +51,7 @@ while (i <= K && check)
     p = vec2mat(p,3)';
     v = vec2mat(v,3)';
     a = vec2mat(a,3)';
-    fail = CheckforAllColl(p,l,K,rmin,addConstr);
+    fail = CheckforAllColl(p,l,K,E1,rmin,addConstr,order);
     if ~fail && exitflag == 1
         check = false;
     end
