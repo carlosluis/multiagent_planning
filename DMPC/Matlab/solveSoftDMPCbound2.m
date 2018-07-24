@@ -1,4 +1,4 @@
-function [p,v,a,success,outbound,coll] = solveSoftDMPCbound2(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,Delta,Q1,S1,E1,E2,order,term)
+function [p,v,a,success,outbound,coll] = solveSoftDMPCbound2(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q1,S1,E1,E2,order,term)
 
 k_hor = size(l,2);
 ub = alim*ones(3*K,1);
@@ -40,7 +40,7 @@ for k = 1: k_hor
     end       
 end
 
-spd = 1;
+spd = 2;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp
@@ -74,7 +74,7 @@ if (any(violation)) % In case of collisions, we relax the constraint with slack 
          zeros(N_violation,3*K) zeros(N_violation,N_violation)];
     bin_total = [bin_coll; repmat((pmax)',K,1) - A_initp*([po';vo']); zeros(N_violation,1); repmat(-(pmin)',K,1) + A_initp*([po';vo']); zeros(N_violation,1)];
     ao_1 = [ao zeros(1,3*(K-1)+N_violation)];
-    A_initp = [A_initp; zeros(N_violation,6)];
+    A_initp_aug = [A_initp; zeros(N_violation,6)];
     
     % add bound on the relaxation variable
     ub = [ub; zeros(N_violation,1)];
@@ -88,7 +88,7 @@ if (any(violation)) % In case of collisions, we relax the constraint with slack 
     EPS = 1*10^0*[zeros(3*K,3*K) zeros(3*K,N_violation);
            zeros(N_violation,3*K) eye(N_violation,N_violation)];
        
-    f = -2*([repmat((pf)',K,1); zeros(N_violation,1)]'*Q*A - (A_initp*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
+    f = -2*([repmat((pf)',K,1); zeros(N_violation,1)]'*Q*A - (A_initp_aug*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
     
 else % case of no collisions, we don't even add collision constraints
     bin_total = [bin_coll; repmat((pmax)',K,1) - A_initp*([po';vo']); repmat(-(pmin)',K,1) + A_initp*([po';vo'])];
@@ -120,7 +120,7 @@ while(~success && tries < 30)
     elseif (~isempty(x))
         % everything was good, return the solution
         a = x(1:3*K);
-        [p,v] = propStatedmpc(po,vo,a,h);
+        [p,v] = propStatedmpc(po,vo,a,A_initp, A_p, A_v);
         p = vec2mat(p,3)';
         v = vec2mat(v,3)';
         a = vec2mat(a,3)';

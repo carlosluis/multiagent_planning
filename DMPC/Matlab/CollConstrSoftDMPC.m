@@ -5,7 +5,7 @@ Ain_total = zeros(N_violation,3*size(l,2));
 bin_total = zeros(N_violation,1);
 prev_dist = zeros(N_violation,1);
 idx = 1;
-k_ctr = k;
+k_ctr = k-1;
 if (~isempty(l))
     for i = 1:N_obs %Iterate through the number of obstacles (other agents)
         if(i~=n && violation(i))

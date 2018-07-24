@@ -17,14 +17,14 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 16; % number of vehicles
+N = 25; % number of vehicles
 
 % Workspace boundaries
 % pmin = [-2.5,-2.5,0.2];
 % pmax = [2.5,2.5,2.2];
 
-pmin = [-0.8,-0.8,0.2];
-pmax = [0.8,0.8,2.2];
+pmin = [-1.0,-1.0,0.2];
+pmax = [1.0,1.0,2.2];
 
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
@@ -71,9 +71,11 @@ a = [];
 pk = [];
 vk = [];
 ak = [];
+ak_mod = [];
+vk_mod = [];
 success = 0; %check if QP was feasible
 at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
-error_tol = 0.05; % 5cm destination tolerance
+error_tol = 0.01; % 5cm destination tolerance
 violation = 0; % checks if violations occured at end of algorithm
 outbound = 0;
 coll = 0;
@@ -94,15 +96,26 @@ Aux = [1 0 0 h 0 0;
      0 0 0 1 0 0;
      0 0 0 0 1 0;
      0 0 0 0 0 1];
+ 
+b = [h^2/2*eye(3);
+     h*eye(3)];
+ 
+prev_row = zeros(6,3*k_hor); % For the first iteration of constructing matrix Ain
+A_p = [];
+A_v = [];
 A_initp = [];
 A_init = eye(6);
-
-Delta = getDeltaMat(k_hor); 
-
 for k = 1:k_hor
+    add_b = [zeros(size(b,1),size(b,2)*(k-1)) b zeros(size(b,1),size(b,2)*(k_hor-k))];
+    new_row = Aux*prev_row + add_b;   
+    A_p = [A_p; new_row(1:3,:)];
+    A_v = [A_v; new_row(4:6,:)];
+    prev_row = new_row;
     A_init = Aux*A_init;
     A_initp = [A_initp; A_init(1:3,:)];  
 end
+
+Delta = getDeltaMat(k_hor); 
 
 failed_goal = 0; %how many times the algorithm failed to reach goal
 tries = 1; % how many iterations it took the DMPC to find a solution
@@ -122,7 +135,7 @@ while ~reached_goal && k < max_K
             pok = pk(:,k-1,n);
             vok = vk(:,k-1,n);
             aok = ak(:,k-1,n);
-            [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound2(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term); 
+            [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound2(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order,term); 
         end
         if (~success || outbound || coll) %problem was infeasible, exit and retry
             break;
