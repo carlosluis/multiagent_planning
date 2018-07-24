@@ -13,11 +13,11 @@ trials = 50; % number os trails per number of vehicles
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-rmin = 0.35; % X-Y protection radius for collisions
 c = 2.0; % make this one for spherical constraint
 E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
+fail = 0;
 
 % Workspace boundaries
 pmin = [-1.0,-1.0,0.2];
@@ -70,6 +70,9 @@ for q = 1:length(N_vector)
         ak = [];
         coll(q,r) = 0;
         term = -5*10^4;
+        
+        % Variables for ellipsoid constraint
+        rmin = 0.35; % X-Y protection radius for collisions
     
         feasible(q,r) = 0; %check if QP was feasible
         error_tol = 0.01; % 5cm destination tolerance
@@ -105,6 +108,8 @@ for q = 1:length(N_vector)
                 ak(:,k,n) = ai(:,1);
             end
             if ~feasible(q,r)
+                save(['Fail_' num2str(fail)]); 
+                fail = fail + 1;
                 break;
             end
             l = new_l;
@@ -194,6 +199,11 @@ for q = 1:length(N_vector)
         p = [];
         v = [];
         a = [];
+        success = 0;
+        violation_cup(q,r) = 0;
+        reached_goal_cup(q,r) = false;
+        rmin = 0.35; % X-Y protection radius for collisions
+
         b = [h^2/2*eye(3);
              h*eye(3)];
         if T==0
@@ -217,15 +227,32 @@ for q = 1:length(N_vector)
         
         t_start = tic;
         % Solve SCP
-        [pk,vk,ak,success_cup(q,r)] = solveCupSCP(po,pf,h,K,N,pmin,pmax,rmin,alim,A_p,A_v,E1,E2,order);
-        
-        if (success_cup(q,r))
+        [pk,vk,ak,success] = solveCupSCP(po,pf,h,K,N,pmin,pmax,rmin,alim,A_p,A_v,E1,E2,order);
+        if success
+            reached_goal_cup(q,r) = ReachedGoal(pk,pf,K,error_tol,N);
             % Interpolate solution with a 100Hz sampling
             for i = 1:N
                 p(:,:,i) = spline(tk,pk(:,:,i),t);
                 v(:,:,i) = spline(tk,vk(:,:,i),t);
                 a(:,:,i) = spline(tk,ak(:,:,i),t); 
             end
+            % Check if collision constraints were not violated
+            for i = 1:N
+                for j = 1:N
+                    if(i~=j)
+                        differ = E1*(p(:,:,i) - p(:,:,j));
+                        dist = (sum(differ.^order,1)).^(1/order);
+                        if min(dist) < (rmin-0.05)
+                            [value,index] = min(dist);
+                            violation_cup(q,r) = 1;
+                        end
+                    end
+                end
+            end
+        end
+        
+        success_cup(q,r) = success && reached_goal_cup(q,r) && ~violation_cup(q,r);
+        if (success_cup(q,r)) 
             t_cup(q,r) = toc(t_start);
             totdist_cup(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));        
         else
@@ -243,6 +270,9 @@ for q = 1:length(N_vector)
         p = [];
         v = [];
         a = [];
+        success = 0;
+        violation_dec(q,r) = 0;
+        reached_goal_dec(q,r) = false;
         
         % DEC-ISCP
         t_start = tic; 
@@ -262,22 +292,37 @@ for q = 1:length(N_vector)
             p(:,:,i) = spline(tk,pi,t);
             v(:,:,i) = spline(tk,vi,t);
             a(:,:,i) = spline(tk,ai,t);
+           
         end
-        if success
-            t_dec(q,r) = toc(t_start);
-            totdist_dec(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));
         
+        if success
+            reached_goal_dec(q,r) = ReachedGoal(pk,pf,K,error_tol,N);
+            % Check if collision constraints were not violated
+            for i = 1:N
+                for j = 1:N
+                    if(i~=j)
+                        differ = E1*(p(:,:,i) - p(:,:,j));
+                        dist = (sum(differ.^order,1)).^(1/order);
+                        if min(dist) < (rmin-0.05)
+                            [value,index] = min(dist);
+                            violation_dec(q,r) = 1;
+                        end
+                    end
+                end
+            end
+        end
+        success_dec(q,r) = success && reached_goal_dec(q,r) && ~violation_dec(q,r);
+        if success_dec(q,r)
+            t_dec(q,r) = toc(t_start);
+            totdist_dec(q,r) = sum(sum(sqrt(diff(p(1,:,:)).^2+diff(p(2,:,:)).^2+diff(p(3,:,:)).^2)));     
         else
             t_dec(q,r) = nan;
             totdist_dec(q,r) = nan;
         end
-        success_dec(q,r) = success;
-        
-        
     end
 end
 fprintf("Finished! \n")
-save('comp_all_2')
+save('comp_all_4')
 %% Post-Processing
 
 % Probability of success plots

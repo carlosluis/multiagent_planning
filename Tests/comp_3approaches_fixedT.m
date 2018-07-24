@@ -9,6 +9,8 @@ h = 0.2; % time step duration
 tk = 0:h:T;
 K = T/h + 1; % number of time steps
 k_hor = 15; % horizon length (currently set to 3s)
+Ts = 0.01; % period for interpolation @ 100Hz
+t = 0:Ts:T; % interpolated time vector
 N_vector = 2:2:20; % number of vehicles
 trials = 50; % number os trails per number of vehicles
 
@@ -67,6 +69,7 @@ for k = 1:(K-1)
 end
 
 % Start Test
+fail = 0;
 
 for q = 1:length(N_vector)
     N = N_vector(q);
@@ -86,6 +89,7 @@ for q = 1:length(N_vector)
         pk = [];
         vk = [];
         ak = [];
+        pred = [];
         coll(q,r) = 0;
         term = -5*10^4;
     
@@ -122,9 +126,12 @@ for q = 1:length(N_vector)
                 ak(:,k,n) = ai(:,1);
             end
             if ~feasible(q,r)
+                save(['Fail_' num2str(fail)]); 
+                fail = fail + 1;
                 break;
             end
             l = new_l;
+            pred(:,:,:,k) = l;
         end
         
         if feasible(q,r)

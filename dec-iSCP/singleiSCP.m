@@ -41,7 +41,7 @@ while (i <= K && check)
      
     %Solve and propagate states
     [a,fval,exitflag] = quadprog(H,[],Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
-    if (isempty(a) || exitflag == 0)
+    if (isempty(a))
         p = [];
         v = [];
         success = 0;
@@ -52,7 +52,7 @@ while (i <= K && check)
     v = vec2mat(v,3)';
     a = vec2mat(a,3)';
     fail = CheckforAllColl(p,l,K,E1,rmin,addConstr,order);
-    if ~fail && exitflag == 1
+    if ~fail
         check = false;
     end
     prev_p = p;

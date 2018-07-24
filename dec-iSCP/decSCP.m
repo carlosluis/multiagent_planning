@@ -1,32 +1,32 @@
-clc
+% clc
 % clear all
-close all
-
-% Time settings and variables
-T = 10; % Trajectory final time
-h = 0.2; % time step duration
-tk = 0:h:T;
-K = T/h + 1; % number of time steps
-Ts = 0.01; % period for interpolation @ 100Hz
-t = 0:Ts:T; % interpolated time vector
-success = 1;
-N = 20; % number of vehicles
-
-% Variables for ellipsoid constraint
-order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-rmin = 0.35; % X-Y protection radius for collisions
-c = 2.0; % make this one for spherical constraint
-E = diag([1,1,c]);
-E1 = E^(-1);
-E2 = E^(-order);
-
-% Workspace boundaries
-pmin = [-2.5,-2.5,0.2];
-pmax = [2.5,2.5,2.2];
-
-rmin_init = 0.75;
-
-% Initial positions
+% close all
+% 
+% % Time settings and variables
+% T = 10; % Trajectory final time
+% h = 0.2; % time step duration
+% tk = 0:h:T;
+% K = T/h + 1; % number of time steps
+% Ts = 0.01; % period for interpolation @ 100Hz
+% t = 0:Ts:T; % interpolated time vector
+% success = 1;
+% N = 20; % number of vehicles
+% 
+% % Variables for ellipsoid constraint
+% order = 2; % choose between 2 or 4 for the order of the super ellipsoid
+% rmin = 0.35; % X-Y protection radius for collisions
+% c = 2.0; % make this one for spherical constraint
+% E = diag([1,1,c]);
+% E1 = E^(-1);
+% E2 = E^(-order);
+% 
+% % Workspace boundaries
+% pmin = [-1.0,-1.0,0.2];
+% pmax = [1.0,1.0,2.2];
+% 
+% rmin_init = 0.75;
+% 
+% % Initial positions
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
 %% Some Precomputations
@@ -37,6 +37,9 @@ a = [];
 pk = [];
 vk = [];
 ak = [];
+reached_goal = 0;
+violation = 0;
+error_tol = 0.01;
 % Kinematic model A,b matrices
 A = [1 0 0 h 0 0;
      0 1 0 0 h 0;
@@ -66,7 +69,7 @@ end
 l = [];
 
 % Maximum acceleration in m/s^2
-alim = 0.5;
+alim = 1.0;
 
 tic %measure the time it gets to solve the optimization problem
 for i = 1:N 
@@ -87,6 +90,24 @@ for i = 1:N
     v(:,:,i) = spline(tk,vi,t);
     a(:,:,i) = spline(tk,ai,t);
 end
+
+if success
+    reached_goal = ReachedGoal(pk,pf,K,error_tol,N);
+    % Check if collision constraints were not violated
+    for i = 1:N
+        for j = 1:N
+            if(i~=j)
+                differ = E1*(pk(:,:,i) - pk(:,:,j));
+                dist = (sum(differ.^order,1)).^(1/order);
+                if min(dist) < (rmin-0.05)
+                    [value,index] = min(dist);
+                    violation = 1;
+                end
+            end
+        end
+    end
+end
+pass = success && reached_goal && ~violation
 toc
 
 %%
@@ -230,9 +251,9 @@ figure(6)
 for i = 1:N
     for j = 1:N
         if(i~=j)
-            diff = p(:,:,i) - p(:,:,j);
-            dist = sqrt(sum(diff.^2,1));
-            plot(t, dist, 'LineWidth',1.5);
+            differ = E1*(pk(:,:,i) - pk(:,:,j));
+            dist = (sum(differ.^order,1)).^(1/order);
+            plot(tk, dist, 'LineWidth',1.5);
             grid on;
             hold on;
             xlabel('t [s]')
@@ -240,5 +261,5 @@ for i = 1:N
         end
     end
 end
-plot(t,rmin*ones(length(t),1),'--r','LineWidth',1.5);
+plot(t,rmin*ones(length(tk),1),'--r','LineWidth',1.5);
 legend(h_plot,h_label);

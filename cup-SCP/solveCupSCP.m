@@ -40,8 +40,8 @@ while criteria > epsilon || k <= 2
     a = [];
     success = 0;
     return
-end
-success = exitflag;
+    end
+    success = exitflag;
     [p,v,a] = getStates(po,atot,A_p,A_v,K,N);
     prev_p = p;
     criteria = abs(prev_f0 - f0);
