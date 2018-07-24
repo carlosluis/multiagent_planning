@@ -1,33 +1,39 @@
-% clc
-% clear all
-% close all
-% 
-% % Time settings and variables
-% T = 10; % Trajectory final time
-% h = 0.2; % time step duration
-% tk = 0:h:T;
-% K = T/h + 1; % number of time steps
-% Ts = 0.01; % period for interpolation @ 100Hz
-% t = 0:Ts:T; % interpolated time vector
-% success = 1;
-% N = 20; % number of vehicles
-% 
-% % Variables for ellipsoid constraint
-% order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-% rmin = 0.35; % X-Y protection radius for collisions
-% c = 2.0; % make this one for spherical constraint
-% E = diag([1,1,c]);
-% E1 = E^(-1);
-% E2 = E^(-order);
-% 
-% % Workspace boundaries
-% pmin = [-1.0,-1.0,0.2];
-% pmax = [1.0,1.0,2.2];
-% 
-% rmin_init = 0.75;
-% 
-% % Initial positions
+clc
+clear all
+close all
+
+% Time settings and variables
+T = 7; % Trajectory final time
+h = 0.2; % time step duration
+tk = 0:h:T;
+K = T/h + 1; % number of time steps
+Ts = 0.01; % period for interpolation @ 100Hz
+t = 0:Ts:T; % interpolated time vector
+success = 1;
+N = 2; % number of vehicles
+
+% Variables for ellipsoid constraint
+order = 2; % choose between 2 or 4 for the order of the super ellipsoid
+rmin = 0.31; % X-Y protection radius for collisions
+c = 2.0; % make this one for spherical constraint
+E = diag([1,1,c]);
+E1 = E^(-1);
+E2 = E^(-order);
+
+% Workspace boundaries
+pmin = [-1.0,-1.0,0.2];
+pmax = [1.0,1.0,2.2];
+
+rmin_init = 0.75;
+
+% Initial positions
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+
+po1 = [-1.0, -1.0, 1.0];
+po2 = [1.0, 1.0, 1.0];
+
+po = cat(3,po1,po2);
+pf = cat(3,po2,po1);
 
 %% Some Precomputations
 l = [];
@@ -97,16 +103,18 @@ if success
     for i = 1:N
         for j = 1:N
             if(i~=j)
-                differ = E1*(pk(:,:,i) - pk(:,:,j));
+                differ = E1*(p(:,:,i) - p(:,:,j));
                 dist = (sum(differ.^order,1)).^(1/order);
-                if min(dist) < (rmin-0.05)
+                if min(dist) < (rmin-0.01)
                     [value,index] = min(dist);
                     violation = 1;
+                    fprintf("Collision constraint violated by %.2fcm: vehicles %i and %i @ k = %i \n", (rmin -value)*100,i,j,index)
                 end
             end
         end
     end
 end
+
 pass = success && reached_goal && ~violation
 toc
 
