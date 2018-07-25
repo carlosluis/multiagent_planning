@@ -1,6 +1,10 @@
-//
-// Created by carlos on 16/03/18.
-//
+/*
+ * dmpc.cpp
+ *
+ *  Created On : Mar 16, 2018
+ *      Author : Carlos Luis
+ *      Email  : carlos.luis@robotics.utias.utoronto.ca
+ */
 
 #include <iostream>
 #include "dmpc.h"
@@ -11,21 +15,27 @@ using namespace std::chrono;
 
 bool execution_ended;
 int failed_i_global;
-int bla;
 
 DMPC::DMPC(std::string solver_name,Params params)
 {
     // Load parameters into private variables
+    _solver_name = solver_name;
     _h = params.h;
-    _T = params.maxT;
+    _T = params.T;
     _k_hor = params.k_hor;
     _order = params.order;
     _c = params.c;
     _rmin = params.rmin;
     _alim = params.alim;
-    _K =  _T/_h + 1; // number of time steps
-    srand((unsigned int) time(0)); // initialize srand DO THIS ONLY ONCE
-    _solver_name = solver_name;
+    _vlim = params.vlim;
+    _freq = params.freq;
+    _goal_tol = params.goal_tol;
+    _collision_tol = params.collision_tol;
+    _speed = params.speed;
+    _K = _T / _h + 1;
+
+    // Initialize srand DO THIS ONLY ONCE
+    srand((unsigned int) time(0));
 
     // Ellipsoid definitions
     Vector3d v(3);
@@ -59,21 +69,32 @@ DMPC::DMPC(std::string solver_name,Params params)
     _pmax << 1.0, 1.0, 2.2;
 }
 
-void DMPC::get_lambda_A_v_mat(const int &K)
-{
-    MatrixXd Apos = MatrixXd::Zero(3*K,3*K);
-    MatrixXd Avel = MatrixXd::Zero(3*K,3*K);
-    MatrixXd prev_row =  MatrixXd::Zero(6,3*K);
-    MatrixXd new_row =  MatrixXd::Zero(6,3*K);
-    MatrixXd add_b = MatrixXd::Zero(6,3*K);
+/***************************************************************************
+    *
+    *  MPC Matrices
+    *
+    **************************************************************************/
+
+void DMPC::get_lambda_A_v_mat(const int &K) {
+    /*
+     * Matrices of the form:
+     *         [b           0        ...   0]
+     * Lambda =|Ab          b        ...   0|
+     *         |..                   ...   0|
+     *         [A^(K-1)b   A^(K-2)b  ...   b]
+     */
+    MatrixXd Apos = MatrixXd::Zero(3 * K, 3 * K);
+    MatrixXd Avel = MatrixXd::Zero(3 * K, 3 * K);
+    MatrixXd prev_row = MatrixXd::Zero(6, 3 * K);
+    MatrixXd new_row = MatrixXd::Zero(6, 3 * K);
+    MatrixXd add_b = MatrixXd::Zero(6, 3 * K);
     int idx = 0;
-    for(int k=0; k < K; ++k)
-    {
-        add_b << MatrixXd::Zero(_b.rows(),_b.cols()*(k)),_b,
-                MatrixXd::Zero(_b.rows(),_b.cols()*(K-k-1));
-        new_row = _A*prev_row + add_b;
-        Apos.middleRows(idx,3) = new_row.middleRows(0,3);
-        Avel.middleRows(idx,3) = new_row.middleRows(3,3);
+    for (int k = 0; k < K; ++k) {
+        add_b << MatrixXd::Zero(_b.rows(), _b.cols() * (k)), _b,
+                MatrixXd::Zero(_b.rows(), _b.cols() * (K - k - 1));
+        new_row = _A * prev_row + add_b;
+        Apos.middleRows(idx, 3) = new_row.middleRows(0, 3);
+        Avel.middleRows(idx, 3) = new_row.middleRows(3, 3);
         prev_row = new_row;
         idx += 3;
     }
@@ -81,53 +102,80 @@ void DMPC::get_lambda_A_v_mat(const int &K)
     _A_v = Avel;
 }
 
-void DMPC::get_delta_mat(const int &K)
-{
-    MatrixXd Delta = MatrixXd::Zero(3*K,3*K);
-    MatrixXd new_row = MatrixXd::Zero(3,3*K);
-    Delta.topRows(3) << MatrixXd::Identity(3,3),
-                        MatrixXd::Zero(3,3*(K-1));
-    MatrixXd b = MatrixXd::Zero(3,6);
-    b << (-1)*MatrixXd::Identity(3,3), MatrixXd::Identity(3,3);
+void DMPC::get_delta_mat(const int &K) {
+    /*
+     * Matrix of the form:
+     *        [ I   0   0 ...   0   0]
+     * Delta =|-I   I   0 ...   0   0|
+     *        | 0  -I   I ...   0   0|
+     *        | ...  ...  ...   0   0|
+     *        [ 0   0   0 ...  -I   I]
+     */
+    MatrixXd Delta = MatrixXd::Zero(3 * K, 3 * K);
+    MatrixXd new_row = MatrixXd::Zero(3, 3 * K);
+    Delta.topRows(3) << MatrixXd::Identity(3, 3),
+            MatrixXd::Zero(3, 3 * (K - 1));
+    MatrixXd b = MatrixXd::Zero(3, 6);
+    b << (-1) * MatrixXd::Identity(3, 3), MatrixXd::Identity(3, 3);
     int idx = 3;
-    for(int k=0; k<K-1; ++k)
-    {
-       new_row <<  MatrixXd::Zero(3,3*k),b,MatrixXd::Zero(3,3*(K-k-2));
-       Delta.middleRows(idx,3) = new_row;
-       idx += 3;
+    for (int k = 0; k < K - 1; ++k) {
+        new_row << MatrixXd::Zero(3, 3 * k), b, MatrixXd::Zero(3,
+                                                               3 * (K - k - 2));
+        Delta.middleRows(idx, 3) = new_row;
+        idx += 3;
     }
 
     _Delta = Delta;
 }
 
-void DMPC::get_A0_mat(const int &K)
-{
-    MatrixXd A0 = MatrixXd::Zero(3*K,6);
-    MatrixXd new_row = MatrixXd::Zero(6,6);
-    MatrixXd prev_row = MatrixXd::Identity(6,6);
+void DMPC::get_A0_mat(const int &K) {
+    /*
+     * Matrix of the form:
+     *
+     * A0 = [A  A^2  ...  A^K]'
+     *
+     */
+
+    MatrixXd A0 = MatrixXd::Zero(3 * K, 6);
+    MatrixXd new_row = MatrixXd::Zero(6, 6);
+    MatrixXd prev_row = MatrixXd::Identity(6, 6);
     int idx = 0;
-    for(int k=0; k<K; ++k)
-    {
-        new_row = _A*prev_row;
-        A0.middleRows(idx,3) = new_row.middleRows(0,3);
+    for (int k = 0; k < K; ++k) {
+        new_row = _A * prev_row;
+        A0.middleRows(idx, 3) = new_row.middleRows(0, 3);
         prev_row = new_row;
         idx += 3;
     }
     _A0 = A0;
 }
 
-Trajectory DMPC::init_dmpc(const Vector3d &po, const Vector3d &pf)
-{
+/***************************************************************************
+    *
+    *  Initialization
+    *
+    **************************************************************************/
+
+Trajectory DMPC::init_dmpc(const Vector3d &po, const Vector3d &pf) {
+
     Trajectory init;
+
+    // The diference tells us the direction of movement to go from po to pf
     Vector3d diff = pf - po;
-    VectorXd t = VectorXd::LinSpaced(_K,0,(_K-1)*_h);
+
+    // Matlab equivalent to t = 0:h:(K-1)*h
+    VectorXd t = VectorXd::LinSpaced(_K, 0, (_K - 1) * _h);
+
+    // Restrict solution to the first k_hor steps
     VectorXd t_hor = t.head(_k_hor);
-    init.pos = MatrixXd::Zero(3,t_hor.size());
-    init.vel = MatrixXd::Zero(3,t_hor.size());
-    init.acc = MatrixXd::Zero(3,t_hor.size());
-    for (int i=0; i<t_hor.size(); ++i)
-    {
-        init.pos.col(i) = po + t_hor[i]*diff/10;   //((_K-1)*_h);
+
+    // Initialize all matrices at zero
+    init.pos = MatrixXd::Zero(3, t_hor.size());
+    init.vel = MatrixXd::Zero(3, t_hor.size());
+    init.acc = MatrixXd::Zero(3, t_hor.size());
+
+    // Define a straight line from po to pf
+    for (int i = 0; i < t_hor.size(); ++i) {
+        init.pos.col(i) = po + t_hor[i] * diff / 10;   //((_K-1)*_h);
     }
     return init;
 }
@@ -135,26 +183,32 @@ Trajectory DMPC::init_dmpc(const Vector3d &po, const Vector3d &pf)
 MatrixXd DMPC::gen_rand_pts(const int &N,
                             const Vector3d &pmin,
                             const Vector3d &pmax,
-                            const float &rmin)
-{
-    MatrixXd pts = MatrixXd::Zero(3,N);
-    Vector3d candidate = MatrixXd::Zero(3,1);
+                            const float &rmin) {
+    MatrixXd pts = MatrixXd::Zero(3, N);
+    Vector3d candidate = MatrixXd::Zero(3, 1);
     VectorXd dist;
+    bool pass = false;
 
     // Generate first point
     pts.col(0) = pmin.array()
-                 + (pmax-pmin).array()*((MatrixXd::Random(3,1).array() + 1)/2);
-    bool pass = false;
-    for (int n=1; n < N; ++n)
-    {
-        while(!pass)
-        {
-            candidate = pmin.array()
-                        + (pmax-pmin).array()*((MatrixXd::Random(3,1).array() + 1)/2);
-            dist = ((((pts.leftCols(n)).colwise()
-                   - candidate).array().square()).colwise().sum()).array().sqrt();
+                 + (pmax - pmin).array() *
+                   ((MatrixXd::Random(3, 1).array() + 1) / 2);
 
-            for (int k=0; k < n; ++k){
+    for (int n = 1; n < N; ++n) {
+        while (!pass) {
+            // Candidate picked randomly within workspace boundaries
+            candidate = pmin.array()
+                        + (pmax - pmin).array() *
+                          ((MatrixXd::Random(3, 1).array() + 1) / 2);
+
+            // Calculate distance to every previous pts calculated
+            dist = ((((pts.leftCols(n)).colwise()
+                      -
+                      candidate).array().square()).colwise().sum()).array().sqrt();
+
+            // If the candidate is sufficiently separated from previous pts,
+            // then we add it to the Matrix of valid pts
+            for (int k = 0; k < n; ++k) {
                 pass = dist[k] > rmin;
                 if (!pass)
                     break;
@@ -164,37 +218,38 @@ MatrixXd DMPC::gen_rand_pts(const int &N,
         }
         pass = false;
     }
-//    cout << "Random Points are:" << endl << pts << endl;
     return pts;
 }
 
-MatrixXd DMPC::gen_rand_perm(const MatrixXd &po)
-{
+MatrixXd DMPC::gen_rand_perm(const MatrixXd &po) {
     int N = po.cols();
     std::vector<int> array;
     std::vector<int> array_aux;
     int perm[N];
-    MatrixXd pf = MatrixXd::Zero(3,N);
+    MatrixXd pf = MatrixXd::Zero(3, N);
     for (int i = 0; i < N; i++) array.push_back(i);
     array_aux = array;
-    // Random permutation the order
+
+    // Random permute the order, making sure that po(i) != pf(i)
+    // Such that every agent has to move during the transition
     for (int i = 0; i < N; i++) {
         int j;
         array_aux.clear();
         array_aux = array;
-        array_aux.erase(std::remove(array_aux.begin(), array_aux.end(), i), array_aux.end());
-        if (i == N-1){
+        array_aux.erase(std::remove(array_aux.begin(), array_aux.end(), i),
+                        array_aux.end());
+        if (i == N - 1) {
             perm[i] = array.at(0);
-        }
-
-        else if (i == N-2 && array_aux.back() == N-1){
+        } else if (i == N - 2 && array_aux.back() == N - 1) {
             perm[i] = array_aux.back();
-            array.erase(std::remove(array.begin(), array.end(), perm[i]), array.end());
-        }
-        else{
-            j = rand() % (N-i-1);
+            array.erase(std::remove(array.begin(), array.end(), perm[i]),
+                        array.end());
+        } else {
+            j = rand() % (N - i - 1);
             perm[i] = array_aux.at(j);
-            array.erase(std::remove(array.begin(), array.end(), array_aux.at(j)), array.end());
+            array.erase(
+                    std::remove(array.begin(), array.end(), array_aux.at(j)),
+                    array.end());
         }
     }
 
@@ -214,14 +269,18 @@ void DMPC::set_initial_pts(const MatrixXd &po) {
     for (int i = 0; i < 3; ++i) {
         if (_po.row(i).maxCoeff(&r, &c) > _pmax(i)) {
             _po(i, c) = _pmax(i);
-            cout << "WARNING: initial position of vehicle #" << c << " is out of bounds" << endl;
-            cout << "Rewriting initial position to be inside of workspace" << endl;
+            cout << "WARNING: initial position of vehicle #" << c
+                 << " is out of bounds" << endl;
+            cout << "Rewriting initial position to be inside of workspace"
+                 << endl;
         }
 
         if (_po.row(i).minCoeff(&r, &c) < _pmin(i)) {
             _po(i, c) = _pmin(i);
-            cout << "WARNING: initial position of vehicle #" << c << " is out of bounds" << endl;
-            cout << "Rewriting initial position to be inside of workspace" << endl;
+            cout << "WARNING: initial position of vehicle #" << c
+                 << " is out of bounds" << endl;
+            cout << "Rewriting initial position to be inside of workspace"
+                 << endl;
         }
     }
 
@@ -253,14 +312,18 @@ void DMPC::set_final_pts(const MatrixXd &pf) {
     for (int i = 0; i < 3; ++i) {
         if (_pf.row(i).maxCoeff(&r, &c) > _pmax(i)) {
             _pf(i, c) = _pmax(i);
-            cout << "WARNING: final position of vehicle #" << c << " is out of bounds" << endl;
-            cout << "Rewriting final position to be inside of workspace" << endl;
+            cout << "WARNING: final position of vehicle #" << c
+                 << " is out of bounds" << endl;
+            cout << "Rewriting final position to be inside of workspace"
+                 << endl;
         }
 
         if (_pf.row(i).minCoeff(&r, &c) < _pmin(i)) {
             _pf(i, c) = _pmin(i);
-            cout << "WARNING: initial position of vehicle #" << c << " is out of bounds" << endl;
-            cout << "Rewriting initial position to be inside of workspace" << endl;
+            cout << "WARNING: initial position of vehicle #" << c
+                 << " is out of bounds" << endl;
+            cout << "Rewriting initial position to be inside of workspace"
+                 << endl;
         }
     }
 
@@ -282,6 +345,17 @@ void DMPC::set_final_pts(const MatrixXd &pf) {
         }
     }
 }
+
+void DMPC::set_boundaries(const Vector3d &pmin, const Vector3d &pmax) {
+    _pmin = pmin;
+    _pmax = pmax;
+}
+
+/***************************************************************************
+    *
+    *  Collision checking and constraint building
+    *
+    **************************************************************************/
 
 bool DMPC::check_collisions(const Vector3d &prev_p,
                             const std::vector<MatrixXd> &obs,
@@ -316,6 +390,9 @@ std::vector<bool> DMPC::check_collisionsv2(const Vector3d &prev_p,
     std::vector<bool> viol_constr(N);
     std::vector<double> dist(N-1);
     int idx = 0;
+
+    // Check the distance from i-th agent to each of the N-1 neighbours
+    // Populate the viol_constr array with the conflicting neighbours
     for (int i = 0; i < N; ++i)
     {
         if (i != n)
@@ -334,6 +411,8 @@ std::vector<bool> DMPC::check_collisionsv2(const Vector3d &prev_p,
         }
     }
 
+    // In case no violations occured, we clear the array to check outside
+    // this function its size and make a decision of what to do next
     if (std::find(violation.begin(),violation.end(),true) == violation.end())
         viol_constr.clear();
 
@@ -359,6 +438,8 @@ Constraint DMPC::build_collconstraint(const Vector3d &prev_p,
     initial_states << po,vo;
     Constraint collision;
 
+    // Build the collision constraint based on its linearization around the
+    // previous solution (prev_p & pj are both past information)
     for (int i=0; i < N_obs; ++i)
     {
         if(i!=n)
@@ -406,6 +487,8 @@ Constraint DMPC::build_collconstraintv2(const Vector3d &prev_p,
     Constraint collision;
     collision.prev_dist = VectorXd::Zero(N_violation);
 
+    // Build the collision constraint based on its linearization around the
+    // previous solution (prev_p & pj are both past information)
     for (int i=0; i < N_obs; ++i)
     {
         if(i!=n && violation_vec[i])
@@ -433,35 +516,39 @@ Constraint DMPC::build_collconstraintv2(const Vector3d &prev_p,
     return collision;
 }
 
+/***************************************************************************
+    *
+    *  QP building and solving
+    *
+    **************************************************************************/
+
 Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
-                   const Vector3d &vo, const Vector3d &ao,
-                   const int &n, const std::vector<MatrixXd> &obs)
+                         const Vector3d &vo, const Vector3d &ao,
+                         const int &n, const std::vector<MatrixXd> &obs)
 {
-    int N = obs.size(); // number of vehicles for transition
-    bool violation; // check if collision constraint is violated in horizon
-    Trajectory solution;
-    Constraint coll_constraint;
-    MatrixXd prev_p = obs.at(n); // previous solution of n-th vehicle
-    VectorXd a0_1;
+    int N = obs.size();          // Number of vehicles in transition
+    bool violation;              // True if collision constraint is violated
+    Trajectory solution;         // Pos, vel, acc profiles
+    Constraint coll_constraint;  // Linear inequality constraint Ax <= b
+    MatrixXd prev_p = obs.at(n); // Previous position horizon of n-th vehicle
+    VectorXd a0_1;               // Vector with initial acceleration
 
     // Initial state joint vector (pos + vel)
     Matrix <double, 6,1> initial_states;
     initial_states << po,vo;
 
-    // Define optimization problem constants
-
     // Amount of variables/ ineq constraints: no collision case
-    int n_var = 3*_k_hor; // 3D acceleration vector for the horizon length
-    int n_ineq = 2*(3*_k_hor)+2*(3*_k_hor); // workspace boundaries + acc limits
+    int n_var = 3*_k_hor;                   // 3D acc vector over the horizon
+    int n_ineq = 2*(3*_k_hor)+2*(3*_k_hor); // Workspace boundaries + acc limits
 
     // Amount of variables/ ineq constraints: collision case
-    int n_var_aug = n_var + N -1; // add slack variable for constraint relaxation
-    int n_ineq_aug = 2*(N-1) + n_ineq; // add collisions + slack variable < 0
+    int n_var_aug = n_var + N -1;      // Add slack variable for relaxation
+    int n_ineq_aug = 2*(N-1) + n_ineq; // Add collisions + slack variable < 0
 
     // Number of variables / ineq constraints to be used by the qp
     int qp_nvar;
     int qp_nineq;
-    int qp_neq = 0; // No equality constraints in this problem
+    int qp_neq = 0;  // No equality constraints in this problem
 
     // Collision constraints augmented with relaxation variable
     MatrixXd collconstrA_aug = MatrixXd::Zero(2*(N-1), n_var_aug);
@@ -645,23 +732,10 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
                + R);
     }
 
-//    t2 = high_resolution_clock::now();
-//    duration = duration_cast<microseconds>( t2 - t1 ).count();
-//    cout << "Building the QP computation time = "
-//         << duration/1000000.0 << "s" << endl;
-
-//    t1 = high_resolution_clock::now();
     // Declare quadprog object and solve the QP
     QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
 
     _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
-
-//    t2 = high_resolution_clock::now();
-//    duration = duration_cast<microseconds>( t2 - t1 ).count();
-//    cout << "Solving the optimization computation time = "
-//         << duration/1000000.0 << "s" << endl;
-
-//    t1 = high_resolution_clock::now();
     x = _qp.result();
     _fail = _qp.fail();
     if(_fail){
@@ -694,60 +768,52 @@ Trajectory DMPC::solveQP(const Vector3d &po, const Vector3d &pf,
     solution.pos = pos_aux;
     solution.vel = vel_aux;
     solution.acc = acc_aux;
-
-//    t2 = high_resolution_clock::now();
-//    duration = duration_cast<microseconds>( t2 - t1 ).count();
-//    cout << "Formatting the solution computation time = "
-//         << duration/1000000.0 << "s" << endl
-//         << "-----------------------------" << endl;
-
     return solution;
 }
 
 Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                          const Vector3d &vo, const Vector3d &ao,
-                         const int &n, const std::vector<MatrixXd> &obs, const int &id_cluster)
+                         const int &n, const std::vector<MatrixXd> &obs,
+                           const int &id_cluster)
 {
-    CPXENVptr env = _env.at(id_cluster);
-    CPXLPptr lp = _lp.at(id_cluster);
+    CPXENVptr env = _env.at(id_cluster); // CPLEX environment for this cluster
+    CPXLPptr lp = _lp.at(id_cluster);    // CPLEX problem object
 
-    int status = 0;
-
-    int N = obs.size(); // number of vehicles for transition
-    int N_violation;
-    bool violation = false;
-    std::vector<bool> violation_vec; // check if collision constraint is violated in horizon
-    Trajectory solution;
-    Constraint coll_constraint;
-    MatrixXd prev_p = obs.at(n); // previous solution of n-th vehicle
-    VectorXd a0_1;
+    int N = obs.size();              // Number of vehicles in transition
+    int N_violation;                 // Number of conflicting neighbours
+    bool violation;                  // True if collision constraint is violated
+    Trajectory solution;             // Pos, vel, acc profiles
+    Constraint coll_constraint;      // Linear inequality constraint Ax <= b
+    MatrixXd prev_p = obs.at(n);     // Previous pos horizon of n-th vehicle
+    VectorXd a0_1;                   // Vector with initial acceleration
+    std::vector<bool> violation_vec; // IDs of conflicting neighbours
+    int status = 0;                  // exit flag of any QP solver
 
     // Initial state joint vector (pos + vel)
     Matrix <double, 6,1> initial_states;
     initial_states << po,vo;
 
-    // Define optimization problem constants
-
     // Amount of variables/ ineq constraints: no collision case
-    int n_var = 3*_k_hor; // 3D acceleration vector for the horizon length
-    int n_ineq = 2*(3*_k_hor)+2*(3*_k_hor); // workspace boundaries + acc limits
+    int n_var = 3*_k_hor;                   // 3D acc over the horizon
+    int n_ineq = 2*(3*_k_hor)+2*(3*_k_hor); // Workspace boundaries + acc limits
 
-    // Number of variables / ineq constraints to be used by the qp
+    // Number of variables / ineq constraints to be used by the QP
     int qp_nvar;
     int qp_nineq;
     int qp_neq = 0; // No equality constraints in this problem
 
     // Penalty matrices for DMPC calculation
-    MatrixXd Q = MatrixXd::Zero(n_var,n_var);
-    MatrixXd R = MatrixXd::Zero(n_var,n_var);
-    MatrixXd S = MatrixXd::Zero(n_var,n_var);
+    MatrixXd Q = MatrixXd::Zero(n_var,n_var);  // Trajectory error
+    MatrixXd R = MatrixXd::Zero(n_var,n_var);  // Input magnitude
+    MatrixXd S = MatrixXd::Zero(n_var,n_var);  // Input variation
 
     // Final Quadratic and linear matrices for QP solver
     MatrixXd H;
     VectorXd f;
 
-    // Tuning factor of speed
-    int spd = 1;
+    // Tuning factors
+    int spd = _speed;
+    float collision_tol = _collision_tol;
     int term = -1*pow(10,5);
 
     // Auxiliary variables
@@ -780,36 +846,41 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     MatrixXd A0_aug;
 
     // QP results
-    VectorXd x; // complete result
-    VectorXd p; // position vector solution
-    VectorXd v; // velocity vector solution
-    VectorXd a; // acceleration vector solution
-    int debug_k = 0;
+    VectorXd x;  // Complete result
+    VectorXd p;  // Position vector solution
+    VectorXd v;  // Velocity vector solution
+    VectorXd a;  // Acceleration vector solution
+
+    // Check for collisions in the prediction horizon
     for (int k=0; k < _k_hor; ++k)
     {
         violation_vec = check_collisionsv2(prev_p.col(k),obs,n,k);
         violation = violation_vec.size() > 0;
         if (violation) // violations occured
         {
-            N_violation = std::count (violation_vec.begin(), violation_vec.end(), true);
+            N_violation = std::count (violation_vec.begin(),
+                                      violation_vec.end(), true);
 
             // Amount of variables/ ineq constraints: collision case
-            n_var_aug = n_var + N_violation; // add slack variable for constraint relaxation
-            n_ineq_aug = 3*N_violation + n_ineq; // add collisions + slack variable bounds
+            n_var_aug = n_var + N_violation;     // Add relaxation variables
+            n_ineq_aug = 3*N_violation + n_ineq; // Add collisions + bounds
 
             // Collision constraints augmented with relaxation variable
             collconstrA_aug = MatrixXd::Zero(3*N_violation, n_var_aug);
             collconstrb_aug = VectorXd::Zero(3*N_violation);
 
-            coll_constraint = build_collconstraintv2(prev_p.col(k),po,vo,obs,violation_vec,n,k);
+            coll_constraint = build_collconstraintv2(prev_p.col(k),po,vo,obs,
+                                                     violation_vec,n,k);
             MatrixXd diag_prevdist = coll_constraint.prev_dist.asDiagonal();
 
             collconstrA_aug << coll_constraint.A, diag_prevdist,
-                    MatrixXd::Zero(N_violation,n_var), MatrixXd::Identity(N_violation,N_violation),
-                    MatrixXd::Zero(N_violation,n_var), -MatrixXd::Identity(N_violation,N_violation);
+                               MatrixXd::Zero(N_violation,n_var),
+                               MatrixXd::Identity(N_violation,N_violation),
+                               MatrixXd::Zero(N_violation,n_var),
+                              -MatrixXd::Identity(N_violation,N_violation);
 
-            collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), 0.05*VectorXd::Ones(N_violation);
-            debug_k = k;
+            collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation),
+                               collision_tol*VectorXd::Ones(N_violation);
             break;
         }
     }
@@ -819,7 +890,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     // Case of no collisions and farther than 1m from goal
     if (!violation && (po-pf).norm() >= 1)
     {
-        Q.block(3*(_k_hor-spd),3*(_k_hor-spd),3*spd,3*spd) = 1000*MatrixXd::Identity(3*spd,3*spd);
+        Q.block(3*(_k_hor-spd),3*(_k_hor-spd),3*spd,3*spd) =
+                1000*MatrixXd::Identity(3*spd,3*spd);
         R = 1*MatrixXd::Identity(n_var,n_var);
         S = 10*MatrixXd::Identity(n_var,n_var);
     }
@@ -827,7 +899,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         // Case of no collisions and close to goal
     else if (!violation && (po-pf).norm() < 1)
     {
-        Q.block(3*(_k_hor-spd),3*(_k_hor-spd),3*spd,3*spd) = 10000*MatrixXd::Identity(3*spd,3*spd);
+        Q.block(3*(_k_hor-spd),3*(_k_hor-spd),3*spd,3*spd) =
+                10000*MatrixXd::Identity(3*spd,3*spd);
         R = 1*MatrixXd::Identity(n_var,n_var);
         S = 10*MatrixXd::Identity(n_var,n_var);
     }
@@ -835,7 +908,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         // Case of collisions in the horizon
     else
     {
-        Q.block(3*(_k_hor-spd),3*(_k_hor-spd),3*spd,3*spd) = 1000*MatrixXd::Identity(3*spd,3*spd);
+        Q.block(3*(_k_hor-spd),3*(_k_hor-spd),3*spd,3*spd) =
+                1000*MatrixXd::Identity(3*spd,3*spd);
         R = 1*MatrixXd::Identity(n_var,n_var);
         S = 100*MatrixXd::Identity(n_var,n_var);
     }
@@ -878,7 +952,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         // 2) workspace boundaries
         // 3) acceleration limits
         bin = VectorXd::Zero(n_ineq_aug);
-        bin << collconstrb_aug,
+        bin <<  collconstrb_aug,
                 _pmax.replicate(_k_hor,1) - init_propagation,
                 -_pmin.replicate(_k_hor,1) + init_propagation,
                 alim_rep, alim_rep;
@@ -894,9 +968,10 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         f_w << VectorXd::Zero(n_var),
                 term*coll_constraint.prev_dist.array().inverse() ;
 
-        //NOTE: W *NEEDS* to be different than zero, if not H has determinant 0
+        // W *NEEDS* to be different than zero, if not H has determinant 0
 
-        W.block(n_var,n_var,N_violation,N_violation) = pow(10,0)*(MatrixXd::Identity(N_violation,N_violation));
+        W.block(n_var,n_var,N_violation,N_violation) =
+                pow(10,0)*(MatrixXd::Identity(N_violation,N_violation));
 
         a0_1 = VectorXd::Zero(n_var_aug);
         a0_1 << ao, VectorXd::Zero(3*(_k_hor-1) + N_violation);
@@ -958,10 +1033,10 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     if (!strcmp(_solver_name.c_str(),"quadprog")) // Eigen-quadprog solver
     {
         // Declare quadprog object and solve the QP
-        QuadProgDense _qp(qp_nvar,qp_neq,qp_nineq);
-        _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
-        x = _qp.result();
-        status = _qp.fail();
+        QuadProgDense qp(qp_nvar,qp_neq,qp_nineq);
+        qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
+        x = qp.result();
+        status = qp.fail();
         int tries = 0;
         float lim = 0.05;
 
@@ -969,8 +1044,10 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             lim = 2*lim;
             term = 2*term;
             // Debug print
-            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim <<  endl;
-            collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim*VectorXd::Ones(N_violation);
+//            cout << "Infeasible - Retrying..." << endl;
+            collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation),
+                               lim*VectorXd::Ones(N_violation);
+
             bin << collconstrb_aug,
                     _pmax.replicate(_k_hor,1) - init_propagation,
                     -_pmin.replicate(_k_hor,1) + init_propagation,
@@ -979,14 +1056,15 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             f_w << VectorXd::Zero(n_var),
 //                    term * VectorXd::Ones(N_violation);
                     term*coll_constraint.prev_dist.array().inverse() ;
+
             f = -2*(pf_rep.transpose()*Q_aug*Lambda_aug -
                     init_propagation_aug.transpose()*Q_aug*Lambda_aug +
                     a0_1.transpose()*S_aug*Delta_aug);
 
             f += f_w;
-            _qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
-            x = _qp.result();
-            status = _qp.fail();
+            qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
+            x = qp.result();
+            status = qp.fail();
             tries++;
         }
     }
@@ -994,15 +1072,19 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     else if (!strcmp(_solver_name.c_str(),"ooqp"))
     {
         high_resolution_clock::time_point t1 = high_resolution_clock::now();
-        status = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x,true);
+        status = !ooqpei::OoqpEigenInterface::solve(H.sparseView(),
+                                                    f, Ain.sparseView(),
+                                                    bin, x,true);
         int tries = 0;
         float lim = 0.05;
         while (status && tries < 20) {
             lim = 2 * lim;
             term = 2 * term;
             // Debug print
-            cout << "Infeasible - Retrying with a more relaxed bound on collision violation = " << lim << endl;
-            collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation), lim * VectorXd::Ones(N_violation);
+//            cout << "Infeasible - Retrying..." << endl;
+            collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation),
+                               lim * VectorXd::Ones(N_violation);
+
             bin << collconstrb_aug,
                     _pmax.replicate(_k_hor, 1) - init_propagation,
                     -_pmin.replicate(_k_hor, 1) + init_propagation,
@@ -1011,12 +1093,15 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             f_w << VectorXd::Zero(n_var),
 //                    term * VectorXd::Ones(N_violation);
                     term*coll_constraint.prev_dist.array().inverse() ;
+
             f = -2 * (pf_rep.transpose() * Q_aug * Lambda_aug -
                       init_propagation_aug.transpose() * Q_aug * Lambda_aug +
                       a0_1.transpose() * S_aug * Delta_aug);
 
             f += f_w;
-            status = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f, Ain.sparseView(), bin, x);
+            status = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f,
+                                                        Ain.sparseView(),
+                                                        bin, x);
             tries++;
         }
 
@@ -1032,7 +1117,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         CPXsetdblparam(env,CPX_PARAM_BAREPCOMP, 1e-8);
 //        CPXsetintparam(env,CPX_PARAM_BARITLIM,1000);
 //        CPXsetintparam(env,CPX_PARAM_BARORDER, 2);
-        CPXsetintparam(env,CPXPARAM_QPMethod,CPX_ALG_DUAL);
+//        CPXsetintparam(env,CPXPARAM_QPMethod,CPX_ALG_DUAL);
         high_resolution_clock::time_point t1 = high_resolution_clock::now();
         int lpstat;
         double objval;
@@ -1044,7 +1129,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         int *hmatbeg,*hmatcnt,*hmatind;
         double *hmatval;
 
-        // Variables for the sparse rep. of the stacked constraint matrices [A_ineq;A_eq]
+        // Variables for the sparse rep. of the constraint matrix Ain
         int tnumrows,tnumcols,tnumnz;
         int *tmatbeg,*tmatcnt,*tmatind;
         double *tmatval;
@@ -1068,7 +1153,6 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             objective[i] = f(i);
         }
         // Lower and upper bounds on each of the variables
-        // TODO: Use this instead of A_ineq_box
         for (uint i = 0; i < f.rows(); i++) {
             lb[i] = -CPX_INFBOUND;
             ub[i] = CPX_INFBOUND;
@@ -1078,8 +1162,6 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             rhs[i] = bin(i);
             sense[i] = 'L';
         }
-
-//        std::cout << "number of environments = " << _env.size() << "id = " << id_cluster << endl;
 
         // Copy linear problem, constraint matrix. specify that it is a minimization problem
         CPXcopylp(env, lp, tnumcols, tnumrows, CPX_MIN, objective, rhs, sense, tmatbeg, tmatcnt, tmatind, tmatval, lb, ub, NULL);
@@ -1108,10 +1190,6 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         if (status) {
             printf("Failed to retreive CPXsolution.\n");
             terminate_cplex(id_cluster);
-        } else {
-            if (lpstat != 1) {
-//                printf("******Failed\n");
-            }
         }
 
         x = VectorXd::Zero(qp_nvar);
@@ -1128,10 +1206,6 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
 
     if(status){
         cout << "Fail completely" << endl;
-//        // Debug print
-//        cout << "distance to neighbours @ k = " << debug_k << " = " << endl << coll_constraint.prev_dist << endl;
-//
-//        cout << "bin_coll = " << endl << coll_constraint.b << endl;
         execution_ended = true;
         failed_i_global = n;
     }
@@ -1139,7 +1213,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     // Extract acceleration from the result
     a = x.head(n_var);
 
-    // propagate states
+    // Propagate states
     p = _Lambda*a + init_propagation;
     v = _A_v*a + vo.replicate(_k_hor,1);
 
@@ -1163,11 +1237,17 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     return solution;
 }
 
-std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
-                                        const MatrixXd &pf)
+/***************************************************************************
+    *
+    *  DMPC algorithm (all versions)
+    *
+    **************************************************************************/
+
+std::vector<Trajectory> DMPC::solveDMPC()
 {
-    int N = po.cols(); // Number of agents = number of rows of po
-    int N_cmd = pf.cols(); // Number of agents of transition = number of rows of pf
+    int N = _po.cols(); // Number of agents = number of rows of po
+    int N_cmd = _pf.cols(); // Number of agents of transition = number of
+    // rows of pf
 
     // Variables
     std::vector<Trajectory> all_trajectories(N_cmd);
@@ -1195,7 +1275,7 @@ std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
 
         for (int i=0; i < N-N_cmd; ++i)
         {
-            rep = (po.col(i+N_cmd)).replicate(_k_hor,1);
+            rep = (_po.col(i+N_cmd)).replicate(_k_hor,1);
             int idx = 0;
             for (int l = 0; l < _k_hor; ++l)
             {
@@ -1224,8 +1304,8 @@ std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
                     trajectory_i.pos = MatrixXd::Zero(3,_k_hor);
                     trajectory_i.vel = MatrixXd::Zero(3,_k_hor);
                     trajectory_i.acc = MatrixXd::Zero(3,_k_hor);
-                    poi = po.col(i);
-                    pfi = pf.col(i);
+                    poi = _po.col(i);
+                    pfi = _pf.col(i);
                     trajectory_i = init_dmpc(poi,pfi);
                     _fail = 0;
                 }
@@ -1235,7 +1315,7 @@ std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
                     pok = all_trajectories.at(i).pos.col(k-1);
                     vok = all_trajectories.at(i).vel.col(k-1);
                     aok = all_trajectories.at(i).acc.col(k-1);
-                    trajectory_i = solveQP(pok,pf.col(i),vok,aok,i,prev_obs);
+                    trajectory_i = solveQP(pok,_pf.col(i),vok,aok,i,prev_obs);
 //                t2 = high_resolution_clock::now();
 //                auto duration = duration_cast<microseconds>( t2 - t1 ).count();
 //                cout << "Computation time of solveQP = "
@@ -1278,7 +1358,7 @@ std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
     {
         cout << "Optimization problem feasible: solution found" << endl;
         // Check if every agent reached its goal
-        arrived = reached_goal(all_trajectories,pf,0.05,N_cmd);
+        arrived = reached_goal(all_trajectories,_pf,0.05,N_cmd);
     }
 
     t1 = high_resolution_clock::now();
@@ -1287,7 +1367,7 @@ std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
     {
         cout << "All vehicles reached their goals" << endl;
         // Interpolate for better resolution (e.g. 100 Hz)
-        solution = interp_trajectory(all_trajectories,0.01);
+        solution = interp_trajectory(all_trajectories,1.0 / _freq);
 
         // Check if collision constraints were not violated
         bool violation = collision_violation(solution);
@@ -1302,11 +1382,11 @@ std::vector<Trajectory> DMPC::solveDMPC(const MatrixXd &po,
     return solution;
 }
 
-std::vector<Trajectory> DMPC::solveParallelDMPC(const MatrixXd &po,
-                                          const MatrixXd &pf)
+std::vector<Trajectory> DMPC::solveParallelDMPC()
 {
-    int N = po.cols(); // Number of agents = number of rows of po
-    int N_cmd = pf.cols(); // Number of agents of transition = number of rows of pf
+    int N = _po.cols(); // Number of agents = number of rows of po
+    int N_cmd = _pf.cols(); // Number of agents of transition = number of
+    // rows of pf
     execution_ended = false; // reset variable before solving
 
     // Variables
@@ -1363,7 +1443,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPC(const MatrixXd &po,
 
         for (int i=N_cmd-1; i < N; ++i)
         {
-            rep = (po.col(i)).replicate(_k_hor,1);
+            rep = (_po.col(i)).replicate(_k_hor,1);
             int idx = 0;
             for (int l = 0; l < _k_hor; ++l)
             {
@@ -1410,7 +1490,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPC(const MatrixXd &po,
     {
         cout << "Optimization problem feasible: solution found" << endl;
         // Check if every agent reached its goal
-        arrived = reached_goal(all_trajectories,pf,0.05,N_cmd);
+        arrived = reached_goal(all_trajectories,_pf,0.05,N_cmd);
     }
 
     t1 = high_resolution_clock::now();
@@ -1436,12 +1516,12 @@ std::vector<Trajectory> DMPC::solveParallelDMPC(const MatrixXd &po,
     return solution;
 }
 
-std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
-                                                const MatrixXd &pf)
+std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 {
-    int N = po.cols(); // Number of agents = number of rows of po
-    int N_cmd = pf.cols(); // Number of agents of transition = number of rows of pf
-    execution_ended = false; // reset variable before solving
+    int N = _po.cols();     // Number of agents = number of rows of po
+    int N_cmd = _pf.cols(); // Number of agents of transition = number of
+                            // rows of pf
+    execution_ended = false; // Reset variable before solving
 
     cout << "I'm solving the problem using " << _solver_name << endl;
 
@@ -1457,7 +1537,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
     Vector3d aok;
     bool arrived = false;
 
-    // Separate N agents into 4 clusters to be solved in parallel
+    // Separate N agents into clusters to be solved in parallel
     int n_cluster = 8;
     if (n_cluster > N_cmd)
         n_cluster = N_cmd;
@@ -1492,8 +1572,6 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
         }
     }
 
-//    std::cout << "We have " << _env.size() << " cplex environments" << endl;
-
     high_resolution_clock::time_point t1;
     high_resolution_clock::time_point t2;
 
@@ -1507,7 +1585,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
 
         for (int i=N_cmd-1; i < N; ++i)
         {
-            rep = (po.col(i)).replicate(_k_hor,1);
+            rep = (_po.col(i)).replicate(_k_hor,1);
             int idx = 0;
             for (int l = 0; l < _k_hor; ++l)
             {
@@ -1518,14 +1596,14 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
         }
     }
 
-    t1 = high_resolution_clock::now();
+    t1 = high_resolution_clock::now(); // tic
+
     // Generate trajectory for each time step of trajectory, for each agent
-    // iterate until transition is completed or maximum number of time steps is exceeded
+    // Iterate until transition is completed or max steps is exceeded
     int k = 0;
-    MatrixXd nada = MatrixXd::Zero(3,N_cmd);
     while (!arrived && k < _K )
     {
-        // this is the loop that we want to parallelize
+        // This is the loop that we want to parallelize
         for (int i=0; i<all_clusters.size(); ++i)
         {
             int id = i;
@@ -1551,13 +1629,13 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
         prev_obs = obs;
 
         // check if the drones arrived at their goal
-        arrived = reached_goalv2(all_trajectories,pf,0.05,N_cmd,k);
+        arrived = reached_goalv2(all_trajectories,_pf,_goal_tol,N_cmd,k);
         k = k + 1;
     }
 
-    // Routine to trim the resulting trajectory, which is a vector of size of the maximum allowed time
-    // So we trim it to k time steps only
-    solution_short.clear(); // just in case the variable was written befor by another call of the method
+    // Routine to trim the resulting trajectory, which is a vector of size of
+    // the maximum allowed time. So we trim it to k time steps only
+    solution_short.clear(); // Just in case the variable was written before
     for (int i =0; i < N_cmd; ++i)
     {
         Trajectory aux;
@@ -1567,7 +1645,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
         solution_short.push_back(aux);
     }
 
-    t2 = high_resolution_clock::now();
+    t2 = high_resolution_clock::now(); // toc
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
     cout << "Solve al QPs computation time = " << duration/1000000.0 << "s" << endl;
 
@@ -1577,19 +1655,20 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
         cout << "Optimization problem feasible: solution found" << endl;
     }
 
-    t1 = high_resolution_clock::now();
+    t1 = high_resolution_clock::now(); // tic
 
     if (!execution_ended && !arrived)
-        cout << "The vehicles cannot finish the transition within the maximum allowed time" << endl;
+        cout << "The vehicles cannot finish the transition within the maximum allowed time"
+             << endl;
 
     if (arrived && !execution_ended)
     {
         cout << "All vehicles reached their goals" << endl;
         // Scale solution to reach velocity and acceleration limits
-        scale_solution(solution_short,1.0,1.0);
+        scale_solution(solution_short,_vlim,_alim);
 
         // Interpolate for better resolution (e.g. 100 Hz)
-        solution = interp_trajectory(solution_short,0.01);
+        solution = interp_trajectory(solution_short,1.0 / _freq);
 
         // Check if collision constraints were not violated
         bool violation = collision_violation(solution);
@@ -1598,9 +1677,10 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2(const MatrixXd &po,
         double time = get_trajectory_time(solution);
     }
 
-    t2 = high_resolution_clock::now();
+    t2 = high_resolution_clock::now(); // toc
     duration = duration_cast<microseconds>( t2 - t1 ).count();
-    cout << "Post-checks computation time = " << duration/1000000.0 << "s" << endl;
+    cout << "Post-checks computation time = "
+         << duration/1000000.0 << "s" << endl;
     return solution;
 }
 
@@ -1656,10 +1736,11 @@ void DMPC::cluster_solve(const int &k,
 }
 
 void DMPC::cluster_solvev2(const int &k,
-                         std::vector<Trajectory> &all_trajectories,
-                         std::vector<MatrixXd> &obs,
-                         const std::vector<int> &agents,
-                         const std::vector<MatrixXd> &prev_obs,const int id_cluster)
+                           std::vector<Trajectory> &all_trajectories,
+                           std::vector<MatrixXd> &obs,
+                           const std::vector<int> &agents,
+                           const std::vector<MatrixXd> &prev_obs,
+                           const int id_cluster)
 {
     Vector3d poi;
     Vector3d pfi;
@@ -1706,8 +1787,15 @@ void DMPC::cluster_solvev2(const int &k,
     }
 }
 
+/***************************************************************************
+    *
+    *  Post-solve checks, scaling and recording of solution
+    *
+    **************************************************************************/
+
 bool DMPC::reached_goal(const std::vector<Trajectory> &all_trajectories,
-                        const MatrixXd &pf, const float &error_tol, const int &N)
+                        const MatrixXd &pf, const float &goal_tol,
+                        const int &N)
 {   Vector3d diff;
     double dist;
     bool reached = true;
@@ -1715,8 +1803,9 @@ bool DMPC::reached_goal(const std::vector<Trajectory> &all_trajectories,
     {
         diff = all_trajectories.at(i).pos.col(_K-1) - pf.col(i);
         dist = pow(((diff.array().pow(2)).sum()),1.0/2);
-        if (dist > error_tol){
-            cout << "Vehicle " << i << " did not reach its goal by " << dist << "m" << endl;
+        if (dist > goal_tol){
+            cout << "Vehicle " << i << " did not reach its goal by "
+                 << dist << "m" << endl;
             reached = false;
         }
     }
@@ -1724,7 +1813,8 @@ bool DMPC::reached_goal(const std::vector<Trajectory> &all_trajectories,
 }
 
 bool DMPC::reached_goalv2(const std::vector<Trajectory> &all_trajectories,
-                        const MatrixXd &pf, const float &error_tol, const int &N, const int &k)
+                          const MatrixXd &pf, const float &goal_tol,
+                          const int &N, const int &k)
 {   Vector3d diff;
     double dist;
     bool reached = true;
@@ -1732,7 +1822,7 @@ bool DMPC::reached_goalv2(const std::vector<Trajectory> &all_trajectories,
     {
         diff = all_trajectories.at(i).pos.col(k) - pf.col(i);
         dist = pow(((diff.array().pow(2)).sum()),1.0/2);
-        if (dist > error_tol)
+        if (dist > goal_tol)
             reached = false;
     }
     return reached;
@@ -1980,16 +2070,12 @@ void DMPC::trajectories2file(const std::vector<Trajectory> &solution,
     }
 }
 
-/*
- *      CPLEX functions
- *
- */
+/***************************************************************************
+    *
+    *  CPLEX functions
+    *
+    **************************************************************************/
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// @brief Initialize the CPLEX environment.
-///
-/// To view console output: CPXPARAM_ScreenOutput = CPX_ON
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DMPC::init_cplex(int id) {
 
     _env.at(id) = NULL;
@@ -2026,9 +2112,6 @@ void DMPC::init_cplex(int id) {
     return;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// @brief Free the CPLEX environment.
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DMPC::terminate_cplex(int id) {
 
     int status = 0;
@@ -2051,11 +2134,9 @@ void DMPC::terminate_cplex(int id) {
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/// @brief Convert Eigen matrices to the CPLEX (sparse) format
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 void DMPC::eigen_to_cplex(const Eigen::MatrixXd &H, int *&matbeg,
-                    int *&matcnt, int *&matind, double *&matval, int &numrows, int &numcols, int &numnz) {
+                          int *&matcnt, int *&matind, double *&matval,
+                          int &numrows, int &numcols, int &numnz) {
     // Process matrices to fit cplex matrix requirements
     int i, j, cnt, k;
     numrows = H.rows();
