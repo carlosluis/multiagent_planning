@@ -10,7 +10,7 @@ K = T/h + 1; % number of time steps
 Ts = 0.01; % period for interpolation @ 100Hz
 t = 0:Ts:T; % interpolated time vector
 success = 1;
-N = 2; % number of vehicles
+N = 20; % number of vehicles
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
@@ -27,13 +27,13 @@ pmax = [1.0,1.0,2.2];
 rmin_init = 0.75;
 
 % Initial positions
-% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
-po1 = [-1.0, -1.0, 1.0];
-po2 = [1.0, 1.0, 1.0];
-
-po = cat(3,po1,po2);
-pf = cat(3,po2,po1);
+% po1 = [-1.0, -1.0, 1.0];
+% po2 = [1.0, 1.0, 1.0];
+% 
+% po = cat(3,po1,po2);
+% pf = cat(3,po2,po1);
 
 %% Some Precomputations
 l = [];
@@ -269,5 +269,5 @@ for i = 1:N
         end
     end
 end
-plot(t,rmin*ones(length(tk),1),'--r','LineWidth',1.5);
+plot(tk,rmin*ones(length(tk),1),'--r','LineWidth',1.5);
 legend(h_plot,h_label);
