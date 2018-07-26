@@ -34,6 +34,8 @@ DMPC::DMPC(std::string solver_name,Params params)
     _speed = params.speed;
     _K = _T / _h + 1;
 
+    successful = false;
+
     // Initialize srand DO THIS ONLY ONCE
     srand((unsigned int) time(0));
 
@@ -67,6 +69,9 @@ DMPC::DMPC(std::string solver_name,Params params)
     // Vicon Room boundaries
     _pmin << -1.0, -1.0, 0.2;
     _pmax << 1.0, 1.0, 2.2;
+
+    // Default number of clusters, in case the setter is never called
+    _num_clusters = 8;
 }
 
 /***************************************************************************
@@ -349,6 +354,10 @@ void DMPC::set_final_pts(const MatrixXd &pf) {
 void DMPC::set_boundaries(const Vector3d &pmin, const Vector3d &pmax) {
     _pmin = pmin;
     _pmax = pmax;
+}
+
+void DMPC::set_cluster_num(const int &num) {
+    _num_clusters = num;
 }
 
 /***************************************************************************
@@ -1134,9 +1143,11 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         int *tmatbeg,*tmatcnt,*tmatind;
         double *tmatval;
 
-        // convert matrices to CPLEX representation
-        eigen_to_cplex(Ain, tmatbeg, tmatcnt, tmatind, tmatval, tnumrows, tnumcols, tnumnz);
-        eigen_to_cplex(H_sym, hmatbeg, hmatcnt, hmatind, hmatval, hnumrows, hnumcols, hnumnz);
+        // Convert matrices to CPLEX representation
+        eigen_to_cplex(Ain, tmatbeg, tmatcnt, tmatind, tmatval,
+                       tnumrows, tnumcols, tnumnz);
+        eigen_to_cplex(H_sym, hmatbeg, hmatcnt, hmatind, hmatval,
+                       hnumrows, hnumcols, hnumnz);
 
         // IBM information on how to use the functions here
         // http://www-01.ibm.com/support/knowledgecenter/SSSA5P_12.4.0/
@@ -1163,8 +1174,9 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             sense[i] = 'L';
         }
 
-        // Copy linear problem, constraint matrix. specify that it is a minimization problem
-        CPXcopylp(env, lp, tnumcols, tnumrows, CPX_MIN, objective, rhs, sense, tmatbeg, tmatcnt, tmatind, tmatval, lb, ub, NULL);
+        // Copy linear problem, constraint matrix. specify minimization problem
+        CPXcopylp(env, lp, tnumcols, tnumrows, CPX_MIN, objective, rhs, sense,
+                  tmatbeg, tmatcnt, tmatind, tmatval, lb, ub, NULL);
         if (status) {
             printf("CPXcopylp failed.\n");
             terminate_cplex(id_cluster);
@@ -1522,8 +1534,9 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
     int N_cmd = _pf.cols(); // Number of agents of transition = number of
                             // rows of pf
     execution_ended = false; // Reset variable before solving
+    successful = false;      // Reset variable before solving
 
-    cout << "I'm solving the problem using " << _solver_name << endl;
+//    cout << "I'm solving the problem using " << _solver_name << endl;
 
     // Variables
     std::vector<Trajectory> all_trajectories(N_cmd);
@@ -1538,7 +1551,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
     bool arrived = false;
 
     // Separate N agents into clusters to be solved in parallel
-    int n_cluster = 8;
+    int n_cluster = _num_clusters;
     if (n_cluster > N_cmd)
         n_cluster = N_cmd;
     std::vector<int> all_idx(n_cluster);
@@ -1621,8 +1634,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 
         if (execution_ended)
         {
-            cout << "Failed - problem unfeasible @ k_T = " << k
-                 << ", vehicle #" << failed_i_global << endl;
+//            cout << "Failed - problem unfeasible @ k_T = " << k
+//                 << ", vehicle #" << failed_i_global << endl;
             break;
         }
 
@@ -1647,23 +1660,23 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 
     t2 = high_resolution_clock::now(); // toc
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
-    cout << "Solve al QPs computation time = " << duration/1000000.0 << "s" << endl;
+//    cout << "Solve al QPs computation time = " << duration/1000000.0 << "s" << endl;
 
     // Sanity post-checks
     if(!execution_ended)
     {
-        cout << "Optimization problem feasible: solution found" << endl;
+//        cout << "Optimization problem feasible: solution found" << endl;
     }
 
     t1 = high_resolution_clock::now(); // tic
 
-    if (!execution_ended && !arrived)
-        cout << "The vehicles cannot finish the transition within the maximum allowed time"
-             << endl;
+//    if (!execution_ended && !arrived)
+//        cout << "The vehicles cannot finish the transition within the maximum allowed time"
+//             << endl;
 
     if (arrived && !execution_ended)
     {
-        cout << "All vehicles reached their goals" << endl;
+//        cout << "All vehicles reached their goals" << endl;
         // Scale solution to reach velocity and acceleration limits
         scale_solution(solution_short,_vlim,_alim);
 
@@ -1672,6 +1685,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 
         // Check if collision constraints were not violated
         bool violation = collision_violation(solution);
+        successful = !violation;
 
         // Calculate minimum time to complete trajectory, within 5cm of goals
         double time = get_trajectory_time(solution);
@@ -1679,8 +1693,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 
     t2 = high_resolution_clock::now(); // toc
     duration = duration_cast<microseconds>( t2 - t1 ).count();
-    cout << "Post-checks computation time = "
-         << duration/1000000.0 << "s" << endl;
+//    cout << "Post-checks computation time = "
+//         << duration/1000000.0 << "s" << endl;
     return solution;
 }
 
@@ -1723,7 +1737,6 @@ void DMPC::cluster_solve(const int &k,
 
         if (_fail)
         {
-//            failed_i = i;
             break;
         }
 
@@ -1775,7 +1788,6 @@ void DMPC::cluster_solvev2(const int &k,
 
         if (execution_ended)
         {
-//            failed_i = i;
             break;
         }
 
@@ -1852,7 +1864,7 @@ double DMPC::get_trajectory_time(const std::vector<Trajectory> &solution)
         }
     }
     min_traj_time = time.maxCoeff();
-    cout << "The transition will be completed in " << min_traj_time << "s" << endl;
+//    cout << "The transition will be completed in " << min_traj_time << "s" << endl;
     return min_traj_time;
 }
 
@@ -2017,17 +2029,18 @@ bool DMPC::collision_violation(const std::vector<Trajectory> &solution)
                 if (min_dist < _rmin-0.05) // we add 5cm tolerance factor to it
                 {
                     violation = true;
-                    cout << "Collision constraint violation: ";
-                    cout << "Vehicles " << i << " and " << j;
-                    cout << " will be " << min_dist << "m";
-                    cout << " apart @ t = " << pos/100.0 << "s" << endl;
+//                    cout << "Collision constraint violation: ";
+//                    cout << "Vehicles " << i << " and " << j;
+//                    cout << " will be " << min_dist << "m";
+//                    cout << " apart @ t = " << pos/100.0 << "s" << endl;
                 }
             }
         }
     }
 
-    if (!violation)
-        cout << "No collisions found!" << endl;
+//    if (!violation)
+//        cout << "No collisions found!" << endl;
+    return violation;
 }
 
 void DMPC::trajectories2file(const std::vector<Trajectory> &solution,

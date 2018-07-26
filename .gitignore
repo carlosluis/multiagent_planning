@@ -16,3 +16,11 @@ DMPC/dmpc_cpp/cmake-build-debug/CMakeFiles/dmpc\.dir/dmpc\.cpp\.o
 DMPC/dmpc_cpp/cmake-build-debug/dmpc_cpp
 
 DMPC/dmpc_cpp/cmake-build-debug/libdmpc\.a
+
+*.o
+
+DMPC/dmpc_cpp/cmake-build-debug/CMakeFiles/cluster_test\.dir/
+
+DMPC/dmpc_cpp/cmake-build-debug/CMakeFiles/
+
+DMPC/dmpc_cpp/cmake-build-debug/

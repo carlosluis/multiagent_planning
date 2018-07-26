@@ -81,6 +81,7 @@ public:
     // Public variables
 
     std::vector<Trajectory> solution_short; /**< Solution pre-interpolation */
+    bool successful;                        /**< True if transition was OK */
 
     // Public methods
 
@@ -137,6 +138,8 @@ public:
      * @param pmax upper limit of workspace
      */
     void set_boundaries (const Vector3d &pmin, const Vector3d &pmax);
+
+    void set_cluster_num (const int &num);
 
     /**
      * Solve the DMPC algorithm sequentially for each agent of the transition.
@@ -197,7 +200,8 @@ private:
     int _speed;           /**< Number of time steps for error calculation */
 
     float _K;             /**< Max number of time steps to complete transit*/
-    float _h_scaled; /**< Resulting time step after scaling solution */
+    float _h_scaled;      /**< Resulting time step after scaling solution */
+    int _num_clusters;    /**< # of clusters to divide the problem in */
 
     // Workspace boundaries
     Vector3d _pmin;  /**< Lower limit of workspace [x,y,z] */
@@ -467,7 +471,7 @@ private:
 
     /**
      * Convert eigen matrices to the CPLEX sparse format
-     * @param H
+     * @param H square matrix (either cost or constraint)
      * @param matbeg beginning index of columns
      * @param matcnt number of non-zero elements of columns
      * @param matind row number of a specified matval

@@ -39,3 +39,15 @@ target_link_libraries(test_cplex
         ${CPLEX_LIBRARIES}
         ${CMAKE_DL_LIBS})
 
+add_executable(cluster_test
+        cluster_test.cpp)
+
+target_link_libraries(cluster_test
+        dmpc
+        eigen-quadprog
+        pthread
+        ooqpei
+        ${OOQP_LIBS}
+        ${CPLEX_LIBRARIES}
+        ${CMAKE_DL_LIBS}
+        )
