@@ -1,4 +1,4 @@
-function [po,pf] = randomTest(N,pmin,pmax,rmin)
+function [po,pf] = randomTest(N,pmin,pmax,rmin,E1,order)
 max_iter = 200000;
 %Generate initial points
 
@@ -12,8 +12,8 @@ while(~pass)
         pass = false;
         while(~pass && tries <= max_iter)
             candidate = (pmin + (pmax-pmin).*rand(1,3))';
-            diff = po - candidate;
-            dist = sqrt(sum(diff.^2,1));
+            diff = E1*(po - candidate);
+            dist = (sum(diff.^order,1)).^(1/order);
 
             if(dist > rmin)
                 po(:,n) = candidate;
@@ -40,8 +40,8 @@ while(~pass)
         pass = false;
         while(~pass && tries <= max_iter)
             candidate = (pmin + (pmax-pmin).*rand(1,3))';
-            diff = pf - candidate;
-            dist = sqrt(sum(diff.^2,1));
+            diff = E1*(pf - candidate);
+            dist = (sum(diff.^order,1)).^(1/order);
 
             if(dist > rmin)
                 pf(:,n) = candidate;

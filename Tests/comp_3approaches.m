@@ -8,7 +8,7 @@ max_T = 20; % Trajectory final time
 h = 0.2; % time step duration
 max_K = max_T/h + 1; % number of time steps
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 2:2:4; % number of vehicles
+N_vector = 2:2:20; % number of vehicles
 trials = 50; % number os trails per number of vehicles
 
 % Variables for ellipsoid constraint
@@ -20,11 +20,11 @@ E2 = E^(-order);
 fail = 0;
 
 % Workspace boundaries
-pmin = [-1.0,-1.0,0.2];
-pmax = [1.0,1.0,2.2];
+pmin = [-0.8,-0.8,0.2];
+pmax = [0.8,0.8,1.8];
 
 % Minimum distance between vehicles in m
-rmin_init = 0.75;
+rmin_init = 0.35;
 
 % Maximum acceleration in m/s^2
 alim = 1.0;
@@ -56,8 +56,6 @@ for k = 1:k_hor
     A_initp = [A_initp; A_init(1:3,:)];  
 end
 
-fail = 0;
-
 Delta = getDeltaMat(k_hor);
 
 % Start Test
@@ -67,7 +65,7 @@ for q = 1:length(N_vector)
     for r = 1:trials
         fprintf("Doing trial #%i with %i vehicles\n",r,N)
         % Initial positions
-        [po,pf] = randomTest(N,pmin,pmax,rmin_init);
+        [po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
         
   %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%      
         
@@ -334,7 +332,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-% save('comp_all_4')
+save('comp_all_6')
 %% Post-Processing
 
 % Probability of success plots

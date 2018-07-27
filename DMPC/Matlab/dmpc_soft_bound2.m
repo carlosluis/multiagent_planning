@@ -17,24 +17,24 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 25; % number of vehicles
+N = 20; % number of vehicles
 
 % Workspace boundaries
 % pmin = [-2.5,-2.5,0.2];
 % pmax = [2.5,2.5,2.2];
 
-pmin = [-1.0,-1.0,0.2];
-pmax = [1.0,1.0,2.2];
+pmin = [-0.8,-0.8,0.2];
+pmax = [0.8,0.8,1.8];
 
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
 % pmax = [5,5,5];
 
 % Minimum distance between vehicles in m
-rmin_init = 0.75;
+rmin_init = 0.35;
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin_init);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
 
 % po1 = [-1.0, 1.0, 1.0];
 % po2 = [0.0, 1.0, 0.8];
