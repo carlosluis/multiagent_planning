@@ -17,24 +17,24 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 20; % number of vehicles
+N = 4; % number of vehicles
 
 % Workspace boundaries
-% pmin = [-2.5,-2.5,0.2];
-% pmax = [2.5,2.5,2.2];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
-pmin = [-0.8,-0.8,0.2];
-pmax = [0.8,0.8,1.8];
+% pmin = [-0.8,-0.8,0.2];
+% pmax = [0.8,0.8,1.8];
 
 % % Workspace boundaries
 % pmin = [-5,-5,0.2];
 % pmax = [5,5,5];
 
 % Minimum distance between vehicles in m
-rmin_init = 0.35;
+% rmin_init = 0.35;
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
+% [po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
 
 % po1 = [-1.0, 1.0, 1.0];
 % po2 = [0.0, 1.0, 0.8];
@@ -48,19 +48,19 @@ rmin_init = 0.35;
 % 
 % po = cat(3,po1,po2,po3,po4,po5,po6);
 % pf = cat(3,po2,po1,po4,po3,po6,po5);
-% % Initial positions
-% po1 = [1.501,1.5,1.5];
-% po2 = [-1.5,-1.5,1.5];
-% po3 = [-1.5,1.5,1.5];
-% po4 = [1.5,-1.5,1.5];
-% po = cat(3,po1,po2,po3,po4);
-% 
-% % Final positions
-% pf1 = [-1.5,-1.5,1.5];
-% pf2 = [1.5,1.5,1.5];
-% pf3 = [1.5,-1.5,1.5];
-% pf4 = [-1.5,1.5,1.5];
-% pf  = cat(3,pf1,pf2,pf3,pf4);
+% Initial positions
+po1 = [1.501,1.5,1.5];
+po2 = [-1.5,-1.5,1.5];
+po3 = [-1.5,1.5,1.5];
+po4 = [1.5,-1.5,1.5];
+po = cat(3,po1,po2,po3,po4);
+
+% Final positions
+pf1 = [-1.5,-1.5,1.5];
+pf2 = [1.5,1.5,1.5];
+pf3 = [1.5,-1.5,1.5];
+pf4 = [-1.5,1.5,1.5];
+pf  = cat(3,po2,po1,po4,po3);
 
 
 %% Solving the problem

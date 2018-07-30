@@ -1,7 +1,7 @@
 clc
 close all
 clear
-M = dlmread('cluster_test.txt','');
+M = dlmread('cluster_test(100-agents).txt','');
 clus_arr_size = M(1,1);
 num_veh_size = M(1,2);
 

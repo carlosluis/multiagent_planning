@@ -20,8 +20,8 @@ E2 = E^(-order);
 fail = 0;
 
 % Workspace boundaries
-pmin = [-0.8,-0.8,0.2];
-pmax = [0.8,0.8,1.8];
+pmin = [-0.7937,-0.7937,0.2];
+pmax = [0.7937,0.7937,1.7874];
 
 % Minimum distance between vehicles in m
 rmin_init = 0.35;
@@ -332,8 +332,13 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_all_6')
+save('comp_all_7')
 %% Post-Processing
+close all
+% Volumen of arena
+V = (pmax(1)-pmin(1))*(pmax(2)-pmin(2))*(pmax(3)-pmin(3));
+pi = 3.14159265359;
+occup = N_vector/V*(4/3*pi*(rmin/2)^2*(rmin*c/2));
 
 % Probability of success plots
 prob_dmpc = sum(success_dmpc,2)/trials;
@@ -343,10 +348,10 @@ figure(1)
 grid on;
 hold on;
 ylim([0,1.05])
-plot(N_vector,prob_cup,'Linewidth',2);
-plot(N_vector,prob_dec','Linewidth',2);
-plot(N_vector,prob_dmpc,'Linewidth',2);
-xlabel('Number of Vehicles');
+plot(N_vector/V,prob_cup,'Linewidth',2);
+plot(N_vector/V,prob_dec','Linewidth',2);
+plot(N_vector/V,prob_dmpc,'Linewidth',2);
+xlabel('Workspace Density [agents/m^3]');
 ylabel('Success Probability');
 legend('cup-SCP','dec-iSCP','DMPC');
 
@@ -360,12 +365,12 @@ tstd_dec = nanstd(t_dec,1,2);
 figure(2)
 grid on;
 hold on;
-plot(N_vector, tmean_cup,'LineWidth',2);
-plot(N_vector, tmean_dec,'LineWidth',2);
-plot(N_vector, tmean_dmpc,'LineWidth',2);
+plot(N_vector/V, tmean_cup,'LineWidth',2);
+plot(N_vector/V, tmean_dec,'LineWidth',2);
+plot(N_vector/V, tmean_dmpc,'LineWidth',2);
 % errorbar(N_vector,tmean_cup,tstd_cup,'Linewidth',2);
 % errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
-xlabel('Number of Vehicles');
+xlabel('Workspace Density [agents/m^3]');
 ylabel('Average Computation time [s]');
 legend('cup-SCP','dec-iSCP','DMPC');
 
@@ -374,12 +379,12 @@ avg_dist_dmpc = nanmean(totdist_dmpc,2);
 avg_dist_cup = nanmean(totdist_cup,2);
 avg_dist_dec = nanmean(totdist_dec,2);
 figure(3)
-plot(N_vector, avg_dist_cup,'LineWidth', 3);
+plot(N_vector/V, avg_dist_cup,'LineWidth', 3);
 hold on;
 grid on;
-plot(N_vector, avg_dist_dec,'LineWidth', 3);
-plot(N_vector, avg_dist_dmpc,'LineWidth', 3);
-xlabel('Number of Vehicles');
+plot(N_vector/V, avg_dist_dec,'LineWidth', 3);
+plot(N_vector/V, avg_dist_dmpc,'LineWidth', 3);
+xlabel('Workspace Density [agents/m^3]');
 ylabel('Total Travelled Distance [m]');
 legend('cup-SQP','dec-iSCP','DMPC');
 
@@ -388,9 +393,7 @@ violation_num = sum(violation,2);
 goal_num = sum(failed_goal,2);
 infes_num = sum(~feasible,2);
 figure(4)
-grid on;
-hold on;
-bar(N_vector,[infes_num violation_num goal_num],'stacked');
-xlabel('Number of Vehicles');
-ylabel(['Number of failed trials (out of ' ,num2str(trials), ')']);
+bar(N_vector/V,[infes_num/trials*100 violation_num/trials*100 goal_num/trials*100],'stacked');
+xlabel('Workspace Density [agents/m^3]');
+ylabel(['Percentage of failed trials (out of ' ,num2str(trials), ')']);
 legend('Infeasibility','Collisions','Incomplete Trajectory')
