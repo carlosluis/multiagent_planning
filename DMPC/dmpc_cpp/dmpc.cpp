@@ -1100,7 +1100,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             lim = 2 * lim;
             term = 2 * term;
             // Debug print
-            cout << "Infeasible - Retrying..." << endl;
+//            cout << "Infeasible - Retrying..." << endl;
             collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation),
                                lim * VectorXd::Ones(N_violation);
 
@@ -1551,7 +1551,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
     execution_ended = false; // Reset variable before solving
     successful = false;      // Reset variable before solving
 
-    cout << "I'm solving the problem using " << _solver_name << endl;
+//    cout << "I'm solving the problem using " << _solver_name << endl;
 
     // Variables
     std::vector<Trajectory> all_trajectories(N_cmd);
@@ -1649,8 +1649,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 
         if (execution_ended)
         {
-            cout << "Failed - problem unfeasible @ k_T = " << k
-                 << ", vehicle #" << failed_i_global << endl;
+//            cout << "Failed - problem unfeasible @ k_T = " << k
+//                 << ", vehicle #" << failed_i_global << endl;
             break;
         }
 
@@ -1675,24 +1675,24 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 
     t2 = high_resolution_clock::now(); // toc
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
-    cout << "Solve all QPs computation time = " << duration/1000000.0 << "s"
-         << endl;
+//    cout << "Solve all QPs computation time = " << duration/1000000.0 << "s"
+//         << endl;
 
     // Sanity post-checks
     if(!execution_ended)
     {
-        cout << "Optimization problem feasible: solution found" << endl;
+//        cout << "Optimization problem feasible: solution found" << endl;
     }
 
     t1 = high_resolution_clock::now(); // tic
 
-    if (!execution_ended && !arrived)
-        cout << "The vehicles cannot finish the transition within the maximum allowed time"
-             << endl;
+//    if (!execution_ended && !arrived)
+//        cout << "The vehicles cannot finish the transition within the maximum allowed time"
+//             << endl;
 
     if (arrived && !execution_ended)
     {
-        cout << "All vehicles reached their goals" << endl;
+//        cout << "All vehicles reached their goals" << endl;
         // Scale solution to reach velocity and acceleration limits
         scale_solution(solution_short,_vlim,_alim);
 
@@ -1702,7 +1702,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
         // Check if collision constraints were not violated
         bool violation = collision_violation(solution);
         successful = !violation;
-        cout << "Successful = " << successful << endl;
+//        cout << "Successful = " << successful << endl;
 
         // Calculate minimum time to complete trajectory, within 5cm of goals
         double time = get_trajectory_time(solution);
@@ -1710,8 +1710,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 
     t2 = high_resolution_clock::now(); // toc
     duration = duration_cast<microseconds>( t2 - t1 ).count();
-    cout << "Post-checks computation time = "
-         << duration/1000000.0 << "s" << endl;
+//    cout << "Post-checks computation time = "
+//         << duration/1000000.0 << "s" << endl;
     return solution;
 }
 
@@ -1881,7 +1881,7 @@ double DMPC::get_trajectory_time(const std::vector<Trajectory> &solution)
         }
     }
     min_traj_time = time.maxCoeff();
-    cout << "The transition will be completed in " << min_traj_time << "s" << endl;
+//    cout << "The transition will be completed in " << min_traj_time << "s" << endl;
     return min_traj_time;
 }
 
@@ -2046,17 +2046,17 @@ bool DMPC::collision_violation(const std::vector<Trajectory> &solution)
                 if (min_dist < _rmin-0.05) // we add 5cm tolerance factor to it
                 {
                     violation = true;
-                    cout << "Collision constraint violation: ";
-                    cout << "Vehicles " << i << " and " << j;
-                    cout << " will be " << min_dist << "m";
-                    cout << " apart @ t = " << pos/100.0 << "s" << endl;
+//                    cout << "Collision constraint violation: ";
+//                    cout << "Vehicles " << i << " and " << j;
+//                    cout << " will be " << min_dist << "m";
+//                    cout << " apart @ t = " << pos/100.0 << "s" << endl;
                 }
             }
         }
     }
 
-    if (!violation)
-        cout << "No collisions found!" << endl;
+//    if (!violation)
+//        cout << "No collisions found!" << endl;
     return violation;
 }
 
