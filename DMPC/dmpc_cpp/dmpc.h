@@ -455,7 +455,7 @@ private:
      * @param amax maximum allowed acceleration in x, y, or z
      */
     void scale_solution(std::vector<Trajectory> &sol,
-                        const int &vmax, const int &amax);
+                        const float &vmax, const float &amax);
 
     /**
      * Initialize the CPLEX environment for a specified cluster ID

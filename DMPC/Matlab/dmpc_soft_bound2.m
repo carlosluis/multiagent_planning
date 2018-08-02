@@ -49,7 +49,7 @@ pmax = [2.5,2.5,2.2];
 % po = cat(3,po1,po2,po3,po4,po5,po6);
 % pf = cat(3,po2,po1,po4,po3,po6,po5);
 % Initial positions
-po1 = [1.501,1.5,1.5];
+po1 = [1.5001,1.5,1.5];
 po2 = [-1.5,-1.5,1.5];
 po3 = [-1.5,1.5,1.5];
 po4 = [1.5,-1.5,1.5];
@@ -135,7 +135,7 @@ while ~reached_goal && k < max_K
             pok = pk(:,k-1,n);
             vok = vk(:,k-1,n);
             aok = ak(:,k-1,n);
-            [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound2(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order,term); 
+            [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order,term); 
         end
         if (~success || outbound || coll) %problem was infeasible, exit and retry
             break;
@@ -397,7 +397,7 @@ for i = 1:N
         if(i~=j)
             differ = E1*(pk(:,:,i) - pk(:,:,j));
             dist = (sum(differ.^order,1)).^(1/order);
-            plot(tk, dist, 'LineWidth',1.5);
+            plot(t, dist, 'LineWidth',1.5);
             grid on;
             hold on;
             xlabel('t [s]')
@@ -405,5 +405,5 @@ for i = 1:N
         end
     end
 end
-plot(tk,rmin*ones(length(tk),1),'--r','LineWidth',1.5);
+plot(t,rmin*ones(length(t),1),'--r','LineWidth',1.5);
 % legend(h_plot,h_label);

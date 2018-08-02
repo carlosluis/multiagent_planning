@@ -8,7 +8,7 @@ max_T = 20; % Trajectory final time
 h = 0.2; % time step duration
 max_K = max_T/h + 1; % number of time steps
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 2:2:20; % number of vehicles
+N_vector = 4:4:20; % number of vehicles
 trials = 50; % number os trails per number of vehicles
 
 % Variables for ellipsoid constraint
@@ -60,9 +60,9 @@ Delta = getDeltaMat(k_hor);
 
 % Start Test
 
-for q = 1:length(N_vector)
+for q = 5:length(N_vector)
     N = N_vector(q);
-    for r = 1:trials
+    for r = 36:trials
         fprintf("Doing trial #%i with %i vehicles\n",r,N)
         % Initial positions
         [po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
@@ -332,7 +332,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_all_7')
+save('comp_all_8')
 %% Post-Processing
 close all
 % Volumen of arena
@@ -348,12 +348,15 @@ figure(1)
 grid on;
 hold on;
 ylim([0,1.05])
-plot(N_vector/V,prob_cup,'Linewidth',2);
-plot(N_vector/V,prob_dec','Linewidth',2);
-plot(N_vector/V,prob_dmpc,'Linewidth',2);
+h1 = plot(N_vector/V,prob_cup,'b','Linewidth',2);
+plot(N_vector/V,prob_cup,'ob', 'MarkerFaceColor', 'b','Linewidth',1);
+h2 = plot(N_vector/V,prob_dec','g','Linewidth',2);
+plot(N_vector/V,prob_dec,'og', 'MarkerFaceColor', 'g','Linewidth',1);
+h3 = plot(N_vector/V,prob_dmpc,'r','Linewidth',2);
+plot(N_vector/V,prob_dmpc,'or', 'MarkerFaceColor', 'r','Linewidth',1);
 xlabel('Workspace Density [agents/m^3]');
 ylabel('Success Probability');
-legend('cup-SCP','dec-iSCP','DMPC');
+legend([h1,h2,h3],'cup-SCP','dec-iSCP','DMPC');
 
 % Computation time
 tmean_dmpc = nanmean(t_dmpc,2);
@@ -365,28 +368,34 @@ tstd_dec = nanstd(t_dec,1,2);
 figure(2)
 grid on;
 hold on;
-plot(N_vector/V, tmean_cup,'LineWidth',2);
-plot(N_vector/V, tmean_dec,'LineWidth',2);
-plot(N_vector/V, tmean_dmpc,'LineWidth',2);
+h1 = plot(N_vector/V, tmean_cup,'b','LineWidth',2);
+plot(N_vector/V,tmean_cup,'ob', 'MarkerFaceColor', 'b','Linewidth',1);
+h2 = plot(N_vector/V, tmean_dec,'g','LineWidth',2);
+plot(N_vector/V,tmean_dec,'og', 'MarkerFaceColor', 'g','Linewidth',1);
+h3 = plot(N_vector/V, tmean_dmpc,'r','LineWidth',2);
+plot(N_vector/V,tmean_dmpc,'or', 'MarkerFaceColor', 'r','Linewidth',1);
 % errorbar(N_vector,tmean_cup,tstd_cup,'Linewidth',2);
 % errorbar(N_vector,tmean_dmpc,tstd_dmpc,'Linewidth',2);
 xlabel('Workspace Density [agents/m^3]');
 ylabel('Average Computation time [s]');
-legend('cup-SCP','dec-iSCP','DMPC');
+legend([h1,h2,h3],'cup-SCP','dec-iSCP','DMPC');
 
 % Average travelled distance
 avg_dist_dmpc = nanmean(totdist_dmpc,2);
 avg_dist_cup = nanmean(totdist_cup,2);
 avg_dist_dec = nanmean(totdist_dec,2);
 figure(3)
-plot(N_vector/V, avg_dist_cup,'LineWidth', 3);
 hold on;
 grid on;
-plot(N_vector/V, avg_dist_dec,'LineWidth', 3);
-plot(N_vector/V, avg_dist_dmpc,'LineWidth', 3);
+h1 = plot(N_vector/V, avg_dist_cup,'b','LineWidth', 2);
+plot(N_vector/V,avg_dist_cup,'ob', 'MarkerFaceColor', 'b','Linewidth',1);
+h2 = plot(N_vector/V, avg_dist_dec,'g','LineWidth', 2);
+plot(N_vector/V,avg_dist_dec,'og', 'MarkerFaceColor', 'g','Linewidth',1);
+h3 = plot(N_vector/V, avg_dist_dmpc,'r','LineWidth', 2);
+plot(N_vector/V,avg_dist_dmpc,'or', 'MarkerFaceColor', 'r','Linewidth',1);
 xlabel('Workspace Density [agents/m^3]');
 ylabel('Total Travelled Distance [m]');
-legend('cup-SQP','dec-iSCP','DMPC');
+legend([h1,h2,h3], 'cup-SQP','dec-iSCP','DMPC');
 
 % Failure analysis
 violation_num = sum(violation,2);

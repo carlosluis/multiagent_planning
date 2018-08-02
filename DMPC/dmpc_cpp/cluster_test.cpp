@@ -34,18 +34,18 @@ int main()
     // Test definitions
     VectorXd cluster_size(6);
     cluster_size << 1, 2, 4, 6, 8 , 10;
-    VectorXd num_vehicles(4);
-    num_vehicles << 10, 20, 30, 40;
-    int num_trials = 20;
+    VectorXd num_vehicles(6);
+    num_vehicles << 10, 20, 40, 60, 80, 100;
+    int num_trials = 30;
     float rmin_init = 0.75;
-    std::string solver = "quadprog";
+    std::string solver = "ooqp";
 
     // Trial set up
     Vector3d pmin;
-    pmin << -2.0, -2.0, 0.2;
+    pmin << -3.0, -3.0, 0.2;
     Vector3d pmax;
-    pmax << 2.0, 2.0, 2.2;
-    Params p = {0.2,30,15,2,2.0,0.35,1.0,2.0,100,0.01,0.05,1};
+    pmax << 3.0, 3.0, 3.2;
+    Params p = {0.2,30,15,2,2.0,0.35,1.0,2.0,100,0.01,0.05,2};
 
     int size_clust_arr = cluster_size.size();
     int size_vehic_arr = num_vehicles.size();

@@ -459,11 +459,11 @@ Constraint DMPC::build_collconstraint(const Vector3d &prev_p,
             diff = (_E2*(prev_p - pj)).array().pow(_order - 1);
 
             r = pow(dist,_order-1)*(_rmin - dist) + diff.transpose()*prev_p
-                - diff.transpose()*_A0.middleRows(3*k,3)*initial_states;
+                - diff.transpose()*_A0.middleRows(3*(k-1),3)*initial_states;
 
-            diff_row << MatrixXd::Zero(1,3*k),
+            diff_row << MatrixXd::Zero(1,3*(k-1)),
                         diff.transpose(),
-                        MatrixXd::Zero(1,3*(_k_hor-k-1));
+                        MatrixXd::Zero(1,3*(_k_hor-(k-1)-1));
             Ain_total.row(idx) = -diff_row*_Lambda;
             bin_total[idx] = -r;
             idx++;
@@ -494,6 +494,7 @@ Constraint DMPC::build_collconstraintv2(const Vector3d &prev_p,
     MatrixXd diff_row = MatrixXd::Zero(1,3*_k_hor);
     initial_states << po,vo;
     Constraint collision;
+    int k_ctr = k;
     collision.prev_dist = VectorXd::Zero(N_violation);
 
     // Build the collision constraint based on its linearization around the
@@ -510,11 +511,11 @@ Constraint DMPC::build_collconstraintv2(const Vector3d &prev_p,
             collision.prev_dist[idx] = pow(dist,_order-1);
 
             r = pow(dist,_order-1)*(_rmin - dist) + diff.transpose()*prev_p
-                - diff.transpose()*_A0.middleRows(3*k,3)*initial_states;
+                - diff.transpose()*_A0.middleRows(3*k_ctr,3)*initial_states;
 
-            diff_row << MatrixXd::Zero(1,3*k),
+            diff_row << MatrixXd::Zero(1,3*k_ctr),
                     diff.transpose(),
-                    MatrixXd::Zero(1,3*(_k_hor-k-1));
+                    MatrixXd::Zero(1,3*(_k_hor-k_ctr-1));
             Ain_total.row(idx) = -diff_row*_Lambda;
             bin_total[idx] = -r;
             idx++;
@@ -823,7 +824,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     // Tuning factors
     int spd = _speed;
     float collision_tol = _collision_tol;
-    int term = -1*pow(10,5);
+    int term = -1*pow(10,6);
 
     // Auxiliary variables
     VectorXd init_propagation = _A0*initial_states;
@@ -867,6 +868,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         violation = violation_vec.size() > 0;
         if (violation) // violations occured
         {
+//            if (k==0)
+//                continue;
             N_violation = std::count (violation_vec.begin(),
                                       violation_vec.end(), true);
 
@@ -975,7 +978,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
 
         // Build linear and quadratic cost matrices
         f_w << VectorXd::Zero(n_var),
-                term*coll_constraint.prev_dist.array().inverse() ;
+                term * VectorXd::Ones(N_violation);
+//                term*coll_constraint.prev_dist.array().inverse() ;
 
         // W *NEEDS* to be different than zero, if not H has determinant 0
 
@@ -1043,8 +1047,11 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     {
         // Declare quadprog object and solve the QP
         QuadProgDense qp(qp_nvar,qp_neq,qp_nineq);
-        qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
+        MatrixXd H_sym = MatrixXd::Zero(qp_nvar,qp_nvar);
+        H_sym = 0.5*(H+H.transpose());
+        qp.solve(H_sym,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
         x = qp.result();
+
         status = qp.fail();
         int tries = 0;
         float lim = 0.05;
@@ -1071,7 +1078,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                     a0_1.transpose()*S_aug*Delta_aug);
 
             f += f_w;
-            qp.solve(H,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,bin);
+            qp.solve(H_sym,f,MatrixXd::Zero(0, qp_nvar),VectorXd::Zero(0),Ain,
+                     bin);
             x = qp.result();
             status = qp.fail();
             tries++;
@@ -1081,7 +1089,9 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     else if (!strcmp(_solver_name.c_str(),"ooqp"))
     {
         high_resolution_clock::time_point t1 = high_resolution_clock::now();
-        status = !ooqpei::OoqpEigenInterface::solve(H.sparseView(),
+        MatrixXd H_sym = MatrixXd::Zero(qp_nvar,qp_nvar);
+        H_sym = 0.5*(H+H.transpose());
+        status = !ooqpei::OoqpEigenInterface::solve(H_sym.sparseView(),
                                                     f, Ain.sparseView(),
                                                     bin, x,true);
         int tries = 0;
@@ -1090,7 +1100,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
             lim = 2 * lim;
             term = 2 * term;
             // Debug print
-//            cout << "Infeasible - Retrying..." << endl;
+            cout << "Infeasible - Retrying..." << endl;
             collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation),
                                lim * VectorXd::Ones(N_violation);
 
@@ -1100,15 +1110,15 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                     alim_rep, alim_rep;
 
             f_w << VectorXd::Zero(n_var),
-//                    term * VectorXd::Ones(N_violation);
-                    term*coll_constraint.prev_dist.array().inverse() ;
+                    term * VectorXd::Ones(N_violation);
+//                    term*coll_constraint.prev_dist.array().inverse() ;
 
             f = -2 * (pf_rep.transpose() * Q_aug * Lambda_aug -
                       init_propagation_aug.transpose() * Q_aug * Lambda_aug +
                       a0_1.transpose() * S_aug * Delta_aug);
 
             f += f_w;
-            status = !ooqpei::OoqpEigenInterface::solve(H.sparseView(), f,
+            status = !ooqpei::OoqpEigenInterface::solve(H_sym.sparseView(), f,
                                                         Ain.sparseView(),
                                                         bin, x);
             tries++;
@@ -1246,6 +1256,9 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     solution.pos = pos_aux;
     solution.vel = vel_aux;
     solution.acc = acc_aux;
+//    cout << solution.pos << endl << endl;
+//    cout << solution.vel << endl << endl;
+//    cout << solution.acc << endl << endl;
     return solution;
 }
 
@@ -1364,7 +1377,8 @@ std::vector<Trajectory> DMPC::solveDMPC()
 
     t2 = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
-    cout << "Solve al QPs computation time = " << duration/1000000.0 << "s" << endl;
+    cout << "Solve all QPs computation time = " << duration/1000000.0 << "s"
+         << endl;
 
     if(!_fail)
     {
@@ -1496,7 +1510,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPC()
     solution_short = all_trajectories;
     t2 = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
-    cout << "Solve al QPs computation time = " << duration/1000000.0 << "s" << endl;
+    cout << "Solve all QPs computation time = " << duration/1000000.0 << "s"
+         << endl;
 
     if(!execution_ended)
     {
@@ -1536,7 +1551,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
     execution_ended = false; // Reset variable before solving
     successful = false;      // Reset variable before solving
 
-//    cout << "I'm solving the problem using " << _solver_name << endl;
+    cout << "I'm solving the problem using " << _solver_name << endl;
 
     // Variables
     std::vector<Trajectory> all_trajectories(N_cmd);
@@ -1634,8 +1649,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 
         if (execution_ended)
         {
-//            cout << "Failed - problem unfeasible @ k_T = " << k
-//                 << ", vehicle #" << failed_i_global << endl;
+            cout << "Failed - problem unfeasible @ k_T = " << k
+                 << ", vehicle #" << failed_i_global << endl;
             break;
         }
 
@@ -1660,23 +1675,24 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 
     t2 = high_resolution_clock::now(); // toc
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
-//    cout << "Solve al QPs computation time = " << duration/1000000.0 << "s" << endl;
+    cout << "Solve all QPs computation time = " << duration/1000000.0 << "s"
+         << endl;
 
     // Sanity post-checks
     if(!execution_ended)
     {
-//        cout << "Optimization problem feasible: solution found" << endl;
+        cout << "Optimization problem feasible: solution found" << endl;
     }
 
     t1 = high_resolution_clock::now(); // tic
 
-//    if (!execution_ended && !arrived)
-//        cout << "The vehicles cannot finish the transition within the maximum allowed time"
-//             << endl;
+    if (!execution_ended && !arrived)
+        cout << "The vehicles cannot finish the transition within the maximum allowed time"
+             << endl;
 
     if (arrived && !execution_ended)
     {
-//        cout << "All vehicles reached their goals" << endl;
+        cout << "All vehicles reached their goals" << endl;
         // Scale solution to reach velocity and acceleration limits
         scale_solution(solution_short,_vlim,_alim);
 
@@ -1686,6 +1702,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
         // Check if collision constraints were not violated
         bool violation = collision_violation(solution);
         successful = !violation;
+        cout << "Successful = " << successful << endl;
 
         // Calculate minimum time to complete trajectory, within 5cm of goals
         double time = get_trajectory_time(solution);
@@ -1693,8 +1710,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 
     t2 = high_resolution_clock::now(); // toc
     duration = duration_cast<microseconds>( t2 - t1 ).count();
-//    cout << "Post-checks computation time = "
-//         << duration/1000000.0 << "s" << endl;
+    cout << "Post-checks computation time = "
+         << duration/1000000.0 << "s" << endl;
     return solution;
 }
 
@@ -1864,12 +1881,12 @@ double DMPC::get_trajectory_time(const std::vector<Trajectory> &solution)
         }
     }
     min_traj_time = time.maxCoeff();
-//    cout << "The transition will be completed in " << min_traj_time << "s" << endl;
+    cout << "The transition will be completed in " << min_traj_time << "s" << endl;
     return min_traj_time;
 }
 
 void DMPC::scale_solution(std::vector<Trajectory> &sol,
-                          const int &vmax, const int &amax)
+                          const float &vmax, const float &amax)
 {
     int N = sol.size();
     int time_steps = sol.at(0).pos.cols();
@@ -2029,17 +2046,17 @@ bool DMPC::collision_violation(const std::vector<Trajectory> &solution)
                 if (min_dist < _rmin-0.05) // we add 5cm tolerance factor to it
                 {
                     violation = true;
-//                    cout << "Collision constraint violation: ";
-//                    cout << "Vehicles " << i << " and " << j;
-//                    cout << " will be " << min_dist << "m";
-//                    cout << " apart @ t = " << pos/100.0 << "s" << endl;
+                    cout << "Collision constraint violation: ";
+                    cout << "Vehicles " << i << " and " << j;
+                    cout << " will be " << min_dist << "m";
+                    cout << " apart @ t = " << pos/100.0 << "s" << endl;
                 }
             }
         }
     }
 
-//    if (!violation)
-//        cout << "No collisions found!" << endl;
+    if (!violation)
+        cout << "No collisions found!" << endl;
     return violation;
 }
 

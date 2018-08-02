@@ -34,8 +34,25 @@ Aux = [1 0 0 h 0 0;
      0 0 0 1 0 0;
      0 0 0 0 1 0;
      0 0 0 0 0 1];
+ 
+b = [h^2/2*eye(3);
+     h*eye(3)];
+ 
+prev_row = zeros(6,3*k_hor); % For the first iteration of constructing matrix Ain
+A_p_dmpc = [];
+A_v_dmpc = [];
 A_initp = [];
 A_init = eye(6);
+for k = 1:k_hor
+    add_b = [zeros(size(b,1),size(b,2)*(k-1)) b zeros(size(b,1),size(b,2)*(k_hor-k))];
+    new_row = Aux*prev_row + add_b;   
+    A_p_dmpc = [A_p_dmpc; new_row(1:3,:)];
+    A_v_dmpc = [A_v_dmpc; new_row(4:6,:)];
+    prev_row = new_row;
+    A_init = Aux*A_init;
+    A_initp = [A_initp; A_init(1:3,:)];  
+end
+
 error_tol = 0.05; % 5cm destination tolerance
 
 Delta = getDeltaMat(k_hor); 
@@ -54,12 +71,12 @@ for q = 1:length(N_vector)
         % Initial positions
         [po,pf] = randomTest(N,pmin,pmax,rmin_init);
         
-        %SoftDMPC with second-order ellipsoid constraint
+        %SoftDMPC enforcing constrain @ k
         
         % Variables for ellipsoid constraint
         order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-        rmin = 0.5; % X-Y protection radius for collisions
-        c = 1.5; % make this one for spherical constraint
+        rmin = 0.35; % X-Y protection radius for collisions
+        c = 2.0; % make this one for spherical constraint
         E = diag([1,1,c]);
         E1 = E^(-1);
         E2 = E^(-order);
@@ -88,7 +105,7 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible2(q,r),outbound2(q,r),violation2(q,r)] = solveSoftDMPCbound2(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term2); 
+                    [pi,vi,ai,feasible2(q,r),outbound2(q,r),violation2(q,r)] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p_dmpc,A_v_dmpc,Delta,Q,S,E1,E2,order,term2); 
                 end
                 if (~feasible2(q,r) || outbound2(q,r) || violation2(q,r))
                     save(['Fail2_' num2str(fail2)]);

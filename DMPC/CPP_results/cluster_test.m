@@ -19,6 +19,8 @@ for i = 1:clus_arr_size
     h_label{i} = [num2str(cluster_size(i)) 'cluster(s)'];
     hold on;
     grid on;
+    plot(num_vehicles, avg_time(i,:),'o', 'MarkerFaceColor', colors(i,:),...
+        'Linewidth',1,'Color',colors(i,:));
     xlabel('Number of Vehicles');
     ylabel('Average Computation Time [s]');  
 end

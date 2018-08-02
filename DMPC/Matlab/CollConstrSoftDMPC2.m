@@ -1,14 +1,11 @@
-function [Ain_total, bin_total,prev_dist] = CollConstrSoftDMPC(p,po,vo,n, k, l,rmin, Ain,A_initp,E1,E2,order,violation)
+function [Ain_total, bin_total,prev_dist] = CollConstrSoftDMPC2(p,po,vo,n, k, l,rmin, Ain,A_initp,E1,E2,order,violation)
 N_obs = size(l,3);
 N_violation = sum(violation);
 Ain_total = zeros(N_violation,3*size(l,2));
 bin_total = zeros(N_violation,1);
 prev_dist = zeros(N_violation,1);
 idx = 1;
-k_ctr = k;
-if k_ctr >= size(l,2)
-    k_ctr = size(l,2);
-end
+k_ctr = k-1;
 if (~isempty(l))
     for i = 1:N_obs %Iterate through the number of obstacles (other agents)
         if(i~=n && violation(i))

@@ -32,7 +32,7 @@ for k = 1: k_hor
         elseif (k==1)
             continue;
         end     
-        [Ainr,binr,prev_dist] = CollConstrSoftDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order,viol_constr);
+        [Ainr,binr,prev_dist] = CollConstrSoftDMPC2(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order,viol_constr);
         Ain_coll = [Ainr diag(prev_dist)];
 %         Ain_coll = [Ainr diag(prev_dist)];
         bin_coll = binr;
@@ -79,10 +79,9 @@ if (any(violation)) % In case of collisions, we relax the constraint with slack 
     % add bound on the relaxation variable
     ub = [ub; zeros(N_violation,1)];
     lb = [lb; -0.05*ones(N_violation,1)];
-%     lb = [lb; -(0.1 + (k/2)^2*(0.04) - 0.04)*ones(N_violation,1)];
 
     % Linear penalty on collision constraint relaxation
-    f_eps = term*[zeros(3*K,1); 1./prev_dist]';
+    f_eps = term*[zeros(3*K,1); ones(N_violation,1)]';
     
     % Quadratic penalty on collision constraint relaxation
     EPS = 1*10^0*[zeros(3*K,3*K) zeros(3*K,N_violation);
@@ -150,7 +149,7 @@ while(~success && tries < 30)
         fprintf("Retrying with more relaxed bound \n");
         lb(3*K+1:end) = lb(3*K+1:end) - 0.01;
         term = term*2;
-        f_eps = term*[zeros(3*K,1); 1./prev_dist]';
+        f_eps = term*[zeros(3*K,1); ones(N_violation,1)]';
         f = -2*([repmat((pf)',K,1); zeros(N_violation,1)]'*Q*A - (A_initp_aug*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;
         tries = tries + 1;
         continue
