@@ -4,69 +4,72 @@ close all
 warning('off','all')
 
 % Time settings and variables
-max_T = 30; % Trajectory final time
+max_T = 20; % Trajectory final time
 h = 0.2; % time step duration
 max_K = max_T/h + 1; % number of time steps
-k_hor = 15; % horizon length
+k_hor = 15; % horizon length (currently set to 3s)
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-rmin = 0.35; % X-Y protection radius for collisions
-c = 2.0; % make this one for spherical constraint
+c = 1.5; % make this one for spherical constraint
 E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 4; % number of vehicles
-
 % Workspace boundaries
-pmin = [-2.5,-2.5,1.5];
-pmax = [2.5,2.5,1.5];
-
-% pmin = [-5,-5,0.2];
-% pmax = [5,5,10.2];
-
-% pmin = [-0.8,-0.8,0.2];
-% pmax = [0.8,0.8,1.8];
-
-% % Workspace boundaries
-% pmin = [-5,-5,0.2];
-% pmax = [5,5,5];
+pmin = [-2.5,-2.5,1.49];
+pmax = [2.5,2.5,1.51];
 
 % Minimum distance between vehicles in m
-% rmin_init = 0.35;
+rmin_init = 0.35;
+
+% Maximum acceleration in m/s^2
+alim = 1.0;
+
+% Some pre computations DMPC
+A = getPosMat(h,k_hor);
+Aux = [1 0 0 h 0 0;
+     0 1 0 0 h 0;
+     0 0 1 0 0 h;
+     0 0 0 1 0 0;
+     0 0 0 0 1 0;
+     0 0 0 0 0 1];
+ 
+b = [h^2/2*eye(3);
+     h*eye(3)];
+ 
+prev_row = zeros(6,3*k_hor); % For the first iteration of constructing matrix Ain
+A_p_dmpc = [];
+A_v_dmpc = [];
+A_initp = [];
+A_init = eye(6);
+for k = 1:k_hor
+    add_b = [zeros(size(b,1),size(b,2)*(k-1)) b zeros(size(b,1),size(b,2)*(k_hor-k))];
+    new_row = Aux*prev_row + add_b;   
+    A_p_dmpc = [A_p_dmpc; new_row(1:3,:)];
+    A_v_dmpc = [A_v_dmpc; new_row(4:6,:)];
+    prev_row = new_row;
+    A_init = Aux*A_init;
+    A_initp = [A_initp; A_init(1:3,:)];  
+end
+
+Delta = getDeltaMat(k_hor);
+N = 4;
 
 % Initial positions
-% [po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
-
-% po1 = [-1.0, 1.0, 1.0];
-% po2 = [0.0, 1.0, 0.8];
-% po3 = [1.0, 1.0, 1.5];
-% po4 = [-1.0, 0.0, 0.4];
-% po5 = [0.0, 0.0 , 1.3];
-% po6 = [1.0, 0.0 , 0.7];
-% po7 = [-1.0, -1.0 , 0.9];
-% po8 = [0.0, -1.0 , 1.4];
-% po9 = [1.0, -1.0 , 0.6];
-% 
-% po = cat(3,po1,po2,po3,po4,po5,po6);
-% pf = cat(3,po2,po1,po4,po3,po6,po5);
-% Initial positions
-po1 = [2,2.0,1.5];
-po2 = [-2.0,-2.0,1.5];
-po3 = [-2.0,2.0,1.5];
-po4 = [2.0,-2.0,1.5];
+po1 = [2.001,2,1.5];
+po2 = [-2,-2,1.5];
+po3 = [-2,2.001,1.5];
+po4 = [2,-2,1.5];
 po = cat(3,po1,po2,po3,po4);
 
 % Final positions
-pf1 = [-2.0,-2.0,1.5];
-pf2 = [2.0,2.0,1.5];
-pf3 = [2.0,-2.0,1.5];
-pf4 = [-2.0,2.0,1.5];
-pf  = cat(3,po2,po1,po4,po3);
+pf1 = [-2,-2,1.5];
+pf2 = [2,2,1.5];
+pf3 = [2,-2,1.5];
+pf4 = [-2,2,1.5];
+pf  = cat(3, pf1, pf2,pf3,pf4);
 
-
-%% Solving the problem
 l = [];
 p = [];
 v = [];
@@ -78,11 +81,11 @@ ak_mod = [];
 vk_mod = [];
 success = 0; %check if QP was feasible
 at_goal = 0; %At the end of solving, makes sure every agent arrives at the goal
-error_tol = 0.01; % 5cm destination tolerance
+error_tol = 0.05; % 5cm destination tolerance
 violation = 0; % checks if violations occured at end of algorithm
 outbound = 0;
 coll = 0;
-term = -1*10^5;
+term = -5*10^4;
 
 % Penalty matrices when there're predicted collisions
 Q = 1000;
@@ -90,6 +93,7 @@ S = 100;
 
 % Maximum acceleration in m/s^2
 alim = 1.0;
+rmin = 0.5;
 
 % Some pre computations
 A = getPosMat(h,k_hor);
@@ -249,165 +253,137 @@ if passed
     fprintf("The sum of trajectory length is %.2f\n",totdist_dmpc);
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Cup-SCP
+success = 0;
+violation_cup = 0;
+reached_goal_cup = false;
+rmin = 0.5; % X-Y protection radius for collisions
 
-%%
+b = [h^2/2*eye(3);
+     h*eye(3)];
+if T==0
+    T = max_T;
+end
+tk = 0:h:T;
+K = length(tk);
+prev_row = zeros(6,3*K); % For the first iteration of constructing matrix Ain
+A_p = zeros(3*(K-1),3*K);
+A_v = zeros(3*(K-1),3*K);
+idx=1;
+% Build matrix to convert acceleration to position
+for k = 1:(K-1)
+    add_b = [zeros(size(b,1),size(b,2)*(k-1)) b zeros(size(b,1),size(b,2)*(K-k))];
+    new_row = Aux*prev_row + add_b;   
+    A_p(idx:idx+2,:) = new_row(1:3,:);
+    A_v(idx:idx+2,:) = new_row(4:6,:);
+    prev_row = new_row;
+    idx = idx+3;
+end
+
+t_start = tic;
+% Solve SCP
+[pk_cup,vk_cup,ak_cup,success] = solveCupSCP(po,pf,h,K,N,pmin,pmax,rmin,alim,A_p,A_v,E1,E2,order);
+if success
+    reached_goal_cup = ReachedGoal(pk_cup,pf,K,error_tol,N);
+    % Interpolate solution with a 100Hz sampling
+    for i = 1:N
+        p_cup(:,:,i) = spline(tk,pk_cup(:,:,i),t);
+        v_cup(:,:,i) = spline(tk,vk_cup(:,:,i),t);
+        a_cup(:,:,i) = spline(tk,ak_cup(:,:,i),t); 
+    end
+    % Check if collision constraints were not violated
+    for i = 1:N
+        for j = 1:N
+            if(i~=j)
+                differ = E1*(p_cup(:,:,i) - p_cup(:,:,j));
+                dist = (sum(differ.^order,1)).^(1/order);
+                if min(dist) < (rmin-0.05)
+                    [value,index] = min(dist);
+                    violation_cup = 1;
+                end
+            end
+        end
+    end
+end
+
+success_cup = success && reached_goal_cup && ~violation_cup
+if (success_cup) 
+    t_cup = toc(t_start);
+    totdist_cup = sum(sum(sqrt(diff(p_cup(1,:,:)).^2+diff(p_cup(2,:,:)).^2+diff(p_cup(3,:,:)).^2)));        
+else
+    t_cup = nan;
+    totdist_cup = nan;
+end
+
+%% Plot DMPC vs cup-SCP trajectories
 figure(1)
 colors = distinguishable_colors(N);
-
-set(gcf, 'Position', get(0, 'Screensize'));
+colors(1,:) = [0,0.73,0.98];
+colors(4,:) = [0.66,0.66,0.66];
+colors_cup(1,:) = [0,0,0.55];
+colors_cup(2,:) = [0.55,0,0];
+colors_cup(3,:) = [0, 0.39,0];
+colors_cup(4,:) = [0,0,0.1];
+% set(gcf, 'Position', get(0, 'Screensize'));
 set(gcf,'currentchar',' ')
+set(0,'DefaultFigureColor',[1 1 1])
+% set(gcf,'Renderer','opengl')
+set(gca,'LineWidth',2,'TickLength',[0.025 0.025]);
+set(gca,'FontSize',20)
 while get(gcf,'currentchar')==' '
-   
     for i = 1:N
-    h_line(i) = animatedline('LineWidth',2,'Color',colors(i,:),'LineStyle',':');
+    h_line(i) = animatedline('LineWidth',8,'Color',colors(i,:),'LineStyle',':','markers',15);
     end
     for k = 1:K
         for i = 1:N
             clearpoints(h_line(i));
-            addpoints(h_line(i),pred(1,:,i,k),pred(2,:,i,k),pred(3,:,i,k));     
+            addpoints(h_line(i),pred(1,:,i,k),pred(2,:,i,k));     
             hold on;
-            grid on;
-            xlim([pmin(1),pmax(1)])
-            ylim([pmin(2),pmax(2)])
-            zlim([0,pmax(3)])
-            plot3(pk(1,k,i),pk(2,k,i),pk(3,k,i),'o',...
-                'LineWidth',2,'Color',colors(i,:));
-            plot3(po(1,1,i), po(1,2,i), po(1,3,i),'^',...
-                  'LineWidth',2,'Color',colors(i,:));
-            plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'x',...
-                  'LineWidth',2,'Color',colors(i,:));    
+            box on;
+            xlabel('x [m]')
+            ylabel('y [m]')
+            zlabel('z [m]')
+            xlim([-2.5,2.5])
+            ylim([-2.5,2.5])
+            zlim([0,3.5])
+            ax = gca;
+            ax.LineWidth = 5;
+            xticks([-2  2]);
+            yticks([-2  2]);
+            zticks([0  3]); 
+            plot(pk(1,1:k,i),pk(2,1:k,i),'-',...
+                'LineWidth',8,'Color',colors(i,:),'markers',6);
+            plot(pk_cup(1,1:k,i),pk_cup(2,1:k,i),'-.',...
+                'LineWidth',8,'Color',colors_cup(i,:),'markers',2);
         end
+    if k==1
+        xh = get(gca,'xlabel'); % handle to the label object
+        p = get(xh,'position'); % get the current position property
+        p(2) = p(2)/1.2 ;        % double the distance, 
+                               % negative values put the label below the axis
+        set(xh,'position',p)   % set the new position
+        yh = get(gca,'ylabel'); % handle to the label object
+        p = get(yh,'position'); % get the current position property
+        p(1) = p(1)/1.1 ;        % double the distance, 
+                               % negative values put the label below the axis
+        set(yh,'position',p)   % set the new position
+    end
+    for i=1:N
+        plot3(po(1,1,i), po(1,2,i), po(1,3,i),'o',...
+                      'LineWidth',2,'Color',colors(i,:),...
+                      'MarkerEdgeColor','k',...
+                      'MarkerFaceColor',colors(i,:),'markers',35);
+    end
+    for i =1:N
+        plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'d',...
+                      'LineWidth',2,'Color',colors(i,:),...
+                      'MarkerEdgeColor','k',...
+                      'MarkerFaceColor',colors(i,:),'markers',20);
+    end
     drawnow
+    set(gcf,'color','w');
     end
     clf
-    pause(0.5)
+    pause(0.1)
 end
-
-%% Plotting
-L = length(t);
-colors = distinguishable_colors(N);
-       
-for i = 1:N
-    figure(1);
-    h_plot(i) = plot3(p(1,:,i), p(2,:,i), p(3,:,i), 'LineWidth',1.5,...
-                'Color',colors(i,:));
-    h_label{i} = ['Vehicle #' num2str(i)];
-    hold on;
-    grid on;
-    xlim([pmin(1),pmax(1)])
-    ylim([pmin(2),pmax(2)])
-    zlim([0,pmax(3)])
-    xlabel('x[m]')
-    ylabel('y[m]');
-    zlabel('z[m]')
-    plot3(po(1,1,i), po(1,2,i), po(1,3,i),'x',...
-                  'LineWidth',3,'Color',colors(i,:));
-%     plot3(pf(1,1,i), pf(1,2,i), pf(1,3,i),'x',...
-%                   'LineWidth',5,'Color',colors(i,:)); 
-    
-    figure(2)
-    diff = p(:,:,i) - repmat(pf(:,:,i),length(t),1)';
-    dist = sqrt(sum(diff.^2,1));
-    plot(t, dist, 'LineWidth',1.5);
-    grid on;
-    hold on;
-    xlabel('t [s]')
-    ylabel('Distance to target [m]');
-    
-    
-    figure(3)
-    subplot(3,1,1)
-    plot(t,p(1,:,i),'LineWidth',1.5);
-    plot(t,pmin(1)*ones(length(t),1),'--r','LineWidth',1.5);
-    plot(t,pmax(1)*ones(length(t),1),'--r','LineWidth',1.5);
-    ylabel('x [m]')
-    xlabel ('t [s]')
-    grid on;
-    hold on;
-
-    subplot(3,1,2)
-    plot(t,p(2,:,i),'LineWidth',1.5);
-    plot(t,pmin(2)*ones(length(t),1),'--r','LineWidth',1.5);
-    plot(t,pmax(2)*ones(length(t),1),'--r','LineWidth',1.5);
-    ylabel('y [m]')
-    xlabel ('t [s]')
-    grid on;
-    hold on;
-
-    subplot(3,1,3)
-    plot(t,p(3,:,i),'LineWidth',1.5);
-    plot(t,pmin(3)*ones(length(t),1),'--r','LineWidth',1.5);
-    plot(t,pmax(3)*ones(length(t),1),'--r','LineWidth',1.5);
-    ylabel('z [m]')
-    xlabel ('t [s]')
-    grid on;
-    hold on;
-
-    figure(4)
-    subplot(3,1,1)
-    plot(t,v(1,:,i),'LineWidth',1.5);
-    ylabel('vx [m/s]')
-    xlabel ('t [s]')
-    grid on;
-    hold on;
-
-    subplot(3,1,2)
-    plot(t,v(2,:,i),'LineWidth',1.5);
-    ylabel('vy [m/s]')
-    xlabel ('t [s]')
-    grid on;
-    hold on;
-
-    subplot(3,1,3)
-    plot(t,v(3,:,i),'LineWidth',1.5);
-    ylabel('vz [m/s]')
-    xlabel ('t [s]')
-    grid on;
-    hold on;
-
-    figure(5)
-    subplot(3,1,1)
-    plot(t,a(1,:,i),'LineWidth',1.5);
-    plot(t,alim*ones(length(t),1),'--r','LineWidth',1.5);
-    plot(t,-alim*ones(length(t),1),'--r','LineWidth',1.5);
-    ylabel('ax [m/s]')
-    xlabel ('t [s]')
-    grid on;
-    hold on;
-
-    subplot(3,1,2)
-    plot(t,a(2,:,i),'LineWidth',1.5);
-    plot(t,alim*ones(length(t),1),'--r','LineWidth',1.5);
-    plot(t,-alim*ones(length(t),1),'--r','LineWidth',1.5);
-    ylabel('ay [m/s]')
-    xlabel ('t [s]')
-    grid on;
-    hold on;
-
-    subplot(3,1,3)
-    plot(t,a(3,:,i),'LineWidth',1.5);
-    plot(t,alim*ones(length(t),1),'--r','LineWidth',1.5);
-    plot(t,-alim*ones(length(t),1),'--r','LineWidth',1.5);
-    ylabel('az [m/s]')
-    xlabel ('t [s]')
-    grid on;
-    hold on;
-   
-end
-%%
-figure(6)
-for i = 1:N
-    for j = 1:N
-        if(i~=j)
-            differ = E1*(pk(:,:,i) - pk(:,:,j));
-            dist = (sum(differ.^order,1)).^(1/order);
-            plot(t, dist, 'LineWidth',1.5);
-            grid on;
-            hold on;
-            xlabel('t [s]')
-            ylabel('Inter-agent distance [m]');
-        end
-    end
-end
-plot(t,rmin*ones(length(t),1),'--r','LineWidth',1.5);
-% legend(h_plot,h_label);

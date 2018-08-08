@@ -125,6 +125,8 @@ public:
      */
     void set_initial_pts(const MatrixXd &po);
 
+    void set_k_factor(const int &k_factor);
+
     /**
      * Verifies consistency of the set of final locations (inbounds). Will
      * relocate if final position if out of bounds
@@ -232,6 +234,7 @@ private:
     MatrixXd _A0;             /**< Propagation of initial states in position */
 
     int _fail; //keeps track if QP failed or not
+    int _k_factor;
 
 
     //CPLEX variables

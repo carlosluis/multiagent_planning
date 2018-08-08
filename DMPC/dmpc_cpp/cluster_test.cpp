@@ -38,8 +38,8 @@ int main()
     // Test definitions
     VectorXd cluster_size(6);
     cluster_size << 1, 2, 4, 6, 8 , 10;
-    VectorXd num_vehicles(1);
-    num_vehicles << 10;
+    VectorXd num_vehicles(2);
+    num_vehicles << 10,20;
     int num_trials = 5;
     float rmin_init = 0.75;
     std::string solver = "ooqp";
@@ -54,12 +54,10 @@ int main()
     int size_clust_arr = cluster_size.size();
     int size_vehic_arr = num_vehicles.size();
 
-    // Result variable
-    MatrixXd avg_time = MatrixXd::Zero(size_clust_arr,size_vehic_arr);
-    MatrixXd std_time = MatrixXd::Zero(size_clust_arr,size_vehic_arr);
-
     // Create the instances of DMPC with different cluster size
     std::vector<DMPC> dmpc_vec;
+
+    // Store all the times, to be processed by MATLAB
     std::vector<MatrixXd> time_vec;
     for(int i=0; i<size_clust_arr; ++i){
         DMPC temp(solver,p);
@@ -95,7 +93,6 @@ int main()
                 // Check if it was successful before recording it
                 if (dmpc_vec.at(k).successful){
                     time_vec.at(k)(i,success) = duration/1000000.0;
-                    avg_time(k,i) += duration/1000000.0;
                 }
                 else continue;
             }
@@ -103,9 +100,6 @@ int main()
                 success++;
         }
     }
-    std::cout << time_vec.at(0) << endl << endl;
-    avg_time /= num_trials;
-    std::cout << avg_time << endl;
 
     // Write result to txt file (to be read by MATLAB)
 

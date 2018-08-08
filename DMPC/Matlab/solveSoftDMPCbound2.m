@@ -147,7 +147,7 @@ while(~success && tries < 30)
             continue
         end
         fprintf("Retrying with more relaxed bound \n");
-        lb(3*K+1:end) = lb(3*K+1:end) - 0.01;
+        lb(3*K+1:end) = 2*lb(3*K+1:end);
         term = term*2;
         f_eps = term*[zeros(3*K,1); ones(N_violation,1)]';
         f = -2*([repmat((pf)',K,1); zeros(N_violation,1)]'*Q*A - (A_initp_aug*([po';vo']))'*Q*A + ao_1*S*Delta) + f_eps ;

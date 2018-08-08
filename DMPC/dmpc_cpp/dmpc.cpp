@@ -307,6 +307,10 @@ void DMPC::set_initial_pts(const MatrixXd &po) {
     }
 }
 
+void DMPC::set_k_factor(const int &k_factor){
+    _k_factor = k_factor;
+}
+
 void DMPC::set_final_pts(const MatrixXd &pf) {
     // Verify if points are within workspace
     int N = pf.cols();
@@ -399,6 +403,7 @@ std::vector<bool> DMPC::check_collisionsv2(const Vector3d &prev_p,
     std::vector<bool> viol_constr(N);
     std::vector<double> dist(N-1);
     int idx = 0;
+    double min_dist = 10.0;
 
     // Check the distance from i-th agent to each of the N-1 neighbours
     // Populate the viol_constr array with the conflicting neighbours
@@ -409,9 +414,18 @@ std::vector<bool> DMPC::check_collisionsv2(const Vector3d &prev_p,
             pj = obs[i].col(k);
             diff = _E1*(prev_p - pj);
             dist[idx] = pow(((diff.array().pow(_order)).sum()),1.0/_order);
-            violation[i] = (dist[idx] < _rmin);
+            violation[i] = (dist[idx] < _rmin*(1+(float)k/_k_hor));
             viol_constr[i] = (dist[idx] < _rmin*(1+(float)k/_k_hor));
+            if (k==0){
+                if (dist[idx] < _rmin - _collision_tol){
+                    execution_ended = true;
+                    cout << "Collision detected with vehicles " << n
+                         << " and " << i << endl;
+                }
+            }
             idx++;
+
+
         }
         else
         {
@@ -419,6 +433,11 @@ std::vector<bool> DMPC::check_collisionsv2(const Vector3d &prev_p,
             viol_constr[i] = false;
         }
     }
+
+
+//    min_dist = *std::min_element( std::begin(dist), std::end(dist) );
+//    if (k==0 && min_dist < _rmin - _collision_tol)
+//        cout << "Collision bound to happen" << endl;
 
     // In case no violations occured, we clear the array to check outside
     // this function its size and make a decision of what to do next
@@ -494,7 +513,7 @@ Constraint DMPC::build_collconstraintv2(const Vector3d &prev_p,
     MatrixXd diff_row = MatrixXd::Zero(1,3*_k_hor);
     initial_states << po,vo;
     Constraint collision;
-    int k_ctr = k;
+    int k_ctr = k + _k_factor;
     collision.prev_dist = VectorXd::Zero(N_violation);
 
     // Build the collision constraint based on its linearization around the
@@ -868,8 +887,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
         violation = violation_vec.size() > 0;
         if (violation) // violations occured
         {
-//            if (k==0)
-//                continue;
+            if (k==0 && _k_factor == -1)
+                continue;
             N_violation = std::count (violation_vec.begin(),
                                       violation_vec.end(), true);
 
@@ -892,7 +911,7 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                               -MatrixXd::Identity(N_violation,N_violation);
 
             collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation),
-                               collision_tol*VectorXd::Ones(N_violation);
+                               0.01*VectorXd::Ones(N_violation);
             break;
         }
     }
@@ -1054,13 +1073,17 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
 
         status = qp.fail();
         int tries = 0;
-        float lim = 0.05;
+        float lim = 0.01;
 
         while (status && tries < 20){
+            if (!violation){
+                cout << "No violation and couldn't solve" << endl;
+                break;
+            }
             lim = 2*lim;
             term = 2*term;
             // Debug print
-//            cout << "Infeasible - Retrying..." << endl;
+            cout << "Infeasible - Retrying with lim = " << lim << endl;
             collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation),
                                lim*VectorXd::Ones(N_violation);
 
@@ -1070,8 +1093,8 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                     alim_rep, alim_rep;
 
             f_w << VectorXd::Zero(n_var),
-//                    term * VectorXd::Ones(N_violation);
-                    term*coll_constraint.prev_dist.array().inverse() ;
+                    term * VectorXd::Ones(N_violation);
+//                    term*coll_constraint.prev_dist.array().inverse() ;
 
             f = -2*(pf_rep.transpose()*Q_aug*Lambda_aug -
                     init_propagation_aug.transpose()*Q_aug*Lambda_aug +
@@ -1095,12 +1118,16 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
                                                     f, Ain.sparseView(),
                                                     bin, x,true);
         int tries = 0;
-        float lim = 0.05;
+        float lim = 0.01;
         while (status && tries < 20) {
+            if (!violation){
+                cout << "No violation and couldn't solve" << endl;
+                break;
+            }
             lim = 2 * lim;
             term = 2 * term;
             // Debug print
-//            cout << "Infeasible - Retrying..." << endl;
+            cout << "Infeasible - Retrying with lim = " << lim << endl;
             collconstrb_aug << coll_constraint.b, VectorXd::Zero(N_violation),
                                lim * VectorXd::Ones(N_violation);
 
@@ -1551,7 +1578,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
     execution_ended = false; // Reset variable before solving
     successful = false;      // Reset variable before solving
 
-//    cout << "I'm solving the problem using " << _solver_name << endl;
+    cout << "I'm solving the problem using " << _solver_name << endl;
 
     // Variables
     std::vector<Trajectory> all_trajectories(N_cmd);
@@ -1649,8 +1676,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 
         if (execution_ended)
         {
-//            cout << "Failed - problem unfeasible @ k_T = " << k
-//                 << ", vehicle #" << failed_i_global << endl;
+            cout << "Failed - problem unfeasible @ k_T = " << k
+                 << ", vehicle #" << failed_i_global << endl;
             break;
         }
 
@@ -1675,26 +1702,26 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 
     t2 = high_resolution_clock::now(); // toc
     auto duration = duration_cast<microseconds>( t2 - t1 ).count();
-//    cout << "Solve all QPs computation time = " << duration/1000000.0 << "s"
-//         << endl;
+    cout << "Solve all QPs computation time = " << duration/1000000.0 << "s"
+         << endl;
 
     // Sanity post-checks
     if(!execution_ended)
     {
-//        cout << "Optimization problem feasible: solution found" << endl;
+        cout << "Optimization problem feasible: solution found" << endl;
     }
 
     t1 = high_resolution_clock::now(); // tic
 
-//    if (!execution_ended && !arrived)
-//        cout << "The vehicles cannot finish the transition within the maximum allowed time"
-//             << endl;
+    if (!execution_ended && !arrived)
+        cout << "The vehicles cannot finish the transition within the maximum allowed time"
+             << endl;
 
     if (arrived && !execution_ended)
     {
-//        cout << "All vehicles reached their goals" << endl;
+        cout << "All vehicles reached their goals" << endl;
         // Scale solution to reach velocity and acceleration limits
-        scale_solution(solution_short,_vlim,_alim);
+//        scale_solution(solution_short,_vlim,_alim);
 
         // Interpolate for better resolution (e.g. 100 Hz)
         solution = interp_trajectory(solution_short,1.0 / _freq);
@@ -1702,7 +1729,7 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
         // Check if collision constraints were not violated
         bool violation = collision_violation(solution);
         successful = !violation;
-//        cout << "Successful = " << successful << endl;
+        cout << "Successful = " << successful << endl;
 
         // Calculate minimum time to complete trajectory, within 5cm of goals
         double time = get_trajectory_time(solution);
@@ -1710,8 +1737,8 @@ std::vector<Trajectory> DMPC::solveParallelDMPCv2()
 
     t2 = high_resolution_clock::now(); // toc
     duration = duration_cast<microseconds>( t2 - t1 ).count();
-//    cout << "Post-checks computation time = "
-//         << duration/1000000.0 << "s" << endl;
+    cout << "Post-checks computation time = "
+         << duration/1000000.0 << "s" << endl;
     return solution;
 }
 
@@ -1881,7 +1908,7 @@ double DMPC::get_trajectory_time(const std::vector<Trajectory> &solution)
         }
     }
     min_traj_time = time.maxCoeff();
-//    cout << "The transition will be completed in " << min_traj_time << "s" << endl;
+    cout << "The transition will be completed in " << min_traj_time << "s" << endl;
     return min_traj_time;
 }
 
@@ -1914,6 +1941,7 @@ void DMPC::scale_solution(std::vector<Trajectory> &sol,
 std::vector<Trajectory> DMPC::interp_trajectory(const std::vector<Trajectory> &sol,
                                                 const double &step_size)
 {
+    _h_scaled = _h;
     float T = (sol.at(0).pos.cols() - 1)*_h_scaled;
     int K = T/step_size + 1;
     int N = sol.size();
@@ -2046,17 +2074,17 @@ bool DMPC::collision_violation(const std::vector<Trajectory> &solution)
                 if (min_dist < _rmin-0.05) // we add 5cm tolerance factor to it
                 {
                     violation = true;
-//                    cout << "Collision constraint violation: ";
-//                    cout << "Vehicles " << i << " and " << j;
-//                    cout << " will be " << min_dist << "m";
-//                    cout << " apart @ t = " << pos/100.0 << "s" << endl;
+                    cout << "Collision constraint violation: ";
+                    cout << "Vehicles " << i << " and " << j;
+                    cout << " will be " << min_dist << "m";
+                    cout << " apart @ t = " << pos*_h << "s" << endl;
                 }
             }
         }
     }
 
-//    if (!violation)
-//        cout << "No collisions found!" << endl;
+    if (!violation)
+        cout << "No collisions found!" << endl;
     return violation;
 }
 

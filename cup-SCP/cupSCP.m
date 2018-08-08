@@ -1,5 +1,5 @@
 clc
-% clear all
+clear all
 close all
 
 % Time settings and variables
@@ -12,41 +12,41 @@ t = 0:Ts:T; % interpolated time vector
 success = 1;
 
 % Workspace boundaries
-pmin = [-1.0,-1.0,0.2];
-pmax = [1.0,1.0,2.2];
+pmin = [-2.5,-2.5,1.49];
+pmax = [2.5,2.5,1.51];
 
 % Minimum distance between vehicles in m
 rmin_init = 0.91;
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-rmin = 0.5; % X-Y protection radius for collisions
-c = 1.5; % make this one for spherical constraint
+rmin = 0.35; % X-Y protection radius for collisions
+c = 2.0; % make this one for spherical constraint
 E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
 % Maximum acceleration in m/s^2
-alim = 0.5;
+alim = 1.0;
 
-N = 10; % number of vehicles
+N = 4; % number of vehicles
 
 % Initial positions
-[po,pf] = randomTest(N,pmin,pmax,rmin_init);
+% [po,pf] = randomTest(N,pmin,pmax,rmin_init);
 
-% % Initial positions
-% po1 = [2,2,1.5];
-% po2 = [-2,-2,1.5];
-% po3 = [-2,2,1.5];
-% po4 = [2,-2,1.5];
-% po = cat(3,po1,po2,po3,po4);
-% 
-% % Final positions
-% pf1 = [-2,-2,1.5];
-% pf2 = [2,2,1.5];
-% pf3 = [2,-2,1.5];
-% pf4 = [-2,2,1.5];
-% pf  = cat(3, pf1,pf2,pf3,pf4);
+% Initial positions
+po1 = [2.01,2,1.5];
+po2 = [-2,-2,1.5];
+po3 = [-2,2,1.5];
+po4 = [2,-2,1.5];
+po = cat(3,po1,po2,po3,po4);
+
+% Final positions
+pf1 = [-2,-2,1.5];
+pf2 = [2,2,1.5];
+pf3 = [2,-2,1.5];
+pf4 = [-2,2,1.5];
+pf  = cat(3, pf1,pf2,pf3,pf4);
 
 %% Some Precomputations
 p = [];

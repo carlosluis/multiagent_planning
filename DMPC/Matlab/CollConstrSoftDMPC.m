@@ -6,9 +6,7 @@ bin_total = zeros(N_violation,1);
 prev_dist = zeros(N_violation,1);
 idx = 1;
 k_ctr = k;
-if k_ctr >= size(l,2)
-    k_ctr = size(l,2);
-end
+
 if (~isempty(l))
     for i = 1:N_obs %Iterate through the number of obstacles (other agents)
         if(i~=n && violation(i))
