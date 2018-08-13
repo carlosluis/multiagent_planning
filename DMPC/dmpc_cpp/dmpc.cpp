@@ -2077,7 +2077,7 @@ bool DMPC::collision_violation(const std::vector<Trajectory> &solution)
                     cout << "Collision constraint violation: ";
                     cout << "Vehicles " << i << " and " << j;
                     cout << " will be " << min_dist << "m";
-                    cout << " apart @ t = " << pos*_h << "s" << endl;
+                    cout << " apart @ t = " << (float)pos/_freq << "s" << endl;
                 }
             }
         }

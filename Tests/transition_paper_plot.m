@@ -320,6 +320,7 @@ end
 figure(1)
 colors = distinguishable_colors(N);
 colors(1,:) = [0,0.73,0.98];
+colors(3,:) = [0.55,0.75,0.11];
 colors(4,:) = [0.66,0.66,0.66];
 colors_cup(1,:) = [0,0,0.55];
 colors_cup(2,:) = [0.55,0,0];

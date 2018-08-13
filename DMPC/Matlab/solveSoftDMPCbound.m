@@ -18,7 +18,6 @@ success = 0;
 outbound = 0;
 coll = 0;
 
-
 for k = 1: k_hor
     [violation,min_dist,viol_constr] = CheckCollSoftDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
     if (any(violation))
@@ -32,13 +31,12 @@ for k = 1: k_hor
         end   
         [Ainr,binr,prev_dist] = CollConstrSoftDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order,viol_constr);
         Ain_coll = [Ainr diag(prev_dist)];
-%         Ain_coll = [Ainr diag(prev_dist)];
         bin_coll = binr;
         break;
     end       
 end
 
-spd = 1;
+spd = 3;
 
 % Setup the QP
 if(isempty(Ain_coll) && norm(po-pf) >= 1) % Case of no collisions far from sp

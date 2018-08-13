@@ -4,9 +4,6 @@ k_hor = size(l,2);
 ub = alim*ones(3*K,1);
 lb = -ub; 
 prev_p = l(:,:,n);
-% clip prev_p to within the boundaries
-% prev_p = bsxfun(@min,prev_p,pmax');
-% prev_p = bsxfun(@max,prev_p,pmin');
 constr_tol = 1e-3;
 Aeq = [];
 beq = [];
@@ -34,7 +31,6 @@ for k = 1: k_hor
         end     
         [Ainr,binr,prev_dist] = CollConstrSoftDMPC2(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order,viol_constr);
         Ain_coll = [Ainr diag(prev_dist)];
-%         Ain_coll = [Ainr diag(prev_dist)];
         bin_coll = binr;
         break;
     end       
@@ -78,7 +74,7 @@ if (any(violation)) % In case of collisions, we relax the constraint with slack 
     
     % add bound on the relaxation variable
     ub = [ub; zeros(N_violation,1)];
-    lb = [lb; -0.05*ones(N_violation,1)];
+    lb = [lb; -0.01*ones(N_violation,1)];
 
     % Linear penalty on collision constraint relaxation
     f_eps = term*[zeros(3*K,1); ones(N_violation,1)]';
@@ -128,10 +124,6 @@ while(~success && tries < 30)
             success = 0;
             outbound = 1;
         end 
-%         if violation % extract the value of the slack variable (not used atm)
-%          epsilon = x(3*K+1:end);
-% %     fprintf("min epsilon = %.4f e-3 \n",1000*min(epsilon))
-%         end
         return
         
     elseif isempty(x)
@@ -154,9 +146,4 @@ while(~success && tries < 30)
         tries = tries + 1;
         continue
     end
-end
-if ~success
-    hola = 1;
-end
-
 end

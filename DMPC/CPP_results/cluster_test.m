@@ -19,20 +19,30 @@ for i = 1:clus_arr_size
     avg_time(i,:) = mean(squeeze(time(i,:,:)),2);
     std_time(i,:) = std(squeeze(time(i,:,:)),1,2);
 end
-
+clusters2plot = [1,2,4,8];
 %% Plotting
 colors = distinguishable_colors(clus_arr_size);
-
+colors(3,:) = [0.55,0.75,0.11];
+idx = 1;
 for i = 1:clus_arr_size
     figure(1)
-    h_plot(i) = errorbar(num_vehicles,avg_time(i,:),std_time(i,:), 'LineWidth',1.5,...
-                'Color',colors(i,:));
-    h_label{i} = [num2str(cluster_size(i)) 'cluster(s)'];
-    hold on;
-    grid on;
-    plot(num_vehicles, avg_time(i,:),'o', 'MarkerFaceColor', colors(i,:),...
-        'Linewidth',1,'Color',colors(i,:));
-    xlabel('Number of Vehicles');
-    ylabel('Average Computation Time [s]');  
+    xlim([0 110])
+    set(gca,'LineWidth',1.2,'TickLength',[0.02 0.02]);
+    set(gca,'FontSize',18)
+    if (ismember(cluster_size(i),clusters2plot))
+        h_plot(idx) = errorbar(num_vehicles,avg_time(i,:),std_time(i,:),'--', 'LineWidth',1.5,...
+                    'Color',colors(idx,:));
+        h_label{idx} = [num2str(cluster_size(i)) 'cluster(s)'];
+        hold on;
+        box on;
+        plot(num_vehicles, avg_time(i,:),'o', 'MarkerFaceColor', colors(idx,:),...
+            'Linewidth',1,'Color',colors(idx,:));
+        xlabel('Number of Agents');
+        ylabel('Computation Time [s]');
+        idx = idx + 1;
+    end
 end
-legend(h_plot,h_label);
+[h, icons, plots, s] = legend(h_plot,h_label);
+h_lines = findobj(icons, 'Type', 'Line');
+set(h_lines, 'LineStyle', '-','LineWidth',2); %// modify properties as desired
+set(gcf,'color','w');

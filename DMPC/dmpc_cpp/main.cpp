@@ -10,10 +10,10 @@ int main()
 
 {
     Vector3d pmin;
-    pmin << -5, -5, 0.2;
+    pmin << -2.5, -2.5, 0.2;
     Vector3d pmax;
-    pmax << 5, 5, 10.2;
-    Params p = {0.1,50,20,2,2.0,0.35,1.0,2.0,100,0.01,0.05,1};
+    pmax << 2.5, 2.5, 5.2;
+    Params p = {0.2,50,15,2,2.0,0.35,1.0,2.0,100,0.01,0.05,1};
     DMPC test("ooqp",p);
     DMPC test2("ooqp",p);
 //    DMPC test3("cplex",p);

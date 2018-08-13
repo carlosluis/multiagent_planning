@@ -17,11 +17,11 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 4; % number of vehicles
+N = 2; % number of vehicles
 
 % Workspace boundaries
-pmin = [-2.5,-2.5,1.5];
-pmax = [2.5,2.5,1.5];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
 % pmin = [-5,-5,0.2];
 % pmax = [5,5,10.2];
@@ -34,36 +34,24 @@ pmax = [2.5,2.5,1.5];
 % pmax = [5,5,5];
 
 % Minimum distance between vehicles in m
-% rmin_init = 0.35;
+rmin_init = 0.35;
 
 % Initial positions
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
 
-% po1 = [-1.0, 1.0, 1.0];
-% po2 = [0.0, 1.0, 0.8];
-% po3 = [1.0, 1.0, 1.5];
-% po4 = [-1.0, 0.0, 0.4];
-% po5 = [0.0, 0.0 , 1.3];
-% po6 = [1.0, 0.0 , 0.7];
-% po7 = [-1.0, -1.0 , 0.9];
-% po8 = [0.0, -1.0 , 1.4];
-% po9 = [1.0, -1.0 , 0.6];
-% 
-% po = cat(3,po1,po2,po3,po4,po5,po6);
-% pf = cat(3,po2,po1,po4,po3,po6,po5);
 % Initial positions
-po1 = [2,2.0,1.5];
+po1 = [2.0,2.0,1.5];
 po2 = [-2.0,-2.0,1.5];
 po3 = [-2.0,2.0,1.5];
 po4 = [2.0,-2.0,1.5];
-po = cat(3,po1,po2,po3,po4);
+po = cat(3,po1,po2);
 
 % Final positions
 pf1 = [-2.0,-2.0,1.5];
 pf2 = [2.0,2.0,1.5];
 pf3 = [2.0,-2.0,1.5];
 pf4 = [-2.0,2.0,1.5];
-pf  = cat(3,po2,po1,po4,po3);
+pf  = cat(3,po2,po1);
 
 
 %% Solving the problem
@@ -128,28 +116,28 @@ moreconstr = [];
 reached_goal = 0;
 k = 1;
 while ~reached_goal && k < max_K
-        for n = 1:N
-        if k==1
-            poi = po(:,:,n);
-            pfi = pf(:,:,n);
-            [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,max_K);
-            success = 1;
-        else
-            pok = pk(:,k-1,n);
-            vok = vk(:,k-1,n);
-            aok = ak(:,k-1,n);
-            [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound2(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order,term); 
-        end
-        if (~success || outbound || coll) %problem was infeasible, exit and retry
-            break;
-        end
-        new_l(:,:,n) = pi;
-        pk(:,k,n) = pi(:,1);
-        vk(:,k,n) = vi(:,1);
-        ak(:,k,n) = ai(:,1);
-        end
+    for n = 1:N
+    if k==1
+        poi = po(:,:,n);
+        pfi = pf(:,:,n);
+        [pi,vi,ai] = initDMPC(poi,pfi,h,k_hor,max_K);
+        success = 1;
+    else
+        pok = pk(:,k-1,n);
+        vok = vk(:,k-1,n);
+        aok = ak(:,k-1,n);
+        [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order,term); 
+    end
+    if (~success || outbound || coll) %problem was infeasible, exit and retry
+        break;
+    end
+    new_l(:,:,n) = pi;
+    pk(:,k,n) = pi(:,1);
+    vk(:,k,n) = vi(:,1);
+    ak(:,k,n) = ai(:,1);
+    end
     
-    if ~success %Heuristic: increase Q, make init more slowly,
+    if ~success 
         if outbound
             fprintf("Failed - problem unfeasible, vehicle couldn't stay in workspace @ k_T = %i, n = %i\n",k,n)
         elseif coll
@@ -399,7 +387,7 @@ figure(6)
 for i = 1:N
     for j = 1:N
         if(i~=j)
-            differ = E1*(pk(:,:,i) - pk(:,:,j));
+            differ = E1*(p(:,:,i) - p(:,:,j));
             dist = (sum(differ.^order,1)).^(1/order);
             plot(t, dist, 'LineWidth',1.5);
             grid on;
