@@ -32,7 +32,7 @@ for i = 1:clus_arr_size
     if (ismember(cluster_size(i),clusters2plot))
         h_plot(idx) = errorbar(num_vehicles,avg_time(i,:),std_time(i,:),'--', 'LineWidth',1.5,...
                     'Color',colors(idx,:));
-        h_label{idx} = [num2str(cluster_size(i)) 'cluster(s)'];
+        h_label{idx} = [num2str(cluster_size(i)) ' cluster(s)'];
         hold on;
         box on;
         plot(num_vehicles, avg_time(i,:),'o', 'MarkerFaceColor', colors(idx,:),...
@@ -44,5 +44,5 @@ for i = 1:clus_arr_size
 end
 [h, icons, plots, s] = legend(h_plot,h_label);
 h_lines = findobj(icons, 'Type', 'Line');
-set(h_lines, 'LineStyle', '-','LineWidth',2); %// modify properties as desired
+set(h_lines, 'LineStyle', '-','LineWidth',4); %// modify properties as desired
 set(gcf,'color','w');

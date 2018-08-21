@@ -57,15 +57,15 @@ Delta = getDeltaMat(k_hor);
 N = 4;
 
 % Initial positions
-po1 = [2.001,2,1.5];
-po2 = [-2,-2,1.5];
-po3 = [-2,2.001,1.5];
+po1 = [2,2,1.5];
+po2 = [0,-2,1.5];
+po3 = [-2,2,1.5];
 po4 = [2,-2,1.5];
 po = cat(3,po1,po2,po3,po4);
 
 % Final positions
 pf1 = [-2,-2,1.5];
-pf2 = [2,2,1.5];
+pf2 = [0,2,1.5];
 pf3 = [2,-2,1.5];
 pf4 = [-2,2,1.5];
 pf  = cat(3, pf1, pf2,pf3,pf4);
@@ -334,7 +334,7 @@ set(gca,'LineWidth',2,'TickLength',[0.025 0.025]);
 set(gca,'FontSize',20)
 while get(gcf,'currentchar')==' '
     for i = 1:N
-    h_line(i) = animatedline('LineWidth',8,'Color',colors(i,:),'LineStyle',':','markers',15);
+    h_line(i) = animatedline('LineWidth',8,'Color',colors(i,:),'LineStyle',':','markers',5);
     end
     for k = 1:K
         for i = 1:N
@@ -355,8 +355,8 @@ while get(gcf,'currentchar')==' '
             zticks([0  3]); 
             plot(pk(1,1:k,i),pk(2,1:k,i),'-',...
                 'LineWidth',8,'Color',colors(i,:),'markers',6);
-            plot(pk_cup(1,1:k,i),pk_cup(2,1:k,i),'-.',...
-                'LineWidth',8,'Color',colors_cup(i,:),'markers',2);
+            plot(pk_cup(1,1:k,i),pk_cup(2,1:k,i),'--',...
+                'LineWidth',8,'Color',colors(i,:),'markers',0.1);
         end
     if k==1
         xh = get(gca,'xlabel'); % handle to the label object

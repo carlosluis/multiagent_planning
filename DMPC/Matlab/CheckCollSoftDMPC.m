@@ -9,7 +9,7 @@ for i = 1:N %Iterate through the number of obstacles (other agents)
         pj = l(:,:,i); %position vector of the i-th neighbour over k iterations
         dist(idx) = norm(E1*(p-pj(:,k)),order);
         violation(i) = (dist(idx) < rmin);
-        viol_constr(i) = dist(idx) < rmin*(1+k/15);
+        viol_constr(i) = dist(idx) < rmin*(3);
         idx = idx + 1;
     end  
 end

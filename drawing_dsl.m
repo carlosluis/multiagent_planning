@@ -81,7 +81,7 @@ for i=1:N
        plot(po(1,i),po(2,i),'ok','LineWidth',1,...
            'MarkerFaceColor',colors(i,:),'markers',15);
     end
-            
+   text(po(1,i)-0.05,po(2,i)+0.2,num2str(i),'Fontsize',14)        
    set(gca,'LineWidth',2,'TickLength',[0.025 0.025]);
    xticks([-1.5  1.5]);
    yticks([-1.5  1.5]);
@@ -129,6 +129,35 @@ for i=1:N
    xlim([-1.7,1.7]);
    ylim([-1.7,1.7]);
 end
+
+% Text labels for DSL are not straightforward
+text(pf(1,1)-0.05,pf(2,1)-0.25,num2str(1),'Fontsize',14);
+text(pf(1,2)-0.05,pf(2,2)-0.25,num2str(2),'Fontsize',14);
+text(pf(1,3)-0.05,pf(2,3)-0.25,num2str(3),'Fontsize',14);
+text(pf(1,4)-0.05,pf(2,4)-0.25,num2str(4),'Fontsize',14);
+text(pf(1,5)-0.05,pf(2,5)-0.25,num2str(5),'Fontsize',14);
+text(pf(1,6)+0.1,pf(2,6),num2str(6),'Fontsize',14);
+text(pf(1,7)+0.1,pf(2,7),num2str(7),'Fontsize',14);
+text(pf(1,8)-0.05,pf(2,8)-0.25,num2str(8),'Fontsize',14);
+text(pf(1,9)-0.05,pf(2,9)-0.25,num2str(9),'Fontsize',14);
+text(pf(1,10)-0.25,pf(2,10)-0.1,num2str(10),'Fontsize',14);
+text(pf(1,11)+0.1,pf(2,11),num2str(11),'Fontsize',14);
+text(pf(1,12)+0.1,pf(2,12),num2str(12),'Fontsize',14);
+text(pf(1,13)-0.1,pf(2,13)+0.2,num2str(13),'Fontsize',14);
+text(pf(1,14)-0.1,pf(2,14)-0.25,num2str(14),'Fontsize',14);
+text(pf(1,15)-0.25,pf(2,15)-0.1,num2str(15),'Fontsize',14);
+text(pf(1,16)+0.1,pf(2,16),num2str(16),'Fontsize',14);
+text(pf(1,17)+0.1,pf(2,17),num2str(17),'Fontsize',14);
+text(pf(1,18)-0.1,pf(2,18)+0.2,num2str(18),'Fontsize',14);
+text(pf(1,19)-0.1,pf(2,19)+0.2,num2str(19),'Fontsize',14);
+text(pf(1,20)-0.1,pf(2,20)+0.2,num2str(20),'Fontsize',14);
+text(pf(1,21)-0.1,pf(2,21)+0.2,num2str(21),'Fontsize',14);
+text(pf(1,22)-0.25,pf(2,22)-0.1,num2str(22),'Fontsize',14);
+text(pf(1,23)-0.1,pf(2,23)+0.2,num2str(23),'Fontsize',14);
+text(pf(1,24)-0.05,pf(2,24)-0.25,num2str(24),'Fontsize',14);
+text(pf(1,25)-0.1,pf(2,25)+0.2,num2str(25),'Fontsize',14);
+
+
 xh = get(gca,'xlabel'); % handle to the label object
 p = get(xh,'position'); % get the current position property
 p(2) = p(2)/1.2 ;        % double the distance, 
@@ -142,6 +171,9 @@ set(yh,'position',p)   % set the new position
 
 rectangle('Position',[-1.5,-1.5,3,3],'LineStyle','--',...
     'LineWidth',4,'EdgeColor','r')
+
+
+
 set(gcf,'color','w');
 
 % Get the minimum distance between agents
@@ -155,4 +187,3 @@ for i = 1:N
         end
     end
 end
-min(dist)

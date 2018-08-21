@@ -414,7 +414,7 @@ std::vector<bool> DMPC::check_collisionsv2(const Vector3d &prev_p,
             pj = obs[i].col(k);
             diff = _E1*(prev_p - pj);
             dist[idx] = pow(((diff.array().pow(_order)).sum()),1.0/_order);
-            violation[i] = (dist[idx] < _rmin*(1+(float)k/_k_hor));
+            violation[i] = (dist[idx] < _rmin);
             viol_constr[i] = (dist[idx] < _rmin*(1+(float)k/_k_hor));
             if (k==0){
                 if (dist[idx] < _rmin - _collision_tol){
@@ -1283,9 +1283,6 @@ Trajectory DMPC::solveQPv2(const Vector3d &po, const Vector3d &pf,
     solution.pos = pos_aux;
     solution.vel = vel_aux;
     solution.acc = acc_aux;
-//    cout << solution.pos << endl << endl;
-//    cout << solution.vel << endl << endl;
-//    cout << solution.acc << endl << endl;
     return solution;
 }
 
@@ -2071,7 +2068,7 @@ bool DMPC::collision_violation(const std::vector<Trajectory> &solution)
                 dist = pow(((differ.array().pow(_order)).colwise().sum()),1.0/_order);
                 min_dist = dist.minCoeff(&pos);
 
-                if (min_dist < _rmin-0.05) // we add 5cm tolerance factor to it
+                if (min_dist < _rmin-_collision_tol)
                 {
                     violation = true;
                     cout << "Collision constraint violation: ";

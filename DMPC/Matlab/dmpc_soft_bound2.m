@@ -17,7 +17,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 2; % number of vehicles
+N = 4; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -39,19 +39,19 @@ rmin_init = 0.35;
 % Initial positions
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
 
-% Initial positions
-po1 = [2.0,2.0,1.5];
-po2 = [-2.0,-2.0,1.5];
-po3 = [-2.0,2.0,1.5];
-po4 = [2.0,-2.0,1.5];
-po = cat(3,po1,po2);
+% % Initial positions
+po1 = [1.5,1.5,1.0];
+po2 = [-1.5,-1.5,1.0];
+po3 = [-1.5,1.5,1.0];
+po4 = [1.5,-1.5,1.0];
+po = cat(3,po1,po2,po3,po4);
 
 % Final positions
-pf1 = [-2.0,-2.0,1.5];
-pf2 = [2.0,2.0,1.5];
-pf3 = [2.0,-2.0,1.5];
-pf4 = [-2.0,2.0,1.5];
-pf  = cat(3,po2,po1);
+pf1 = [-1.5001,-1.5,1.0];
+pf2 = [1.5,1.5,1.0];
+pf3 = [1.5,-1.5,1.0];
+pf4 = [-1.5,1.5,1.0];
+pf  = cat(3,pf1,pf2,pf3,pf4);
 
 
 %% Solving the problem
@@ -70,7 +70,7 @@ error_tol = 0.01; % 5cm destination tolerance
 violation = 0; % checks if violations occured at end of algorithm
 outbound = 0;
 coll = 0;
-term = -1*10^5;
+term = -5*10^4;
 
 % Penalty matrices when there're predicted collisions
 Q = 1000;
@@ -166,15 +166,15 @@ toc
 if passed
     
     % scale the trajectory to meet the limits and plot
-%     vmax = 2;
-%     amax = 1;
-%     for i=1:N
-%         ak_mod(:,i) = amax./sqrt(sum(ak(:,:,i).^2,1));
-%         vk_mod(:,i) = vmax./sqrt(sum(vk(:,:,i).^2,1));
-%     end
-%     r_factor = min([min(min(ak_mod)), min(min(vk_mod))]);
-%     h_scaled = h/sqrt(r_factor);
-    h_scaled = h;
+    vmax = 2;
+    amax = 1;
+    for i=1:N
+        ak_mod(:,i) = amax./sqrt(sum(ak(:,:,i).^2,1));
+        vk_mod(:,i) = vmax./sqrt(sum(vk(:,:,i).^2,1));
+    end
+    r_factor = min([min(min(ak_mod)), min(min(vk_mod))]);
+    h_scaled = h/sqrt(r_factor);
+%     h_scaled = h;
     
     % Time settings and variables
     T = (k-2)*h_scaled; % Trajectory final time
@@ -184,13 +184,13 @@ if passed
     K = T/h_scaled + 1;
 
     % Compute new velocity and acceleration profiles
-%     for i = 1:N
-%         for k = 1:size(pk,2)-1
-%             ak(:,k,i) = ak(:,k,i)*r_factor;
-%             vk(:,k+1,i) = vk(:,k,i) + h_scaled*ak(:,k,i);
-%             pk(:,k+1,i) = pk(:,k,i) + h_scaled*vk(:,k,i) + h_scaled^2/2*ak(:,k,i);
-%         end
-%     end
+    for i = 1:N
+        for k = 1:size(pk,2)-1
+            ak(:,k,i) = ak(:,k,i)*r_factor;
+            vk(:,k+1,i) = vk(:,k,i) + h_scaled*ak(:,k,i);
+            pk(:,k+1,i) = pk(:,k,i) + h_scaled*vk(:,k,i) + h_scaled^2/2*ak(:,k,i);
+        end
+    end
     
     % Interpolate for better resolution
     for i = 1:N

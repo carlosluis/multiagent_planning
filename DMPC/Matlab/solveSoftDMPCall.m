@@ -1,12 +1,9 @@
-function [p,v,a,success,outbound,coll] = solveSoftDMPCbound(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q1,S1,E1,E2,order,term)
+function [p,v,a,success,outbound,coll] = solveSoftDMPCall(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q1,S1,E1,E2,order,term)
 
 k_hor = size(l,2);
 ub = alim*ones(3*K,1);
 lb = -ub; 
 prev_p = l(:,:,n);
-% clip prev_p to within the boundaries
-% prev_p = bsxfun(@min,prev_p,pmax');
-% prev_p = bsxfun(@max,prev_p,pmin');
 constr_tol = 1e-3;
 Aeq = [];
 beq = [];
@@ -17,10 +14,12 @@ bin_coll = [];
 success = 0;
 outbound = 0;
 coll = 0;
+some_violation = 0;
 
 for k = 1: k_hor
     [violation,min_dist,viol_constr] = CheckCollSoftDMPC(prev_p(:,k),l,n,k,E1,rmin,order);
     if (any(violation))
+        some_violation = 1;
         N_violation = sum(viol_constr);
         if (k==1 && min_dist < rmin - 0.05) %already violated constraint
             p = [];
@@ -28,10 +27,26 @@ for k = 1: k_hor
             a = [];
             coll = 1;
             return;   
-        end   
-        [Ainr,binr,prev_dist] = CollConstrSoftDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order,viol_constr);
-        Ain_coll = [Ainr diag(prev_dist)];
-        bin_coll = binr;
+        elseif (k==1)
+            continue;
+        end
+        
+        % We want to include constraints in k-1,k,k+1
+        if k == 2
+            ks = [k,k+1];
+        elseif k == K
+            ks = [k-1,k];
+        else
+            ks = [k-1,k,k+1];
+        end
+        
+        for kl = 1:length(ks)
+            [Ainr,binr,prev_dist] = CollConstrSoftDMPC(prev_p(:,ks(kl)),po,vo,n,ks(kl),l,rmin,A,A_initp,E1,E2,order,viol_constr);
+            Ain_coll = [Ain_coll;
+            Ainr zeros(N_violation,N_violation*(kl-1)) diag(prev_dist) zeros(N_violation,N_violation*(length(ks)-kl))];
+            bin_coll = [bin_coll;binr];
+        end
+        N_violation = length(ks)*N_violation;
         break;
     end       
 end
@@ -53,10 +68,10 @@ else     % collisions
     Q = Q1*[zeros(3*(K-spd),3*K);
             zeros(3*spd,3*(K-spd)) eye(3*spd)];
     R = 1*eye(3*K);
-    S = S1*eye(3*K);
+    S = 10*eye(3*K);
 end
 
-if (any(violation)) % In case of collisions, we relax the constraint with slack variable
+if (some_violation) % In case of collisions, we relax the constraint with slack variable
     % Add dimensions for slack variable
     Q = [Q zeros(3*K,N_violation);
          zeros(N_violation,3*K) zeros(N_violation,N_violation)];
@@ -74,8 +89,7 @@ if (any(violation)) % In case of collisions, we relax the constraint with slack 
     
     % add bound on the relaxation variable
     ub = [ub; zeros(N_violation,1)];
-    lb = [lb; -0.05*ones(N_violation,1)];
-%     lb = [lb; -(0.1 + (k/2)^2*(0.04) - 0.04)*ones(N_violation,1)];
+    lb = [lb; -0.01*ones(N_violation,1)];
 
     % Linear penalty on collision constraint relaxation
     f_eps = term*[zeros(3*K,1); ones(N_violation,1)]';
@@ -125,10 +139,6 @@ while(~success && tries < 30)
             success = 0;
             outbound = 1;
         end 
-%         if violation % extract the value of the slack variable (not used atm)
-%          epsilon = x(3*K+1:end);
-% %     fprintf("min epsilon = %.4f e-3 \n",1000*min(epsilon))
-%         end
         return
         
     elseif isempty(x)
@@ -136,7 +146,7 @@ while(~success && tries < 30)
         v = [];
         a = [];
         success = 0;
-        if (~any(violation))
+        if (~some_violation)
             fprintf("Couldn't solve in no violation case, retrying with higher tolerance \n");
             constr_tol = 2*constr_tol;
             options.ConstraintTolerance = constr_tol;
@@ -151,9 +161,4 @@ while(~success && tries < 30)
         tries = tries + 1;
         continue
     end
-end
-if ~success
-    hola = 1;
-end
-
 end

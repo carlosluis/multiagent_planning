@@ -8,7 +8,7 @@ max_T = 20; % Trajectory final time
 h = 0.2; % time step duration
 max_K = max_T/h + 1; % number of time steps
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 4:4:20; % number of vehicles
+N_vector = 4:4:8; % number of vehicles
 trials = 50; % number os trails per number of vehicles
 
 % Variables for ellipsoid constraint
@@ -60,9 +60,9 @@ Delta = getDeltaMat(k_hor);
 
 % Start Test
 
-for q = 5:length(N_vector)
+for q = 1:length(N_vector)
     N = N_vector(q);
-    for r = 36:trials
+    for r = 1:trials
         fprintf("Doing trial #%i with %i vehicles\n",r,N)
         % Initial positions
         [po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
@@ -107,7 +107,7 @@ for q = 5:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible(q,r),outbound(q,r),coll(q,r)] = solveSoftDMPCbound2(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p_dmpc,A_v_dmpc,Delta,Q,S,E1,E2,order,term); 
+                    [pi,vi,ai,feasible(q,r),outbound(q,r),coll(q,r)] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p_dmpc,A_v_dmpc,Delta,Q,S,E1,E2,order,term); 
                 end
                 if (~feasible(q,r) || outbound(q,r) || coll(q,r)) %problem was infeasible, exit and retry
                     break;
@@ -332,7 +332,7 @@ for q = 5:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_all_8')
+% save('comp_all_9')
 %% Post-Processing
 close all
 % Volumen of arena
