@@ -8,7 +8,7 @@ max_T = 20; % Trajectory final time
 h = 0.2; % time step duration
 max_K = max_T/h + 1; % number of time steps
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 4:4:8; % number of vehicles
+N_vector = 4:4:20; % number of vehicles
 trials = 50; % number os trails per number of vehicles
 
 % Variables for ellipsoid constraint
@@ -332,7 +332,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-% save('comp_all_9')
+save('comp_all_13_spd2')
 %% Post-Processing
 close all
 % Volumen of arena

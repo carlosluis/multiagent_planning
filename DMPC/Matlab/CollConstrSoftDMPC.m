@@ -18,7 +18,7 @@ if (~isempty(l))
             
             prev_dist(idx) = dist^(order-1);
             % Right side of inequality constraint (bin)
-            r = dist^(order-1)*(rmin - dist + diff*p/(dist^(order-1))) - diff*A_initp(3*(k_ctr-1)+1:3*k_ctr,:)*[po';vo'];
+            r = dist^(order-1)*((rmin/2+dist/2) - dist + diff*p/(dist^(order-1))) - diff*A_initp(3*(k_ctr-1)+1:3*k_ctr,:)*[po';vo'];
 
             % Construct diagonal matrix with vector difference
             diff_mat = [zeros(1,3*(k_ctr-1)) diff zeros(1,3*(K-k_ctr))];

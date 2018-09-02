@@ -11,8 +11,8 @@ k_hor = 15; % horizon length
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-rmin = 0.35; % X-Y protection radius for collisions
-c = 2.0; % make this one for spherical constraint
+rmin = 0.25; % X-Y protection radius for collisions
+c = 2.5; % make this one for spherical constraint
 E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
@@ -20,8 +20,8 @@ E2 = E^(-order);
 N = 4; % number of vehicles
 
 % Workspace boundaries
-pmin = [-2.5,-2.5,0.2];
-pmax = [2.5,2.5,2.2];
+pmin = [-0.5,-0.5,0.2];
+pmax = [0.5,0.5,2.2];
 
 % pmin = [-5,-5,0.2];
 % pmax = [5,5,10.2];
@@ -40,17 +40,17 @@ rmin_init = 0.35;
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
 
 % % Initial positions
-po1 = [1.5,1.5,1.0];
-po2 = [-1.5,-1.5,1.0];
-po3 = [-1.5,1.5,1.0];
-po4 = [1.5,-1.5,1.0];
+po1 = [0.5,0.5,1.0];
+po2 = [-0.5,-0.5,1.0];
+po3 = [-0.5,0.5,1.0];
+po4 = [0.5,-0.5,1.0];
 po = cat(3,po1,po2,po3,po4);
 
 % Final positions
-pf1 = [-1.5001,-1.5,1.0];
-pf2 = [1.5,1.5,1.0];
-pf3 = [1.5,-1.5,1.0];
-pf4 = [-1.5,1.5,1.0];
+pf1 = [-0.495,-0.5,1.0];
+pf2 = [0.5,0.5,1.0];
+pf3 = [0.5,-0.5,1.0];
+pf4 = [-0.5,0.5,1.0];
 pf  = cat(3,pf1,pf2,pf3,pf4);
 
 
@@ -70,7 +70,7 @@ error_tol = 0.01; % 5cm destination tolerance
 violation = 0; % checks if violations occured at end of algorithm
 outbound = 0;
 coll = 0;
-term = -5*10^4;
+term = -1*10^4;
 
 % Penalty matrices when there're predicted collisions
 Q = 1000;

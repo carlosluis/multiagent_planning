@@ -1,7 +1,7 @@
 clc
 close all
 clear
-load('comp_all_9.mat');
+load('comp_all_12_spd2.mat');
 % green = [0.55,0.75,0.11];
 green = [0.55,0.71,0]; %apple green
 % Volumen of arena
@@ -46,7 +46,7 @@ set(gca,'FontSize',20)
 hold on;
 box on;
 xticks([1:5]);
-ylim([0,1150])
+ylim([0,700])
 xlim([0,5.5])
 h1 = errorbar(N_vector/V, tmean_cup,tstd_cup,':b','LineWidth',2.5);
 plot(N_vector/V,tmean_cup,'ob', 'MarkerFaceColor', 'b','Linewidth',1,'markers',10);
@@ -55,7 +55,7 @@ plot(N_vector/V,tmean_dec,'o','Color',green, 'MarkerFaceColor', green,'Linewidth
 h3 = errorbar(N_vector/V, tmean_dmpc,tstd_dmpc,':r','LineWidth',2.5);
 plot(N_vector/V,tmean_dmpc,'or', 'MarkerFaceColor', 'r','Linewidth',1,'markers',10);
 message = sprintf('Successful \ntrials \nonly');
-text(1,400,message,'Fontsize',20)
+text(1,200,message,'Fontsize',20)
 xlabel(' Workspace Density [agents/m³]')
 ylabel('Computation time [s]');
 [h, icons, plots, s] = legend([h1,h2,h3],'Centralized','Decoupled','DMPC');
@@ -104,9 +104,10 @@ hold on;
 box on;
 xticks([1:5]);
 xlim([0,6])
+ylim([0,15])
 h1 = errorbar(N_vector/V,tmean_traj,tstd_traj,':r','LineWidth', 2.5);
 plot(N_vector/V,tmean_traj,'or', 'MarkerFaceColor', 'r','Linewidth',1.5,'markers',10);
-text(0.5,10,message,'Fontsize',20)
+text(0.5,8,message,'Fontsize',20)
 xlabel(' Workspace Density [agents/m³]')
 ylabel('Transition Time [s]');
 [h, icons, plots, s] = legend([h1],'DMPC');

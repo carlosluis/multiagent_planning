@@ -8,7 +8,7 @@ max_T = 30; % Trajectory final time
 h = 0.2; % time step duration
 max_K = max_T/h + 1; % number of time steps
 k_hor = 15; % horizon length (currently set to 3s)
-N_vector = 80:10:100; % number of vehicles
+N_vector = 20:20:100; % number of vehicles
 trials = 50; % number os trails per number of vehicles
 
 % Variables for ellipsoid constraint
@@ -207,7 +207,7 @@ for q = 1:length(N_vector)
         success_dmpc(q,r) = feasible(q,r) && ~failed_goal(q,r) && ~violation(q,r);
         
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%        
-        %SoftDMPC enforcing constraint at 3 different time steps
+        %SoftDMPC enforcing constraint at k_ctr = k-1
         T = 0;
         l = [];
         p = [];
@@ -245,7 +245,7 @@ for q = 1:length(N_vector)
                     pok = pk(:,k-1,n);
                     vok = vk(:,k-1,n);
                     aok = ak(:,k-1,n);
-                    [pi,vi,ai,feasible2(q,r),outbound2(q,r),coll2(q,r)] = solveSoftDMPCall(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p_dmpc,A_v_dmpc,Delta,Q,S,E1,E2,order,term); 
+                    [pi,vi,ai,feasible2(q,r),outbound2(q,r),coll2(q,r)] = solveSoftDMPCbound2(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p_dmpc,A_v_dmpc,Delta,Q,S,E1,E2,order,term); 
                 end
                 if (~feasible2(q,r) || outbound2(q,r) || coll2(q,r)) %problem was infeasible, exit and retry
                     break;
@@ -342,7 +342,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('comp_kctr_all1')
+save('comp_kctr_newctr')
 %% Post-Processing
 close all
 
@@ -444,7 +444,7 @@ fprintf("Percentage failure due to collisions --> %.2f%% (%d out of %d failures)
 fprintf("Percentage failure due to not reaching goal --> %.2f%% (%d out of %d failures) \n",...
     sum(goal_num)/total_num*100, sum(goal_num), total_num)
 
-fprintf("--------------------------- \nk_ctr = k-1,k,k+1 \n");
+fprintf("--------------------------- \nk_ctr = k-1\n");
 fprintf("--------------------------- \n")
 fprintf("Probability of success across all tests --> %.2f%% (%d out of %d tests) \n",...
     sum(prob_dmpc2)/length(prob_dmpc2)*100, sum(sum(success_dmpc2)), length(N_vector)*trials)

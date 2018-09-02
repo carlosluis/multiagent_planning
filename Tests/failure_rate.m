@@ -202,7 +202,7 @@ for q = 1:length(N_vector)
     end
 end
 fprintf("Finished! \n")
-save('failure_rate3')
+save('failure_rate_newctr')
 %% Post-Processing
 close all
 
