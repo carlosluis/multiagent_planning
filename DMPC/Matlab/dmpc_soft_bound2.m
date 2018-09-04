@@ -11,17 +11,17 @@ k_hor = 15; % horizon length
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-rmin = 0.25; % X-Y protection radius for collisions
-c = 2.5; % make this one for spherical constraint
+rmin = 0.35; % X-Y protection radius for collisions
+c = 2.0; % make this one for spherical constraint
 E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 4; % number of vehicles
+N = 2; % number of vehicles
 
 % Workspace boundaries
-pmin = [-0.5,-0.5,0.2];
-pmax = [0.5,0.5,2.2];
+pmin = [-2.5,-2.5,0.2];
+pmax = [2.5,2.5,2.2];
 
 % pmin = [-5,-5,0.2];
 % pmax = [5,5,10.2];
@@ -40,18 +40,18 @@ rmin_init = 0.35;
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
 
 % % Initial positions
-po1 = [0.5,0.5,1.0];
-po2 = [-0.5,-0.5,1.0];
+po1 = [-2,0.001,1.0];
+po2 = [2,0,1.0];
 po3 = [-0.5,0.5,1.0];
 po4 = [0.5,-0.5,1.0];
-po = cat(3,po1,po2,po3,po4);
+po = cat(3,po1,po2);
 
 % Final positions
-pf1 = [-0.495,-0.5,1.0];
-pf2 = [0.5,0.5,1.0];
+pf1 = [2,0,1.0];
+pf2 = [-2,0,1.0];
 pf3 = [0.5,-0.5,1.0];
 pf4 = [-0.5,0.5,1.0];
-pf  = cat(3,pf1,pf2,pf3,pf4);
+pf  = cat(3,pf1,pf2);
 
 
 %% Solving the problem
