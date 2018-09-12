@@ -69,6 +69,6 @@ int main()
 
     // Write result to txt file (to be read by MATLAB)
 
-    char const *file = "/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/dmpc/cpp_results/trajectories.txt";
+    char const *file = "/home/carlos/repos/multiagent_planning/dmpc/cpp_results/trajectories.txt";
     test.trajectories2file(sol_para_short,file);
 }
