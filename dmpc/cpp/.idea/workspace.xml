@@ -1,0 +1,692 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true" buildAllGenerated="true">
+    <generated>
+      <config projectName="dmpc_cpp" targetName="dmpc" />
+      <config projectName="dmpc_cpp" targetName="cluster_test" />
+      <config projectName="dmpc_cpp" targetName="test_cplex" />
+      <config projectName="dmpc_cpp" targetName="dmpc_cpp" />
+    </generated>
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Release" CONFIG_NAME="Release" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="7c069a95-5612-4740-a8cb-e73561831c4f" name="Default" comment="" />
+    <ignored path="$PROJECT_DIR$/cmake-build-debug/" />
+    <ignored path="$PROJECT_DIR$/cmake-build-release/" />
+    <ignored path="$PROJECT_DIR$/cmake-build-minsizerel/" />
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Release" />
+  <component name="FavoritesManager">
+    <favorites_list name="dmpc_cpp" />
+  </component>
+  <component name="FileEditorManager">
+    <splitter split-orientation="horizontal" split-proportion="0.48793858">
+      <split-first>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="450">
+          <file leaf-file-name="main.cpp" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/main.cpp">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="746">
+                  <caret line="71" column="135" lean-forward="true" selection-start-line="71" selection-start-column="135" selection-end-line="71" selection-end-column="135" />
+                  <folding>
+                    <element signature="e#0#19#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="dmpc.h" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/dmpc.h">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="527">
+                  <caret line="198" column="59" lean-forward="false" selection-start-line="198" selection-start-column="59" selection-end-line="198" selection-end-column="59" />
+                  <folding />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file leaf-file-name="cluster_test.cpp" pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/cluster_test.cpp">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="816">
+                  <caret line="48" column="28" lean-forward="false" selection-start-line="48" selection-start-column="28" selection-end-line="48" selection-end-column="28" />
+                  <folding>
+                    <element signature="e#0#19#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-first>
+      <split-second>
+        <leaf SIDE_TABS_SIZE_LIMIT_KEY="450">
+          <file leaf-file-name="dmpc.cpp" pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/dmpc.cpp">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="848">
+                  <caret line="2065" column="13" lean-forward="false" selection-start-line="2065" selection-start-column="13" selection-end-line="2065" selection-end-column="13" />
+                  <folding>
+                    <element signature="e#138#157#0" expanded="true" />
+                    <element signature="e#1639#2784#0" expanded="false" />
+                    <element signature="e#2786#3657#0" expanded="false" />
+                    <element signature="e#3659#4134#0" expanded="false" />
+                    <element signature="e#4136#5086#0" expanded="false" />
+                    <element signature="e#6496#7728#0" expanded="false" />
+                    <element signature="e#7730#9285#0" expanded="false" />
+                    <element signature="e#9287#9360#0" expanded="false" />
+                    <element signature="e#9362#11007#0" expanded="false" />
+                    <element signature="e#11009#11118#0" expanded="false" />
+                    <element signature="e#11120#11191#0" expanded="false" />
+                    <element signature="e#11193#11994#0" expanded="false" />
+                    <element signature="e#11996#13776#0" expanded="false" />
+                    <element signature="e#13778#15392#0" expanded="false" />
+                    <element signature="e#15394#17349#0" expanded="false" />
+                    <element signature="e#17351#26145#0" expanded="false" />
+                    <element signature="e#43946#48927#0" expanded="false" />
+                    <element signature="e#48929#53144#0" expanded="false" />
+                    <element signature="e#53146#58768#0" expanded="false" />
+                    <element signature="e#58770#60516#0" expanded="false" />
+                    <element signature="e#60518#62371#0" expanded="false" />
+                    <element signature="e#62373#63206#0" expanded="false" />
+                    <element signature="e#63208#63707#0" expanded="false" />
+                    <element signature="e#63709#64545#0" expanded="false" />
+                    <element signature="e#64547#65421#0" expanded="false" />
+                    <element signature="e#65422#69838#0" expanded="false" />
+                    <element signature="e#70882#71961#0" expanded="false" />
+                    <element signature="e#71963#73240#0" expanded="false" />
+                    <element signature="e#73242#73930#0" expanded="false" />
+                    <element signature="e#73932#75195#0" expanded="false" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+        </leaf>
+      </split-second>
+    </splitter>
+  </component>
+  <component name="FindInProjectRecents">
+    <findStrings>
+      <find>e</find>
+      <find>a0</find>
+      <find>total</find>
+      <find>obs</find>
+      <find>fail</find>
+      <find>poss</find>
+      <find>I'</find>
+      <find>_T</find>
+      <find>_K</find>
+      <find>all_tra</find>
+      <find>Diagona</find>
+      <find>Diago</find>
+      <find>solve</find>
+      <find>env_</find>
+      <find>x</find>
+      <find>_env</find>
+      <find>_lp</find>
+      <find>_fail</find>
+      <find>qp</find>
+      <find>po</find>
+      <find>K</find>
+      <find>a0_1</find>
+      <find>debug_k</find>
+      <find>nada</find>
+      <find>QuadPr</find>
+      <find>Solve al</find>
+      <find>cout</find>
+      <find>collision_tol</find>
+      <find>0.01</find>
+      <find>0.2</find>
+    </findStrings>
+    <replaceStrings>
+      <replace>array</replace>
+      <replace>_env</replace>
+      <replace>env.at(id_cluster)</replace>
+      <replace>_env(id_cluster)</replace>
+      <replace>_lp(id_cluster)</replace>
+    </replaceStrings>
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/dec_iscp.cpp" />
+        <option value="$PROJECT_DIR$/dec_iscp.h" />
+        <option value="$PROJECT_DIR$/spline.h" />
+        <option value="$PROJECT_DIR$/cmake/FindGUROBI.cmake" />
+        <option value="$PROJECT_DIR$/cmake-modules/Findcplex.cmake" />
+        <option value="$PROJECT_DIR$/iloqpex1.cpp" />
+        <option value="$PROJECT_DIR$/cmake-modules/Findqpoases.cmake" />
+        <option value="$PROJECT_DIR$/example1.cpp" />
+        <option value="$PROJECT_DIR$/CMakeLists.txt" />
+        <option value="$PROJECT_DIR$/cluster_test.cpp" />
+        <option value="$PROJECT_DIR$/dmpc.h" />
+        <option value="$PROJECT_DIR$/dmpc.cpp" />
+        <option value="$PROJECT_DIR$/main.cpp" />
+      </list>
+    </option>
+  </component>
+  <component name="JsBuildToolGruntFileManager" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsBuildToolPackageJson" detection-done="true" sorting="DEFINITION_ORDER" />
+  <component name="JsGulpfileManager">
+    <detection-done>true</detection-done>
+    <sorting>DEFINITION_ORDER</sorting>
+  </component>
+  <component name="OCFindUsagesOptions" text="true" ivars="false" properties="true" derivedClasses="false" />
+  <component name="ProjectFrameBounds" extendedState="6">
+    <option name="x" value="72" />
+    <option name="y" value="-8" />
+    <option name="width" value="1849" />
+    <option name="height" value="1089" />
+  </component>
+  <component name="ProjectView">
+    <navigator proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+      <manualOrder />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="settings.editor.selected.configurable" value="CMakeSettings" />
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="RunManager" selected="Application.dmpc">
+    <configuration name="Build All" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="dmpc_cpp" RUN_TARGET_NAME="dmpc_cpp" EXPLICIT_BUILD_TARGET_NAME="all">
+      <envs />
+    </configuration>
+    <configuration name="cluster_test" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="dmpc_cpp" TARGET_NAME="cluster_test" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="dmpc_cpp" RUN_TARGET_NAME="dmpc_cpp">
+      <envs />
+    </configuration>
+    <configuration name="dmpc" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="dmpc_cpp" TARGET_NAME="dmpc" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="dmpc_cpp" RUN_TARGET_NAME="dmpc_cpp">
+      <envs />
+    </configuration>
+    <configuration name="dmpc_cpp" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="dmpc_cpp" TARGET_NAME="dmpc_cpp" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="dmpc_cpp" RUN_TARGET_NAME="dmpc_cpp">
+      <envs />
+    </configuration>
+    <configuration name="test_cplex" type="CMakeRunConfiguration" factoryName="Application" PASS_PARENT_ENVS_2="true" PROJECT_NAME="dmpc_cpp" TARGET_NAME="test_cplex" CONFIG_NAME="Release" RUN_TARGET_PROJECT_NAME="dmpc_cpp" RUN_TARGET_NAME="test_qpoases">
+      <envs />
+    </configuration>
+    <list size="5">
+      <item index="0" class="java.lang.String" itemvalue="Application.Build All" />
+      <item index="1" class="java.lang.String" itemvalue="Application.cluster_test" />
+      <item index="2" class="java.lang.String" itemvalue="Application.dmpc" />
+      <item index="3" class="java.lang.String" itemvalue="Application.dmpc_cpp" />
+      <item index="4" class="java.lang.String" itemvalue="Application.test_cplex" />
+    </list>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false">
+    <option name="remove_strategy" value="false" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="7c069a95-5612-4740-a8cb-e73561831c4f" name="Default" comment="" />
+      <created>1521226465306</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1521226465306</updated>
+      <workItem from="1521226466908" duration="264000" />
+      <workItem from="1521226997691" duration="7759000" />
+      <workItem from="1525114387839" duration="180000" />
+      <workItem from="1525114819464" duration="172633000" />
+      <workItem from="1526307204607" duration="703000" />
+      <workItem from="1526317477814" duration="22185000" />
+      <workItem from="1526484949725" duration="16342000" />
+      <workItem from="1527006084094" duration="9612000" />
+      <workItem from="1528462827843" duration="1599000" />
+      <workItem from="1528464584467" duration="32377000" />
+      <workItem from="1528912832044" duration="41393000" />
+      <workItem from="1529589975531" duration="1280000" />
+      <workItem from="1529604181668" duration="83000" />
+      <workItem from="1529604279852" duration="5698000" />
+      <workItem from="1530022082034" duration="3913000" />
+      <workItem from="1530030229930" duration="1889000" />
+      <workItem from="1530112611277" duration="4924000" />
+      <workItem from="1530640515683" duration="25968000" />
+      <workItem from="1531144632271" duration="22856000" />
+      <workItem from="1531519399248" duration="29410000" />
+      <workItem from="1531620981758" duration="1722000" />
+      <workItem from="1531622787768" duration="7962000" />
+      <workItem from="1531630864344" duration="42821000" />
+      <workItem from="1531940481861" duration="15472000" />
+      <workItem from="1531958716079" duration="29239000" />
+      <workItem from="1532042037272" duration="179000" />
+      <workItem from="1532042263499" duration="351000" />
+      <workItem from="1532053282728" duration="14000" />
+      <workItem from="1532053313688" duration="84000" />
+      <workItem from="1532053432252" duration="26000" />
+      <workItem from="1532053592349" duration="30186000" />
+      <workItem from="1532123555671" duration="1980000" />
+      <workItem from="1532147741355" duration="4268000" />
+      <workItem from="1532360258745" duration="10413000" />
+      <workItem from="1532542062990" duration="23796000" />
+      <workItem from="1532632895201" duration="45000" />
+      <workItem from="1532634125007" duration="492000" />
+      <workItem from="1532704908997" duration="56000" />
+      <workItem from="1532706212456" duration="243000" />
+      <workItem from="1532713380282" duration="282000" />
+      <workItem from="1532713733402" duration="7816000" />
+      <workItem from="1532962280944" duration="3658000" />
+      <workItem from="1532966060539" duration="2747000" />
+      <workItem from="1533061716036" duration="133000" />
+      <workItem from="1533062043805" duration="233000" />
+      <workItem from="1533063555759" duration="123000" />
+      <workItem from="1533129409366" duration="16098000" />
+      <workItem from="1533235663195" duration="8140000" />
+      <workItem from="1533308434317" duration="14930000" />
+      <workItem from="1533508910347" duration="1264000" />
+      <workItem from="1533836527472" duration="16717000" />
+      <workItem from="1534526855059" duration="7060000" />
+      <workItem from="1535122325565" duration="1195000" />
+      <workItem from="1535159914661" duration="597000" />
+      <workItem from="1535557431544" duration="899000" />
+      <workItem from="1535642880611" duration="313000" />
+      <workItem from="1536613016286" duration="12000" />
+      <workItem from="1536775686289" duration="151000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TimeTrackingManager">
+    <option name="totallyTimeSpent" value="652785000" />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="73" y="-5" width="1847" height="1085" extended-state="6" />
+    <editor active="true" />
+    <layout>
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.12335526" sideWeight="0.49275362" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32932165" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4862788" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="CMake" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32930845" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.44346872" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="false" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32932165" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4890591" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.1459251" sideWeight="0.5072464" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+    </layout>
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <option name="time" value="371" />
+    </breakpoint-manager>
+    <watches-manager />
+  </component>
+  <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/dec_iscp.cpp" />
+    <entry file="file://$PROJECT_DIR$/dec_iscp.h" />
+    <entry file="file://$PROJECT_DIR$/main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="272">
+          <caret line="16" column="47" lean-forward="true" selection-start-line="16" selection-start-column="47" selection-end-line="16" selection-end-column="47" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="14" column="1" lean-forward="true" selection-start-line="14" selection-start-column="1" selection-end-line="14" selection-end-column="1" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/eigen3/Eigen/src/Core/GeneralProduct.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="172">
+          <caret line="389" column="0" lean-forward="false" selection-start-line="389" selection-start-column="0" selection-end-line="389" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dec_iscp.cpp" />
+    <entry file="file://$PROJECT_DIR$/dec_iscp.h" />
+    <entry file="file:///usr/local/include/eigen-quadprog/QuadProg.h" />
+    <entry file="file:///usr/include/eigen-quadprog/QuadProg.h" />
+    <entry file="file:///usr/include/eigen3/Eigen/src/Core/DenseStorage.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-226">
+          <caret line="385" column="0" lean-forward="false" selection-start-line="385" selection-start-column="0" selection-end-line="385" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/spline.h" />
+    <entry file="file:///usr/include/eigen3/Eigen/src/Core/util/Memory.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-317">
+          <caret line="246" column="0" lean-forward="false" selection-start-line="246" selection-start-column="0" selection-end-line="246" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/eigen3/Eigen/src/Core/CwiseBinaryOp.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="185">
+          <caret line="109" column="0" lean-forward="false" selection-start-line="109" selection-start-column="0" selection-end-line="109" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/eigen3/Eigen/src/Core/DenseBase.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="185">
+          <caret line="259" column="0" lean-forward="false" selection-start-line="259" selection-start-column="0" selection-end-line="259" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/c++/5/bits/stl_vector.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="129">
+          <caret line="802" column="0" lean-forward="false" selection-start-line="802" selection-start-column="0" selection-end-line="802" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/eigen-quadprog/src/eigen_quadprog_api.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="11" column="4" lean-forward="true" selection-start-line="11" selection-start-column="4" selection-end-line="11" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/eigen3/Eigen/src/Core/CwiseUnaryOp.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="169">
+          <caret line="55" column="0" lean-forward="false" selection-start-line="55" selection-start-column="0" selection-end-line="55" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/eigen3/Eigen/src/Core/CommaInitializer.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="185">
+          <caret line="111" column="0" lean-forward="false" selection-start-line="111" selection-start-column="0" selection-end-line="111" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/FindGUROBI.cmake" />
+    <entry file="file://$PROJECT_DIR$/cmake/FindGUROBI.cmake" />
+    <entry file="file:///usr/local/include/eigen-gurobi/eigen_gurobi_api.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="170">
+          <caret line="11" column="4" lean-forward="true" selection-start-line="11" selection-start-column="4" selection-end-line="11" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/include/eigen-gurobi/Gurobi.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="181">
+          <caret line="46" column="25" lean-forward="false" selection-start-line="46" selection-start-column="25" selection-end-line="46" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/c++/5/bits/basic_string.tcc">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="177">
+          <caret line="222" column="0" lean-forward="false" selection-start-line="222" selection-start-column="0" selection-end-line="222" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/opt/gurobi752/linux64/include/gurobi_c++.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="177">
+          <caret line="817" column="0" lean-forward="false" selection-start-line="817" selection-start-column="0" selection-end-line="817" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/c++/5/functional">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="177">
+          <caret line="1519" column="0" lean-forward="false" selection-start-line="1519" selection-start-column="0" selection-end-line="1519" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///opt/ibm/ILOG/CPLEX_Studio128/cplex/include/ilcplex/cplex.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="142">
+          <caret line="3047" column="10" lean-forward="true" selection-start-line="3047" selection-start-column="10" selection-end-line="3047" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///opt/ibm/ILOG/CPLEX_Studio128/cplex/include/ilcplex/cpxconst.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="394">
+          <caret line="2377" column="10" lean-forward="false" selection-start-line="2377" selection-start-column="10" selection-end-line="2377" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/iloqpex1.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="34">
+          <caret line="2" column="19" lean-forward="false" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/local/include/ooqp_eigen_interface/OoqpEigenInterface.hpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="295">
+          <caret line="55" column="6" lean-forward="false" selection-start-line="55" selection-start-column="6" selection-end-line="55" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cmake-modules/Findcplex.cmake">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="94" column="33" lean-forward="false" selection-start-line="93" selection-start-column="2" selection-end-line="94" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cmake-build-debug/Makefile">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="140">
+          <caret line="130" column="0" lean-forward="false" selection-start-line="130" selection-start-column="0" selection-end-line="130" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cmake-modules/Findqpoases.cmake" />
+    <entry file="file:///usr/local/include/qpOASES/extras/SolutionAnalysis.hpp" />
+    <entry file="file:///usr/local/include/qpOASES/QProblem.hpp" />
+    <entry file="file:///usr/local/include/qpOASES.hpp" />
+    <entry file="file://$USER_HOME$/qpOASES-3.2.1/include/qpOASES.hpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="578">
+          <caret line="34" column="0" lean-forward="false" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/qpOASES-3.2.1/include/qpOASES/Matrices.hpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-473">
+          <caret line="510" column="6" lean-forward="false" selection-start-line="510" selection-start-column="6" selection-end-line="510" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/qpOASES-3.2.1/include/qpOASES/QProblem.hpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2040">
+          <caret line="122" column="20" lean-forward="false" selection-start-line="122" selection-start-column="20" selection-end-line="122" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/qpOASES-3.2.1/include/qpOASES/QProblemB.hpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="224">
+          <caret line="164" column="20" lean-forward="false" selection-start-line="164" selection-start-column="20" selection-end-line="164" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/example1.cpp" />
+    <entry file="file:///usr/include/Eigen/src/Core/Matrix.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="238">
+          <caret line="292" column="33" lean-forward="false" selection-start-line="292" selection-start-column="33" selection-end-line="292" selection-end-column="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CMakeLists.txt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="695">
+          <caret line="46" column="22" lean-forward="false" selection-start-line="46" selection-start-column="22" selection-end-line="46" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/eigen-quadprog/src/QuadProg.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="290">
+          <caret line="94" column="32" lean-forward="false" selection-start-line="94" selection-start-column="18" selection-end-line="94" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/Eigen/src/SparseCore/SparseMatrix.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="91" column="6" lean-forward="false" selection-start-line="91" selection-start-column="6" selection-end-line="91" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/eigen3/Eigen/src/Core/DenseCoeffsBase.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="351" column="0" lean-forward="false" selection-start-line="351" selection-start-column="0" selection-end-line="351" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file:///usr/include/eigen3/Eigen/src/Core/Block.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="145">
+          <caret line="146" column="0" lean-forward="false" selection-start-line="146" selection-start-column="0" selection-end-line="146" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/cluster_test.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="816">
+          <caret line="48" column="28" lean-forward="false" selection-start-line="48" selection-start-column="28" selection-end-line="48" selection-end-column="28" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dmpc.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="848">
+          <caret line="2065" column="13" lean-forward="false" selection-start-line="2065" selection-start-column="13" selection-end-line="2065" selection-end-column="13" />
+          <folding>
+            <element signature="e#138#157#0" expanded="true" />
+            <element signature="e#1639#2784#0" expanded="false" />
+            <element signature="e#2786#3657#0" expanded="false" />
+            <element signature="e#3659#4134#0" expanded="false" />
+            <element signature="e#4136#5086#0" expanded="false" />
+            <element signature="e#6496#7728#0" expanded="false" />
+            <element signature="e#7730#9285#0" expanded="false" />
+            <element signature="e#9287#9360#0" expanded="false" />
+            <element signature="e#9362#11007#0" expanded="false" />
+            <element signature="e#11009#11118#0" expanded="false" />
+            <element signature="e#11120#11191#0" expanded="false" />
+            <element signature="e#11193#11994#0" expanded="false" />
+            <element signature="e#11996#13776#0" expanded="false" />
+            <element signature="e#13778#15392#0" expanded="false" />
+            <element signature="e#15394#17349#0" expanded="false" />
+            <element signature="e#17351#26145#0" expanded="false" />
+            <element signature="e#43946#48927#0" expanded="false" />
+            <element signature="e#48929#53144#0" expanded="false" />
+            <element signature="e#53146#58768#0" expanded="false" />
+            <element signature="e#58770#60516#0" expanded="false" />
+            <element signature="e#60518#62371#0" expanded="false" />
+            <element signature="e#62373#63206#0" expanded="false" />
+            <element signature="e#63208#63707#0" expanded="false" />
+            <element signature="e#63709#64545#0" expanded="false" />
+            <element signature="e#64547#65421#0" expanded="false" />
+            <element signature="e#65422#69838#0" expanded="false" />
+            <element signature="e#70882#71961#0" expanded="false" />
+            <element signature="e#71963#73240#0" expanded="false" />
+            <element signature="e#73242#73930#0" expanded="false" />
+            <element signature="e#73932#75195#0" expanded="false" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/dmpc.h">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="527">
+          <caret line="198" column="59" lean-forward="false" selection-start-line="198" selection-start-column="59" selection-end-line="198" selection-end-column="59" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/main.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="746">
+          <caret line="71" column="135" lean-forward="true" selection-start-line="71" selection-start-column="135" selection-end-line="71" selection-end-column="135" />
+          <folding>
+            <element signature="e#0#19#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+  </component>
+</project>

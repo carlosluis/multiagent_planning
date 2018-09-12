@@ -1,0 +1,23 @@
+/home/carlos/clion-2017.3.3/bin/cmake/bin/cmake -DCMAKE_BUILD_TYPE=Release -G "CodeBlocks - Unix Makefiles" "/home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/dmpc/cpp"
+-- The C compiler identification is GNU 5.4.0
+-- The CXX compiler identification is GNU 5.4.0
+-- Check for working C compiler: /usr/bin/cc
+-- Check for working C compiler: /usr/bin/cc -- works
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Check for working CXX compiler: /usr/bin/c++
+-- Check for working CXX compiler: /usr/bin/c++ -- works
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- CPLEX Library: /opt/ibm/ILOG/CPLEX_Studio128/cplex/lib/x86-64_linux/static_pic/libcplex.a
+-- ILOCPLEX Library: /opt/ibm/ILOG/CPLEX_Studio128/cplex/lib/x86-64_linux/static_pic/libilocplex.a
+-- CONCERT Library: /opt/ibm/ILOG/CPLEX_Studio128/concert/lib/x86-64_linux/static_pic/libconcert.a
+-- CPLEX Bin Dir: CPLEX_BIN_DIR-NOTFOUND
+-- Found CPLEX: /opt/ibm/ILOG/CPLEX_Studio128/cplex/lib/x86-64_linux/static_pic/libcplex.a  
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/carlos/Documents/UTIAS/First Year/Winter 2018/ECE1505/Project/dec_SQP/dmpc/cpp/cmake-build-release

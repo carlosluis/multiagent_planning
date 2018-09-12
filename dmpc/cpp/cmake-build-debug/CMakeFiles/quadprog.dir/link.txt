@@ -1,0 +1,2 @@
+/usr/bin/ar qc libquadprog.a  CMakeFiles/quadprog.dir/dmpc.cpp.o
+/usr/bin/ranlib libquadprog.a
