@@ -129,7 +129,7 @@ while ~reached_goal && k < max_K
         pok = pk(:,k-1,n);
         vok = vk(:,k-1,n);
         aok = ak(:,k-1,n);
-        [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound_debug(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order,term); 
+        [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound2(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order,term); 
     end
     if (~success || outbound || coll) %problem was infeasible, exit and retry
         break;
