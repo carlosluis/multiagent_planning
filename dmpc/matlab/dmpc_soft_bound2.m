@@ -11,7 +11,7 @@ k_hor = 15; % horizon length
 
 % Variables for ellipsoid constraint
 order = 2; % choose between 2 or 4 for the order of the super ellipsoid
-rmin = 0.35; % X-Y protection radius for collisions
+rmin = 0.5; % X-Y protection radius for collisions
 c = 2.0; % make this one for spherical constraint
 E = diag([1,1,c]);
 E1 = E^(-1);
@@ -43,7 +43,7 @@ rmin_init = 0.35;
 % [po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
 
 % Initial positions
-po1 = [-2,0.001,1.0];
+po1 = [1.6,0.001,1.0];
 po2 = [2,0,1.0];
 po3 = [0,2,1.0];
 po4 = [0,-2,1.0];
@@ -129,7 +129,7 @@ while ~reached_goal && k < max_K
         pok = pk(:,k-1,n);
         vok = vk(:,k-1,n);
         aok = ak(:,k-1,n);
-        [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound2(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order,term); 
+        [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order,term); 
     end
     if (~success || outbound || coll) %problem was infeasible, exit and retry
         break;

@@ -23,6 +23,8 @@ clusters2plot = [1,2,4,8];
 %% Plotting
 colors = distinguishable_colors(clus_arr_size);
 colors(3,:) = [0.55,0.75,0.11];
+colors(2,:) = [0 0 0];
+colors(4,:) = [1 0 0];
 idx = 1;
 for i = 1:clus_arr_size
     figure(1)

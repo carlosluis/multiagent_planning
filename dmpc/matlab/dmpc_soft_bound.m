@@ -1,5 +1,5 @@
-% clc
-% clear all
+clc
+clear all
 close all
 warning('off','all')
 
@@ -85,12 +85,24 @@ Aux = [1 0 0 h 0 0;
      0 0 0 1 0 0;
      0 0 0 0 1 0;
      0 0 0 0 0 1];
+ 
+b = [h^2/2*eye(3);
+    h*eye(3)];
+
+prev_row = zeros(6,3*k_hor); % For the first iteration of constructing matrix Ain
 A_initp = [];
 A_init = eye(6);
+A_p = [];
+A_v = [];
 
-Delta = getDeltaMat(k_hor); 
+Delta = getDeltaMat(k_hor);
 
 for k = 1:k_hor
+    add_b = [zeros(size(b,1),size(b,2)*(k-1)) b zeros(size(b,1),size(b,2)*(k_hor-k))];
+    new_row = Aux*prev_row + add_b;   
+    A_p = [A_p; new_row(1:3,:)];
+    A_v = [A_v; new_row(4:6,:)];
+    prev_row = new_row;
     A_init = Aux*A_init;
     A_initp = [A_initp; A_init(1:3,:)];  
 end
@@ -111,7 +123,7 @@ for k = 1:K
             pok = pk(:,k-1,n);
             vok = vk(:,k-1,n);
             aok = ak(:,k-1,n);
-            [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,Delta,Q,S,E1,E2,order,term); 
+            [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order,term); 
         end
         if (~success || outbound || coll) %problem was infeasible, exit and retry
             break;

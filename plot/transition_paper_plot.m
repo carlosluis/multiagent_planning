@@ -58,14 +58,14 @@ N = 4;
 
 % Initial positions
 po1 = [2,2,1.5];
-po2 = [0.5,-2,1.5];
+po2 = [0,-2,1.5];
 po3 = [-2,2,1.5];
 po4 = [2,-2,1.5];
 po = cat(3,po1,po2,po3,po4);
 
 % Final positions
 pf1 = [-2,-2,1.5];
-pf2 = [-0.5,2,1.5];
+pf2 = [0,2,1.5];
 pf3 = [2,-2,1.5];
 pf4 = [-2,2,1.5];
 pf  = cat(3, pf1, pf2,pf3,pf4);
@@ -142,7 +142,7 @@ while ~reached_goal && k < max_K
             pok = pk(:,k-1,n);
             vok = vk(:,k-1,n);
             aok = ak(:,k-1,n);
-            [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order,term); 
+            [pi,vi,ai,success,outbound,coll] = solveSoftDMPCbound2(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order,term); 
         end
         if (~success || outbound || coll) %problem was infeasible, exit and retry
             break;
@@ -355,8 +355,8 @@ while get(gcf,'currentchar')==' '
             zticks([0  3]); 
             plot(pk(1,1:k,i),pk(2,1:k,i),'-',...
                 'LineWidth',8,'Color',colors(i,:),'markers',6);
-            plot(pk_cup(1,1:k,i),pk_cup(2,1:k,i),'--',...
-                'LineWidth',8,'Color',colors(i,:),'markers',0.1);
+%             plot(pk_cup(1,1:k,i),pk_cup(2,1:k,i),'--',...
+%                 'LineWidth',8,'Color',colors(i,:),'markers',0.1);
         end
     if k==1
         xh = get(gca,'xlabel'); % handle to the label object

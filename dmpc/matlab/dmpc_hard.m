@@ -17,7 +17,7 @@ E = diag([1,1,c]);
 E1 = E^(-1);
 E2 = E^(-order);
 
-N = 2; % number of vehicles
+N = 70; % number of vehicles
 
 % Workspace boundaries
 pmin = [-2.5,-2.5,0.2];
@@ -40,21 +40,21 @@ pmax = [2.5,2.5,2.2];
 rmin_init = 0.35;
 
 % Initial positions
-% [po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
+[po,pf] = randomTest(N,pmin,pmax,rmin_init,E1,order);
 
-% Initial positions
-po1 = [-2,0,1.0];
-po2 = [2,0,1.0];
-po3 = [0,2,1.0];
-po4 = [0,-2,1.0];
-po = cat(3,po1,po2);
-
-% Final positions
-pf1 = [2,0,1.0];
-pf2 = [-2,0,1.0];
-pf3 = [0,-2,1.0];
-pf4 = [0,2,1.0];
-pf  = cat(3,pf1,pf2);
+% % Initial positions
+% po1 = [-2,0,1.0];
+% po2 = [2,0,1.0];
+% po3 = [0,2,1.0];
+% po4 = [0,-2,1.0];
+% po = cat(3,po1,po2,po3,po4);
+% 
+% % Final positions
+% pf1 = [2,0,1.0];
+% pf2 = [-2,0,1.0];
+% pf3 = [0,-2,1.0];
+% pf4 = [0,2,1.0];
+% pf  = cat(3,pf1,pf2,pf3,pf4);
 
 
 %% Solving the problem
@@ -128,7 +128,7 @@ while ~reached_goal && k < max_K
         pok = pk(:,k-1,n);
         vok = vk(:,k-1,n);
         aok = ak(:,k-1,n);
-        [pi,vi,ai,success,outbound,coll] = solveHardDMPCOnDemand(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order); 
+        [pi,vi,ai,success,outbound,coll] = solveHardDMPC(pok',pf(:,:,n),vok',aok',n,h,l,k_hor,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q,S,E1,E2,order); 
     end
     if (~success || outbound || coll) %problem was infeasible, exit and retry
         break;

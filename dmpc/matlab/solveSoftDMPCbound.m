@@ -1,4 +1,4 @@
-function [p,v,a,success,outbound,coll] = solveSoftDMPCbound(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q1,S1,E1,E2,order,term)
+function [p,v,a,feasible,outbound,coll] = solveSoftDMPCbound(po,pf,vo,ao,n,h,l,K,rmin,pmin,pmax,alim,A,A_initp,A_p,A_v,Delta,Q1,S1,E1,E2,order,term)
 
 k_hor = size(l,2);
 ub = alim*ones(3*K,1);
@@ -14,7 +14,7 @@ options = optimoptions('quadprog','Display','off','ConstraintTolerance',constr_t
 N = size(l,3);
 Ain_coll = []; 
 bin_coll = []; 
-success = 0;
+feasible = 0;
 outbound = 0;
 coll = 0;
 
@@ -27,6 +27,7 @@ for k = 1: k_hor
             v = [];
             a = [];
             coll = 1;
+            feasible = 1;
             return;   
         end   
         [Ainr,binr,prev_dist] = CollConstrSoftDMPC(prev_p(:,k),po,vo,n,k,l,rmin,A,A_initp,E1,E2,order,viol_constr);
@@ -98,7 +99,7 @@ H = 2*(A'*Q*A+ Delta'*S*Delta + R + EPS);
 tries = 0;
 x = [];
 %Solve and propagate states
-while(~success && tries < 30)
+while(~feasible && tries < 30)
     [x,fval,exitflag] = quadprog(H,f',Ain_total,bin_total,Aeq,beq,lb,ub,[],options);
     if (exitflag == -6)
         % Weird non-convex flag may appear, even though the problem is
@@ -110,7 +111,7 @@ while(~success && tries < 30)
         fprintf("Exitflag was -6 in Bound \n")
         constr_tol = 2*constr_tol;
         options.ConstraintTolerance = constr_tol;
-        success = 0;
+        feasible = 0;
         tries = tries + 1;
         continue  
     elseif (~isempty(x))
@@ -120,9 +121,9 @@ while(~success && tries < 30)
         p = vec2mat(p,3)';
         v = vec2mat(v,3)';
         a = vec2mat(a,3)';
-        success = 1;
+        feasible = 1;
         if (~is_inbounds(p(:,1),pmin,pmax))
-            success = 0;
+            feasible = 1;
             outbound = 1;
         end 
 %         if violation % extract the value of the slack variable (not used atm)
@@ -135,7 +136,7 @@ while(~success && tries < 30)
         p = [];
         v = [];
         a = [];
-        success = 0;
+        feasible = 0;
         if (~any(violation))
             fprintf("Couldn't solve in no violation case, retrying with higher tolerance \n");
             constr_tol = 2*constr_tol;
@@ -152,7 +153,7 @@ while(~success && tries < 30)
         continue
     end
 end
-if ~success
+if ~feasible
     hola = 1;
 end
 
